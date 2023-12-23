@@ -27,6 +27,7 @@ class MapCard extends LitElement {
                 attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             })
         );
+        this.addWmsLayers(map);
         this.map = map;
     }
 
@@ -62,9 +63,16 @@ class MapCard extends LitElement {
         return html`
             <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
             <ha-card header="${this.getTitle()}">
-                <div id="${this.getCSSId()}" style="height: ${(this.getCardSize() - 1) * 50}px;"></div>
+                <div id="${this.getCSSId()}" style="height: ${this.getMapHeight()}px;"></div>
             </ha-card>
         `;
+    }
+
+    addWmsLayers(map) {
+        this.config.wms.forEach((l) => {
+            console.log(l);
+            L.tileLayer.wms(l.url, l.options).addTo(map);
+        });
     }
 
     setConfigWithDefault(input, name, d = null) {
@@ -91,15 +99,26 @@ class MapCard extends LitElement {
         this.setConfigWithDefault(inputConfig, "x");
         this.setConfigWithDefault(inputConfig, "y");
         this.setConfigWithDefault(inputConfig, "zoom", 12);
-        this.setConfigWithDefault(inputConfig, "title", "");
+        this.config["title"] = inputConfig["title"];
+        this.setConfigWithDefault(inputConfig, "card_size", 6);
         this.setConfigWithDefault(inputConfig, "entities", []);
         this.setConfigWithDefault(inputConfig, "css_id", "map-card-" + (new Date()).getTime());
+        this.setConfigWithDefault(inputConfig, "wms", []);
+        
     }
 
     // The height of your card. Home Assistant uses this to automatically
     // distribute all cards over the available columns.
     getCardSize() {
-        return 6;
+        return this.config.card_size;
+    }
+
+    getMapHeight() {
+        if(this.getTitle()) {
+            return (this.getCardSize() - 1) * 50;
+        } else {
+            return this.getCardSize() * 50;
+        }
     }
 
     getCSSId() {
