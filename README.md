@@ -6,6 +6,10 @@
 
 ### Usage
 
+> #### TIP
+>
+> Home Assistant contains a [native map](https://www.home-assistant.io/dashboards/map/) feature, if you don't need advanced features like WMS layers it might be a better choice.
+
 #### Minimal
 ```yaml
 type: custom:map-card
