@@ -84,7 +84,8 @@ class MapCard extends LitElement {
         .split(" ")
         .map((part) => part[0])
         .join("")
-        .substr(0, 3);
+        .substr(0, 3)
+        .toUpperCase();
         var html = `<div class="marker">${abbr}</div>`
     }
     // const marker = L.marker([stateObj.attributes.latitude, stateObj.attributes.longitude])
