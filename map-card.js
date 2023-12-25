@@ -21,15 +21,15 @@ class MapCard extends LitElement {
 
   firstRenderWithMap = true;
   entities = [];
-
+  /** @type {L.Map} */
+  map;
 
 
   firstUpdated() {
-    this.map = this._setupMap();
+    this.map = this._setupMap();    
   }
 
-  render() {
-
+  render() {    
     if (this.map) {
       // First render is without the map
       if (this.firstRenderWithMap) {
@@ -37,17 +37,21 @@ class MapCard extends LitElement {
         this.firstRenderWithMap = false;
       }
       this.entities.forEach((ent) => {
-        const entity = ent[0];
+        const stateObj = this.hass.states[ent[0]];
+        const {
+          latitude,
+          longitude,
+        } = stateObj.attributes;
         const marker = ent[1];
-        this._updateEntity(entity, marker, this.hass);
+        this._updateEntity(marker, latitude, longitude);
       })
 
     }
 
     return html`
             <link rel="stylesheet" href="/static/images/leaflet/leaflet.css">
-            <ha-card header="${this.getTitle()}">
-                <div id="${this.getCSSId()}" style="height: ${this.getMapHeight()}px;"></div>
+            <ha-card header="${this._getTitle()}">
+                <div id="map" style="height: ${this._getMapHeight()}px"></div>
             </ha-card>
         `;
   }
@@ -77,8 +81,9 @@ class MapCard extends LitElement {
   }
 
   _drawEntityFirstTime(entityId, latitude, longitude, icon, title) {
+    let iconHtml = "";
     if(icon) {
-      var html = `<div class="marker"><ha-icon icon="${icon}">icon</ha-icon></div>`
+      iconHtml = `<div class="marker"><ha-icon icon="${icon}">icon</ha-icon></div>`
     } else {
       const abbr = title
         .split(" ")
@@ -86,17 +91,11 @@ class MapCard extends LitElement {
         .join("")
         .substr(0, 3)
         .toUpperCase();
-        var html = `<div class="marker">${abbr}</div>`
+        iconHtml = `<div class="marker">${abbr}</div>`
     }
-    // const marker = L.marker([stateObj.attributes.latitude, stateObj.attributes.longitude])
-    //   .setIcon(new L.icon({
-    //     iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-    //     shadowIconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png"
-    //   }))
-    //   .bindPopup(entityId);
     const marker = L.marker([latitude, longitude], {
       icon: L.divIcon({
-        html: html,
+        html: iconHtml,
         iconSize: [24, 24],
         className: "",
       }),
@@ -105,19 +104,21 @@ class MapCard extends LitElement {
     return marker;
   }
 
-  _updateEntity(entityId, marker, hass) {
-    const stateObj = this.hass.states[entityId];
-    marker.setLatLng([stateObj.attributes.latitude, stateObj.attributes.longitude]);
+  _updateEntity(marker, latitude, longitude) {
+    marker.setLatLng([latitude, longitude]);
   }
 
+  /** @returns {L.Map} */
   _setupMap() {
-    const mapEl = this.shadowRoot.querySelector('#' + this.getCSSId());
-    let map = L.map(mapEl).setView([this.getX(), this.getY()], this.getZoom());
+    L.Icon.Default.imagePath = "/static/images/leaflet/images/";
+
+    const mapEl = this.shadowRoot.querySelector('#map');
+    let map = L.map(mapEl).setView(this._getLatLong(), this._getZoom());
 
     map.addLayer(
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      L.tileLayer(this._getTileLayerUrl(), {
         maxZoom: 19,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        attribution: this._getTileLayerAttribution()
       })
     );
     this._addWmsLayers(map);
@@ -125,13 +126,13 @@ class MapCard extends LitElement {
   }
 
   _addWmsLayers(map) {
-    this.config.wms.forEach((l) => {
+    this._getWmsLayersConfig().forEach((l) => {
       console.log(l);
       L.tileLayer.wms(l.url, l.options).addTo(map);
     });
   }
 
-  setConfigWithDefault(input, name, d = null) {
+  _setConfigWithDefault(input, name, d = null) {
     if (!input[name]) {
       if (d == null) {
         throw new Error("Missing key " + name);
@@ -142,24 +143,18 @@ class MapCard extends LitElement {
     }
   }
 
-  setMap(map) {
-    this.config.map = map;
-  }
-
-  getMap() {
-    return this.config.map;
-  }
-
   setConfig(inputConfig) {
     this.config = {};
-    this.setConfigWithDefault(inputConfig, "x");
-    this.setConfigWithDefault(inputConfig, "y");
-    this.setConfigWithDefault(inputConfig, "zoom", 12);
+    this._setConfigWithDefault(inputConfig, "x");
+    this._setConfigWithDefault(inputConfig, "y");
+    this._setConfigWithDefault(inputConfig, "zoom", 12);
     this.config["title"] = inputConfig["title"];
-    this.setConfigWithDefault(inputConfig, "card_size", 6);
-    this.setConfigWithDefault(inputConfig, "entities", []);
-    this.setConfigWithDefault(inputConfig, "css_id", "map-card-" + (new Date()).getTime());
-    this.setConfigWithDefault(inputConfig, "wms", []);
+    this._setConfigWithDefault(inputConfig, "card_size", 5);
+    this._setConfigWithDefault(inputConfig, "entities", []);
+    //this._setConfigWithDefault(inputConfig, "css_id", "map-card-" + (new Date()).getTime());
+    this._setConfigWithDefault(inputConfig, "wms", []);
+    this._setConfigWithDefault(inputConfig, "tile_layer_url", "https://tile.openstreetmap.org/{z}/{x}/{y}.png");
+    this._setConfigWithDefault(inputConfig, "tile_layer_attribution", '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>');
 
   }
 
@@ -169,31 +164,43 @@ class MapCard extends LitElement {
     return this.config.card_size;
   }
 
-  getMapHeight() {
-    if (this.getTitle()) {
-      return (this.getCardSize() - 1) * 50;
+  /** @returns {String} */
+  _getTileLayerUrl() {
+    return this.config.tile_layer_url;
+  }
+
+  /** @returns {[url: String, options: {}]}} */
+  _getWmsLayersConfig() {
+    return this.config.wms;
+  }
+
+  /** @returns {String} */
+  _getTileLayerAttribution() {
+    return this.config.tile_layer_attribution;
+  }
+
+  /** @returns {Int} */
+  _getMapHeight() {
+    if (this._getTitle()) {
+      return (this.getCardSize() * 50) + 20 - 76 - 2;
     } else {
-      return this.getCardSize() * 50;
+      return (this.getCardSize() * 50) + 20;
     }
   }
+  
 
-  getCSSId() {
-    return this.config.css_id;
+  /** @returns {[Double, Double]} */
+  _getLatLong() {
+    return [this.config.x, this.config.y];
   }
 
-  getX() {
-    return this.config.x;
-  }
-
-  getY() {
-    return this.config.y;
-  }
-
-  getZoom() {
+  /** @returns {Int} */
+  _getZoom() {
     return this.config.zoom;
   }
 
-  getTitle() {
+  /** @returns {String} */
+  _getTitle() {
     return this.config.title;
   }
 
@@ -202,13 +209,28 @@ class MapCard extends LitElement {
       :host {
           display:block;     
       }        
+      #map {
+        border-radius: var(--ha-card-border-radius,12px);
+      }
       .leaflet-pane {
         z-index: 0 !important;
+      }
+      .leaflet-edit-resize {
+        border-radius: 50%;
+        cursor: nesw-resize !important;
       }
       .leaflet-control,
       .leaflet-top,
       .leaflet-bottom {
         z-index: 1 !important;
+      }
+      .leaflet-tooltip {
+        padding: 8px;
+        font-size: 90%;
+        background: rgba(80, 80, 80, 0.9) !important;
+        color: white !important;
+        border-radius: 4px;
+        box-shadow: none !important;
       }
       .marker {
         display: flex;
