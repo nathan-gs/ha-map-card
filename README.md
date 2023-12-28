@@ -24,16 +24,17 @@ x: 51.23
 
 #### Options
 
-| name                     | note                                         |
-|--------------------------|----------------------------------------------|
-| `x`                      | Longitude                                    |
-| `y`                      | Latitude                                     |
-| `zoom`                   | The zoom level                               |
-| `card_size`              | The Home Assistant card size                 |
-| `entities`               | Array of entities, will be listed as markers |
-| `wms`                    | WMS Layers, an array of `WMS` see below      |
-| `tile_layer_url`         | Override the default map source              |
-| `tile_layer_attribution` | Set the correct map attribution              |
+| name                     | Default                                                                      | note                                         |
+|--------------------------|------------------------------------------------------------------------------|----------------------------------------------|
+| `x`                      |                                                                              | Longitude                                    |
+| `y`                      |                                                                              | Latitude                                     |
+| `title`                  |                                                                              | If empty, don't show a title                 |
+| `zoom`                   | 12                                                                           | The zoom level                               |
+| `card_size`              | 5                                                                            | The Home Assistant card size                 |
+| `entities`               | []                                                                           | Array of entities, will be listed as markers |
+| `wms`                    | []                                                                           | WMS Layers, an array of `WMS` see below      |
+| `tile_layer_url`         | https://tile.openstreetmap.org/{z}/{x}/{y}.png                               | Override the default map source              |
+| `tile_layer_attribution` | \&copy; \<a href="http://www.openstreetmap.org/copyright">OpenStreetMap\</a> | Set the correct map attribution              |
 
 
 `WMS` options
