@@ -1,5 +1,9 @@
 # Home Assistant Map Card
 
+Take a look at the blog post [introducing the custom:map-card for Home Assistant](https://nathan.gs/2024/01/06/ha-map-card-a-new-and-alternative-leaflet-based-map/). 
+
+![An example of the custom:map-card](ha-map-card-pm25.png)
+
 > #### WARNING
 > 
 > This is still very early alpha quality.
@@ -21,6 +25,13 @@ type: custom:map-card
 x: 51.23
 'y': 3.652
 ```
+
+#### More advanced
+
+> ##### TIP
+> 
+> Take a look at:
+> https://nathan.gs/2024/01/06/ha-map-card-a-new-and-alternative-leaflet-based-map/#a-more-advanced-example-measuring-pm25-air-quality-for-my-home 
 
 #### Options
 
