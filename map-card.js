@@ -127,7 +127,6 @@ class MapCard extends LitElement {
 
   _addWmsLayers(map) {
     this._getWmsLayersConfig().forEach((l) => {
-      console.log(l);
       L.tileLayer.wms(l.url, l.options).addTo(map);
     });
   }
@@ -144,18 +143,23 @@ class MapCard extends LitElement {
   }
 
   setConfig(inputConfig) {
-    this.config = {};
-    this._setConfigWithDefault(inputConfig, "x");
-    this._setConfigWithDefault(inputConfig, "y");
+    this.config = {};    
     this._setConfigWithDefault(inputConfig, "zoom", 12);
     this.config["title"] = inputConfig["title"];
+    this.config["focus_entity"] = inputConfig["focus_entity"];
+    this.config["x"] = inputConfig["x"];
+    this.config["y"] = inputConfig["y"];
+
+    if((this.config.x == null || this.config.y == null) && this.config.focus_entity == null) {
+      throw new Error("Either [x, y] or focus_entity needs to be set.");
+    }
     this._setConfigWithDefault(inputConfig, "card_size", 5);
     this._setConfigWithDefault(inputConfig, "entities", []);
     //this._setConfigWithDefault(inputConfig, "css_id", "map-card-" + (new Date()).getTime());
     this._setConfigWithDefault(inputConfig, "wms", []);
     this._setConfigWithDefault(inputConfig, "tile_layer_url", "https://tile.openstreetmap.org/{z}/{x}/{y}.png");
     this._setConfigWithDefault(inputConfig, "tile_layer_attribution", '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>');
-
+    
   }
 
   // The height of your card. Home Assistant uses this to automatically
@@ -190,8 +194,29 @@ class MapCard extends LitElement {
   
 
   /** @returns {[Double, Double]} */
-  _getLatLong() {
+  _getLatLongFromXY() {
     return [this.config.x, this.config.y];
+  }
+
+  /** @returns {[Double, Double]} */
+  _getLatLong() {
+    if(this.config.focus_entity) {
+      return this._getLatLongFromFocusedEntity();
+    } else {
+      return this._getLatLongFromXY();
+    }
+  }
+
+  /** @returns {[Double, Double]} */
+  _getLatLongFromFocusedEntity() {
+    const entity = this.hass.states[this.config.focus_entity];
+    if (!entity) {
+      throw new Error(`Entity ${this.config.focus_entity} not found`);
+    }
+    if (!(entity.attributes.latitude || entity.attributes.longitude)) {
+      throw new Error(`Entity ${this.config.focus_entity} has no longitude & latitude.`);
+    }
+    return [entity.attributes.latitude, entity.attributes.longitude];
   }
 
   /** @returns {Int} */

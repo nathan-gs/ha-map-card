@@ -39,6 +39,7 @@ x: 51.23
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------|
 | `x`                      |                                                                                                                              | Longitude                                    |
 | `y`                      |                                                                                                                              | Latitude                                     |
+| `focus_entity`           |                                                                                                                              | Entity to focus on (instead of X & Y)        |
 | `title`                  |                                                                                                                              | If empty, don't show a title                 |
 | `zoom`                   | 12                                                                                                                           | The zoom level                               |
 | `card_size`              | 5                                                                                                                            | The Home Assistant card size                 |
@@ -47,6 +48,7 @@ x: 51.23
 | `tile_layer_url`         | https://tile.openstreetmap.org/{z}/{x}/{y}.png                                                                               | Override the default map source              |
 | `tile_layer_attribution` | &amp;copy; &lt;a href&#x3D;&quot;http:&#x2F;&#x2F;www.openstreetmap.org&#x2F;copyright&quot;&gt;OpenStreetMap&lt;&#x2F;a&gt; | Set the correct map attribution              |
 
+Either the `x` & `y` or the `focus_entity` needs to be set.
 
 `WMS` options
 
