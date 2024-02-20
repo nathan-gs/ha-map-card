@@ -50,7 +50,16 @@ x: 51.23
 
 Either the `x` & `y` or the `focus_entity` needs to be set.
 
-`WMS` options
+###### `entities` options
+
+Either the name of the `entity` or:
+| name      | Default           | note                                                                          |
+|-----------|-------------------|-------------------------------------------------------------------------------|
+| `entity`  |                   | The entity id                                                                 |
+| `display` | `marker`          | Either `icon` or `marker`. `marker` will display the picture if available     |
+| `size`    | 24                | Size of the icon (not supported for `marker`)                                 |
+
+###### `WMS` options
 
 | name      | note                                                                            |
 |-----------|---------------------------------------------------------------------------------|
