@@ -48,7 +48,7 @@ x: 51.23
 | `tile_layer_url`         | https://tile.openstreetmap.org/{z}/{x}/{y}.png                                                                               | Override the default map source              |
 | `tile_layer_attribution` | &amp;copy; &lt;a href&#x3D;&quot;http:&#x2F;&#x2F;www.openstreetmap.org&#x2F;copyright&quot;&gt;OpenStreetMap&lt;&#x2F;a&gt; | Set the correct map attribution              |
 
-Either the `x` & `y` or the `focus_entity` needs to be set.
+If `x` & `y` or `focus_entity` is not set it will take the lat/long from the __first entity__.
 
 ###### `entities` options
 

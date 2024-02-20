@@ -199,15 +199,15 @@ class MapCard extends LitElement {
     this.config["x"] = inputConfig["x"];
     this.config["y"] = inputConfig["y"];
 
-    if((this.config.x == null || this.config.y == null) && this.config.focus_entity == null) {
-      throw new Error("Either [x, y] or focus_entity needs to be set.");
-    }
     this._setConfigWithDefault(inputConfig, "card_size", 5);
     this._setConfigWithDefault(inputConfig, "entities", []);
     //this._setConfigWithDefault(inputConfig, "css_id", "map-card-" + (new Date()).getTime());
     this._setConfigWithDefault(inputConfig, "wms", []);
     this._setConfigWithDefault(inputConfig, "tile_layer_url", "https://tile.openstreetmap.org/{z}/{x}/{y}.png");
     this._setConfigWithDefault(inputConfig, "tile_layer_attribution", '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>');
+    if((this.config.x == null || this.config.y == null) && this.config.focus_entity == null && this.config.entities.length == 0) {
+      throw new Error("We need a map latitude & longitude; set at least [x, y], a focus_entity or have at least 1 entities defined.");
+    }
     
   }
 
@@ -249,21 +249,23 @@ class MapCard extends LitElement {
 
   /** @returns {[Double, Double]} */
   _getLatLong() {
-    if(this.config.focus_entity) {
-      return this._getLatLongFromFocusedEntity();
-    } else {
+    if(this.config.x && this.config.y) {
       return this._getLatLongFromXY();
+    } else {
+      return this._getLatLongFromFocusedEntity();
     }
   }
 
   /** @returns {[Double, Double]} */
-  _getLatLongFromFocusedEntity() {
-    const entity = this.hass.states[this.config.focus_entity];
+  _getLatLongFromFocusedEntity() {   
+    const entityId = this.config.focus_entity ? this.config.focus_entity : this._getEntityId(this.config.entities[0])
+    const entity = this.hass.states[entityId];
+    
     if (!entity) {
-      throw new Error(`Entity ${this.config.focus_entity} not found`);
+      throw new Error(`Entity ${entityId} not found`);
     }
     if (!(entity.attributes.latitude || entity.attributes.longitude)) {
-      throw new Error(`Entity ${this.config.focus_entity} has no longitude & latitude.`);
+      throw new Error(`Entity ${entityId} has no longitude & latitude.`);
     }
     return [entity.attributes.latitude, entity.attributes.longitude];
   }
