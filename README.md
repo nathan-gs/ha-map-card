@@ -45,9 +45,11 @@ x: 51.23
 | `card_size`              | 5                                                                                                                            | The Home Assistant card size                 |
 | `entities`               | []                                                                                                                           | Array of entities, will be listed as markers |
 | `wms`                    | []                                                                                                                           | WMS Layers, an array of `WMS` see below      |
-| `tile_layers`            | []                                                                                                                           | Ti;e Layers, an array of `Tile Layers` see below      |
+| `tile_layers`            | []                                                                                                                           | Tile Layers, an array of `Tile Layers` see below      |
 | `tile_layer_url`         | https://tile.openstreetmap.org/{z}/{x}/{y}.png                                                                               | Override the default map source              |
 | `tile_layer_attribution` | &amp;copy; &lt;a href&#x3D;&quot;http:&#x2F;&#x2F;www.openstreetmap.org&#x2F;copyright&quot;&gt;OpenStreetMap&lt;&#x2F;a&gt; | Set the correct map attribution              |
+| `tile_layer_options` | {}                                                                                                                               | The `options` for the default [TileLayer](https://leafletjs.com/reference.html#tilelayer) |
+
 
 If `x` & `y` or `focus_entity` is not set it will take the lat/long from the __first entity__.
 
