@@ -28,7 +28,7 @@ class MapCard extends LitElement {
   firstUpdated() {
     this.map = this._setupMap();    
   }
-
+  
   render() {    
     if (this.map) {
       // First render is without the map
@@ -165,18 +165,22 @@ class MapCard extends LitElement {
     let map = L.map(mapEl).setView(this._getLatLong(), this._getZoom());
 
     map.addLayer(
-      L.tileLayer(this._getTileLayerUrl(), {
-        maxZoom: 19,
-        attribution: this._getTileLayerAttribution()
-      })
+      L.tileLayer(this._getTileLayerUrl(), this._getTileLayerOptions())
     );
     this._addWmsLayers(map);
+    this._addTileLayers(map);
     return map;
   }
 
   _addWmsLayers(map) {
     this._getWmsLayersConfig().forEach((l) => {
       L.tileLayer.wms(l.url, l.options).addTo(map);
+    });
+  }
+
+  _addTileLayers(map) {
+    this._getTileLayersConfig().forEach((l) => {
+      L.tileLayer(l.url, l.options).addTo(map);
     });
   }
 
@@ -203,8 +207,10 @@ class MapCard extends LitElement {
     this._setConfigWithDefault(inputConfig, "entities", []);
     //this._setConfigWithDefault(inputConfig, "css_id", "map-card-" + (new Date()).getTime());
     this._setConfigWithDefault(inputConfig, "wms", []);
+    this._setConfigWithDefault(inputConfig, "tile_layers", []);
     this._setConfigWithDefault(inputConfig, "tile_layer_url", "https://tile.openstreetmap.org/{z}/{x}/{y}.png");
     this._setConfigWithDefault(inputConfig, "tile_layer_attribution", '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>');
+    this._setConfigWithDefault(inputConfig, "tile_layer_options", {});
     if((this.config.x == null || this.config.y == null) && this.config.focus_entity == null && this.config.entities.length == 0) {
       throw new Error("We need a map latitude & longitude; set at least [x, y], a focus_entity or have at least 1 entities defined.");
     }
@@ -222,9 +228,19 @@ class MapCard extends LitElement {
     return this.config.tile_layer_url;
   }
 
+  /** @returns {} */
+  _getTileLayerOptions() {
+    return {...{attribution: this._getTileLayerAttribution()}, ...this.config.tile_layer_options};
+  }
+
   /** @returns {[url: String, options: {}]}} */
   _getWmsLayersConfig() {
     return this.config.wms;
+  }
+
+  /** @returns {[url: String, options: {}]}} */
+  _getTileLayersConfig() {
+    return this.config.tile_layers;
   }
 
   /** @returns {String} */

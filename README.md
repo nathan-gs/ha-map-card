@@ -45,6 +45,7 @@ x: 51.23
 | `card_size`              | 5                                                                                                                            | The Home Assistant card size                 |
 | `entities`               | []                                                                                                                           | Array of entities, will be listed as markers |
 | `wms`                    | []                                                                                                                           | WMS Layers, an array of `WMS` see below      |
+| `tile_layers`            | []                                                                                                                           | Ti;e Layers, an array of `Tile Layers` see below      |
 | `tile_layer_url`         | https://tile.openstreetmap.org/{z}/{x}/{y}.png                                                                               | Override the default map source              |
 | `tile_layer_attribution` | &amp;copy; &lt;a href&#x3D;&quot;http:&#x2F;&#x2F;www.openstreetmap.org&#x2F;copyright&quot;&gt;OpenStreetMap&lt;&#x2F;a&gt; | Set the correct map attribution              |
 
@@ -59,11 +60,11 @@ Either the name of the `entity` or:
 | `display` | `marker`          | Either `icon` or `marker`. `marker` will display the picture if available     |
 | `size`    | 24                | Size of the icon (not supported for `marker`)                                 |
 
-###### `WMS` options
+###### `WMS` and `tile_layers` options
 
-| name      | note                                                                            |
-|-----------|---------------------------------------------------------------------------------|
-| `url`     | The url of the layer                                                            |
-| `options` | The leaflet layer [options](https://leafletjs.com/reference.html#tilelayer-wms) |
+| name      | note                                                                                                                                                        |
+|-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `url`     | The url of the layer                                                                                                                                        |
+| `options` | The leaflet layer [WMS options](https://leafletjs.com/reference.html#tilelayer-wms) or [Tile Layer options](https://leafletjs.com/reference.html#tilelayer) |
 
 
