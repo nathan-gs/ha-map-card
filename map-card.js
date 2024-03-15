@@ -27,6 +27,10 @@ class MapCard extends LitElement {
 
   firstUpdated() {
     this.map = this._setupMap();    
+    // force a render when the page is done loading
+    setTimeout(() => {
+      this.render();
+    });
   }
   
   render() {    
