@@ -23,14 +23,13 @@ class MapCard extends LitElement {
   entities = [];
   /** @type {L.Map} */
   map;
+  resizeObserver;
 
 
   firstUpdated() {
-    this.map = this._setupMap();    
-    // force a render when the page is done loading
-    setTimeout(() => {
-      this.render();
-    });
+    this.map = this._setupMap();
+    // redraw the map every time it resizes
+    this.resizeObserver = this._setupResizeObserver();
   }
   
   render() {    
@@ -159,6 +158,19 @@ class MapCard extends LitElement {
 
   _updateEntity(marker, latitude, longitude) {
     marker.setLatLng([latitude, longitude]);
+  }
+
+  _setupResizeObserver() {
+    const resizeObserver = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        if (entry.target === this.map.getContainer()) {
+          this.map.invalidateSize();
+        }
+      }
+    });
+
+    resizeObserver.observe(this.map.getContainer());
+    return resizeObserver;
   }
 
   /** @returns {L.Map} */
