@@ -166,7 +166,7 @@ class MapCard extends LitElement {
 
     const resizeObserver = new ResizeObserver(entries => {
       for (let entry of entries) {
-        if (entry.target === this.map.getContainer()) {
+        if (entry.target === this.map.getContainer()) {          
           this.map.invalidateSize();
         }
       }
@@ -230,7 +230,7 @@ class MapCard extends LitElement {
     this._setConfigWithDefault(inputConfig, "tile_layer_url", "https://tile.openstreetmap.org/{z}/{x}/{y}.png");
     this._setConfigWithDefault(inputConfig, "tile_layer_attribution", '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>');
     this._setConfigWithDefault(inputConfig, "tile_layer_options", {});
-    if((this.config.x == null || this.config.y == null) && this.config.focus_entity == null && this.config.entities.length == 0) {
+    if(!(Number.isFinite(this.config.x) && Number.isFinite(this.config.y)) && this.config.focus_entity == null && this.config.entities.length == 0) {
       throw new Error("We need a map latitude & longitude; set at least [x, y], a focus_entity or have at least 1 entities defined.");
     }
     
@@ -295,7 +295,7 @@ class MapCard extends LitElement {
 
   /** @returns {[Double, Double]} */
   _getLatLong() {
-    if(this.config.x && this.config.y) {
+    if(Number.isFinite(this.config.x) && Number.isFinite(this.config.y)) {
       return this._getLatLongFromXY();
     } else {
       return this._getLatLongFromFocusedEntity();
