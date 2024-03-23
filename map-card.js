@@ -23,10 +23,13 @@ class MapCard extends LitElement {
   entities = [];
   /** @type {L.Map} */
   map;
+  resizeObserver;
 
 
   firstUpdated() {
-    this.map = this._setupMap();    
+    this.map = this._setupMap();
+    // redraw the map every time it resizes
+    this.resizeObserver = this._setupResizeObserver();
   }
   
   render() {    
@@ -44,7 +47,7 @@ class MapCard extends LitElement {
         } = stateObj.attributes;
         const marker = ent[1];
         this._updateEntity(marker, latitude, longitude);
-      })
+      });
 
     }
 
@@ -63,7 +66,6 @@ class MapCard extends LitElement {
 
   _firstRender(map, hass, entities) {
     console.log("First Render with Map object, resetting size.")
-    map.invalidateSize();
     return entities.map((ent) => {
       const entityId = this._getEntityId(ent);
       const display = ent.display ? ent.display : "marker";
@@ -82,9 +84,9 @@ class MapCard extends LitElement {
       if (!(latitude && longitude)) {
         console.log(ent + " has no latitude & longitude");
       }
-      var marker = null;
-      switch(display) {        
-        case "icon": 
+      let marker = null;
+      switch(display) {
+        case "icon":
           marker = this._drawEntityIcon(entityId, latitude, longitude, icon, friendly_name, size)
           break;
         case 'marker':
@@ -157,6 +159,23 @@ class MapCard extends LitElement {
     marker.setLatLng([latitude, longitude]);
   }
 
+  _setupResizeObserver() {
+    if (this.resizeObserver) {
+      return this.resizeObserver;
+    }
+
+    const resizeObserver = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        if (entry.target === this.map.getContainer()) {
+          this.map.invalidateSize();
+        }
+      }
+    });
+
+    resizeObserver.observe(this.map.getContainer());
+    return resizeObserver;
+  }
+
   /** @returns {L.Map} */
   _setupMap() {
     L.Icon.Default.imagePath = "/static/images/leaflet/images/";
@@ -221,6 +240,17 @@ class MapCard extends LitElement {
   // distribute all cards over the available columns.
   getCardSize() {
     return this.config.card_size;
+  }
+
+  disconnectedCallback() {
+    if (this.map) {
+      this.map.remove();
+      this.map = undefined;
+    }
+
+    if (this.resizeObserver) {
+      this.resizeObserver.unobserve(this);
+    }
   }
 
   /** @returns {String} */
