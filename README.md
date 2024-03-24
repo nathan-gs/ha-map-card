@@ -10,8 +10,16 @@ Take a look at the blog post [introducing the custom:map-card for Home Assistant
 
 ### Installation
 
+#### Manual
 1. Copy `map-card.js` to your `/var/lib/hass/www` folder.
 2. Click on `Edit Dashboard`,  `Manage resources` add `/local/map-card.js` as `JavaScript Module`.
+
+#### HACS
+
+> ##### TIP
+> The PR to add this to the default HACS repo is still open: https://github.com/hacs/default/pull/2377 
+
+Follow the instructions to add a [HACS Custom Repository](https://hacs.xyz/docs/faq/custom_repositories/).
 
 ### Usage
 
@@ -23,7 +31,7 @@ Take a look at the blog post [introducing the custom:map-card for Home Assistant
 ```yaml
 type: custom:map-card
 x: 51.23
-'y': 3.652
+y: 3.652
 ```
 
 #### More advanced
@@ -73,3 +81,10 @@ Either the name of the `entity` or:
 ##### Extra Tile Layers
 
 The [leaflet-extras](https://github.com/leaflet-extras/leaflet-providers) has a nice list of available [tile layer providers](https://leaflet-extras.github.io/leaflet-providers/preview/).
+
+### Mentions & Discussions
+
+* [home-assistant community: map-card: a slightly improved map-card](https://community.home-assistant.io/t/map-card-a-slightly-improved-map-card/693088), this topic should be used for general discussions. 
+* [nathan.gs: Map Card, a new leaflet based map with WMS and other advanced features](https://nathan.gs/2024/01/06/ha-map-card-a-new-and-alternative-leaflet-based-map/)
+* [nathan.gs: Map Card, displaying Weather and Other Tile Layers](https://nathan.gs/2024/02/25/ha-map-card-displaying-weather-and-other-tilelayers/)
+
