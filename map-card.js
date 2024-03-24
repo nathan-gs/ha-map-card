@@ -178,7 +178,10 @@ class MapCard extends LitElement {
 
   /** @returns {L.Map} */
   _setupMap() {
-    console.log("nathan-gs/ha-map-card: VERSION")
+    console.info(
+      `%c nathan-gs/ha-map-card: VERSION`,
+      'color: orange; font-weight: bold; background: black'
+    )
     L.Icon.Default.imagePath = "/static/images/leaflet/images/";
 
     const mapEl = this.shadowRoot.querySelector('#map');
