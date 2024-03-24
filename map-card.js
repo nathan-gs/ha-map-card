@@ -166,8 +166,8 @@ class MapCard extends LitElement {
 
     const resizeObserver = new ResizeObserver(entries => {
       for (let entry of entries) {
-        if (entry.target === this.map.getContainer()) {          
-          this.map.invalidateSize();
+        if (entry.target === this.map?.getContainer()) {
+          this.map?.invalidateSize();
         }
       }
     });
@@ -247,6 +247,7 @@ class MapCard extends LitElement {
   }
 
   disconnectedCallback() {
+    super.disconnectedCallback();
     if (this.map) {
       this.map.remove();
       this.map = undefined;
