@@ -13,6 +13,11 @@ jobs:
       contents: write
     steps:
     - uses: actions/checkout@v3
+    - name: Update version
+      uses: brettdorrans/write-version-to-file@master
+      with:
+        filename: 'map-card.js'
+        placeholder: 'VERSION'
     - uses: ncipollo/release-action@v1
       with:
         artifacts: "map-card.js"
