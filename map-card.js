@@ -25,6 +25,14 @@ class MapCard extends LitElement {
   map;
   resizeObserver;
 
+  constructor() {
+    super();
+    console.info(
+      `%cnathan-gs/ha-map-card: VERSION`,
+      'color: orange; font-weight: bold; background: black'
+    )
+  }
+
 
   firstUpdated() {
     this.map = this._setupMap();
@@ -177,11 +185,7 @@ class MapCard extends LitElement {
   }
 
   /** @returns {L.Map} */
-  _setupMap() {
-    console.info(
-      `%c nathan-gs/ha-map-card: VERSION`,
-      'color: orange; font-weight: bold; background: black'
-    )
+  _setupMap() {    
     L.Icon.Default.imagePath = "/static/images/leaflet/images/";
 
     const mapEl = this.shadowRoot.querySelector('#map');
