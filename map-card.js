@@ -246,12 +246,13 @@ class MapCard extends LitElement {
     return this.config.card_size;
   }
 
-    connectedCallback() {
-      super.connectedCallback();
-      if (this.shadowRoot.querySelector('#map')) {
-        this.firstUpdated();
-      }
+  connectedCallback() {
+    super.connectedCallback();
+    // Reinitialize the map when the card gets reloaded but it's still in view
+    if (this.shadowRoot.querySelector('#map')) {
+      this.firstUpdated();
     }
+  }
 
   disconnectedCallback() {
     super.disconnectedCallback();
