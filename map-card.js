@@ -166,8 +166,8 @@ class MapCard extends LitElement {
 
     const resizeObserver = new ResizeObserver(entries => {
       for (let entry of entries) {
-        if (entry.target === this.map.getContainer()) {          
-          this.map.invalidateSize();
+        if (entry.target === this.map?.getContainer()) {
+          this.map?.invalidateSize();
         }
       }
     });
@@ -246,7 +246,16 @@ class MapCard extends LitElement {
     return this.config.card_size;
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+    // Reinitialize the map when the card gets reloaded but it's still in view
+    if (this.shadowRoot.querySelector('#map')) {
+      this.firstUpdated();
+    }
+  }
+
   disconnectedCallback() {
+    super.disconnectedCallback();
     if (this.map) {
       this.map.remove();
       this.map = undefined;
