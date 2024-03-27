@@ -25,14 +25,6 @@ class MapCard extends LitElement {
   map;
   resizeObserver;
 
-  constructor() {
-    super();
-    console.info(
-      `%cnathan-gs/ha-map-card: VERSION`,
-      'color: orange; font-weight: bold; background: black'
-    )
-  }
-
 
   firstUpdated() {
     this.map = this._setupMap();
@@ -383,4 +375,11 @@ class MapCard extends LitElement {
     `;
   }
 }
-customElements.define("map-card", MapCard);
+
+if (!customElements.get("map-card")) {
+  customElements.define("map-card", MapCard);
+  console.info(
+    `%cnathan-gs/ha-map-card: VERSION`,
+    'color: orange; font-weight: bold; background: black'
+  )
+}
