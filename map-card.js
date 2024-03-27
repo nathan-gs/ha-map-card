@@ -61,8 +61,8 @@ class MapCard extends LitElement {
 
     return html`
             <link rel="stylesheet" href="/static/images/leaflet/leaflet.css">
-            <ha-card header="${this._getTitle()}">
-                <div id="map" style="height: ${this._getMapHeight()}px"></div>
+            <ha-card header="${this._getTitle()}" style="height: 100%">
+                <div id="map" style="min-height: ${this._getMapHeight()}px"></div>
             </ha-card>
         `;
   }
@@ -344,11 +344,9 @@ class MapCard extends LitElement {
   }
 
   static get styles() {
-    return css`    
-      :host {
-          display:block;     
-      }        
+    return css`       
       #map {
+        height: 100%;
         border-radius: var(--ha-card-border-radius,12px);
       }
       .leaflet-pane {
