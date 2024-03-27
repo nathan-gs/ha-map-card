@@ -340,11 +340,7 @@ class MapCard extends LitElement {
   }
 
   static get styles() {
-    return css`    
-      :host {
-        display:block;
-        height: 100%;
-      }        
+    return css`       
       #map {
         height: 100%;
         border-radius: var(--ha-card-border-radius,12px);
