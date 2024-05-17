@@ -25,9 +25,105 @@ class EntityConfig {
     this.hoursToShow = config.hours_to_show ? config.hours_to_show : 0;
   }
 
-  showPath(){
+  get showPath(){
     return this.hoursToShow > 0;
   }
+  
+}
+
+class LayerConfig {
+  /** @type {String} */
+  url;
+  /** @type {Object} */
+  options;
+
+  constructor(url, options, attribution = null) {
+    this.url = url;
+    this.options = {...{attribution: attribution}, ...options};
+  }
+
+}
+
+class TileLayerConfig extends LayerConfig {};
+class WmsLayerConfig extends LayerConfig {};
+
+class MapConfig {
+  /** @type {String} */
+  title;
+  focusEntity;
+  x;
+  y;
+  /** @type {Int} */
+  zoom;
+  /** @type {Int} */
+  cardSize;
+  /** @type {[EntityConfig]} */
+  entities;
+  /** @type {[WmsLayerConfig]} */
+  wms;
+  /** @type {[TileLayerConfig]} */
+  tileLayers;
+  /** @type {TileLayerConfig} */
+  tileLayer;
+
+
+  constructor(inputConfig) {
+    this.title = inputConfig.title;
+    this.focusEntity = inputConfig.focus_entity;
+    this.x = inputConfig.x;
+    this.y = inputConfig.y;
+    this.zoom = this._setConfigWithDefault(inputConfig.zoom, 12);
+    this.cardSize = this._setConfigWithDefault(inputConfig.card_size, 5);
+    
+    this.entities = (inputConfig["entities"] ? inputConfig.entities : []).map((ent) => {
+      return new EntityConfig(ent);
+    });
+    this.wms = (this._setConfigWithDefault(inputConfig.wms, [])).map((wms) => {
+      return new WmsLayerConfig(wms.url, wms.options);
+    });
+    this.tileLayers = (this._setConfigWithDefault(inputConfig.tile_layers, [])).map((tile) => {
+      return new TileLayerConfig(tile.url, tile.options);
+    });
+
+    this.tileLayer = new TileLayerConfig(
+      this._setConfigWithDefault(inputConfig.tile_layer_url, "https://tile.openstreetmap.org/{z}/{x}/{y}.png"),
+      this._setConfigWithDefault(inputConfig.tile_layer_options, {}),
+      this._setConfigWithDefault(inputConfig.tile_layer_attribution, '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>')
+    );
+    if(!(Number.isFinite(this.x) && Number.isFinite(this.y)) && this.focusEntity == null && this.entities.length == 0) {
+      throw new Error("We need a map latitude & longitude; set at least [x, y], a focus_entity or have at least 1 entities defined.");
+    }
+  }
+
+  _setConfigWithDefault(input, d = null) {
+    if (!input) {
+      if (d == null) {
+        throw new Error("Missing key " + name);
+      }
+      return d;
+    } else {
+      return input;
+    }
+  }
+
+  hasTitle() {
+    return this.title != null;
+  }
+
+  /** @returns {Int} */
+  get mapHeight() {
+    if (this.hasTitle()) {
+      return (this.cardSize * 50) + 20 - 76 - 2;
+    } else {
+      return (this.cardSize * 50) + 20;
+    }
+  }
+  
+  /** @returns {[EntityConfig]} */
+  get entitiesWithShowPath() {
+    return this.entities.filter((ent) => ent.showPath);
+  }
+
 }
 
 class MapCard extends LitElement {
@@ -72,8 +168,8 @@ class MapCard extends LitElement {
 
     return html`
             <link rel="stylesheet" href="/static/images/leaflet/leaflet.css">
-            <ha-card header="${this._getTitle()}" style="height: 100%">
-                <div id="map" style="min-height: ${this._getMapHeight()}px"></div>
+            <ha-card header="${this.config.title}" style="height: 100%">
+                <div id="map" style="min-height: ${this.config.mapHeight}px"></div>
             </ha-card>
         `;
   }
@@ -112,6 +208,7 @@ class MapCard extends LitElement {
       return [entityId, marker];
     });
   }
+
 
   _markerCss(size) {
     return `style="height: ${size}px; width: ${size}px;"`;
@@ -195,10 +292,10 @@ class MapCard extends LitElement {
     L.Icon.Default.imagePath = "/static/images/leaflet/images/";
 
     const mapEl = this.shadowRoot.querySelector('#map');
-    let map = L.map(mapEl).setView(this._getLatLong(), this._getZoom());
+    let map = L.map(mapEl).setView(this._getLatLong(), this.config.zoom);
 
     map.addLayer(
-      L.tileLayer(this._getTileLayerUrl(), this._getTileLayerOptions())
+      L.tileLayer(this.config.tileLayer.url, this.config.tileLayer.options)
     );
     this._addWmsLayers(map);
     this._addTileLayers(map);
@@ -206,57 +303,25 @@ class MapCard extends LitElement {
   }
 
   _addWmsLayers(map) {
-    this._getWmsLayersConfig().forEach((l) => {
+    this.config.wms.forEach((l) => {
       L.tileLayer.wms(l.url, l.options).addTo(map);
     });
   }
 
   _addTileLayers(map) {
-    this._getTileLayersConfig().forEach((l) => {
+    this.config.tileLayers.forEach((l) => {
       L.tileLayer(l.url, l.options).addTo(map);
     });
   }
 
-  _setConfigWithDefault(input, name, d = null) {
-    if (!input[name]) {
-      if (d == null) {
-        throw new Error("Missing key " + name);
-      }
-      this.config[name] = d;
-    } else {
-      this.config[name] = input[name];
-    }
-  }
-
   setConfig(inputConfig) {
-    this.config = {};    
-    this._setConfigWithDefault(inputConfig, "zoom", 12);
-    this.config["title"] = inputConfig["title"];
-    this.config["focus_entity"] = inputConfig["focus_entity"];
-    this.config["x"] = inputConfig["x"];
-    this.config["y"] = inputConfig["y"];
-
-    this._setConfigWithDefault(inputConfig, "card_size", 5);
-
-    this.config["entities"] = (inputConfig["entities"] ? inputConfig.entities : []).map((ent) => {
-      return new EntityConfig(ent);
-    });
-    //this._setConfigWithDefault(inputConfig, "css_id", "map-card-" + (new Date()).getTime());
-    this._setConfigWithDefault(inputConfig, "wms", []);
-    this._setConfigWithDefault(inputConfig, "tile_layers", []);
-    this._setConfigWithDefault(inputConfig, "tile_layer_url", "https://tile.openstreetmap.org/{z}/{x}/{y}.png");
-    this._setConfigWithDefault(inputConfig, "tile_layer_attribution", '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>');
-    this._setConfigWithDefault(inputConfig, "tile_layer_options", {});
-    if(!(Number.isFinite(this.config.x) && Number.isFinite(this.config.y)) && this.config.focus_entity == null && this.config.entities.length == 0) {
-      throw new Error("We need a map latitude & longitude; set at least [x, y], a focus_entity or have at least 1 entities defined.");
-    }
-    
+    this.config = new MapConfig(inputConfig);    
   }
 
   // The height of your card. Home Assistant uses this to automatically
   // distribute all cards over the available columns.
   getCardSize() {
-    return this.config.card_size;
+    return this.config.cardSize;
   }
 
   connectedCallback() {
@@ -279,50 +344,10 @@ class MapCard extends LitElement {
     }
   }
 
-  /** @returns {String} */
-  _getTileLayerUrl() {
-    return this.config.tile_layer_url;
-  }
-
-  /** @returns {} */
-  _getTileLayerOptions() {
-    return {...{attribution: this._getTileLayerAttribution()}, ...this.config.tile_layer_options};
-  }
-
-  /** @returns {[url: String, options: {}]}} */
-  _getWmsLayersConfig() {
-    return this.config.wms;
-  }
-
-  /** @returns {[url: String, options: {}]}} */
-  _getTileLayersConfig() {
-    return this.config.tile_layers;
-  }
-
-  /** @returns {String} */
-  _getTileLayerAttribution() {
-    return this.config.tile_layer_attribution;
-  }
-
-  /** @returns {Int} */
-  _getMapHeight() {
-    if (this._getTitle()) {
-      return (this.getCardSize() * 50) + 20 - 76 - 2;
-    } else {
-      return (this.getCardSize() * 50) + 20;
-    }
-  }
-  
-
-  /** @returns {[Double, Double]} */
-  _getLatLongFromXY() {
-    return [this.config.x, this.config.y];
-  }
-
   /** @returns {[Double, Double]} */
   _getLatLong() {
     if(Number.isFinite(this.config.x) && Number.isFinite(this.config.y)) {
-      return this._getLatLongFromXY();
+      return [this.config.x, this.config.y];
     } else {
       return this._getLatLongFromFocusedEntity();
     }
@@ -342,15 +367,7 @@ class MapCard extends LitElement {
     return [entity.attributes.latitude, entity.attributes.longitude];
   }
 
-  /** @returns {Int} */
-  _getZoom() {
-    return this.config.zoom;
-  }
-
-  /** @returns {String} */
-  _getTitle() {
-    return this.config.title;
-  }
+  
 
   static get styles() {
     return css`       
