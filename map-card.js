@@ -11,6 +11,25 @@ import "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
  * https://github.com/home-assistant/frontend/blob/dev/src/components/map/ha-map.ts 
  */
 
+
+class EntityConfig {
+  id;
+  display;
+  size;
+  hoursToShow;
+
+  constructor(config) {
+    this.id = (typeof config === 'string' || config instanceof String)? config : config.entity;
+    this.display = config.display ? config.display : "marker";
+    this.size = config.size ? config.size : 24;
+    this.hoursToShow = config.hours_to_show ? config.hours_to_show : 0;
+  }
+
+  showPath(){
+    return this.hoursToShow > 0;
+  }
+}
+
 class MapCard extends LitElement {
   static get properties() {
     return {
@@ -59,17 +78,12 @@ class MapCard extends LitElement {
         `;
   }
 
-  /** @returns {String} */
-  _getEntityId(ent) {
-    return (typeof ent === 'string' || ent instanceof String)? ent : ent.entity;
-  }
-
   _firstRender(map, hass, entities) {
     console.log("First Render with Map object, resetting size.")
     return entities.map((ent) => {
-      const entityId = this._getEntityId(ent);
-      const display = ent.display ? ent.display : "marker";
-      const size = ent.size ? ent.size : 24;
+      const entityId = ent.id;
+      const display = ent.display;
+      const size = ent.size;
       const stateObj = hass.states[entityId];
       const {
         latitude,
@@ -223,7 +237,10 @@ class MapCard extends LitElement {
     this.config["y"] = inputConfig["y"];
 
     this._setConfigWithDefault(inputConfig, "card_size", 5);
-    this._setConfigWithDefault(inputConfig, "entities", []);
+
+    this.config["entities"] = (inputConfig["entities"] ? inputConfig.entities : []).map((ent) => {
+      return new EntityConfig(ent);
+    });
     //this._setConfigWithDefault(inputConfig, "css_id", "map-card-" + (new Date()).getTime());
     this._setConfigWithDefault(inputConfig, "wms", []);
     this._setConfigWithDefault(inputConfig, "tile_layers", []);
@@ -313,7 +330,7 @@ class MapCard extends LitElement {
 
   /** @returns {[Double, Double]} */
   _getLatLongFromFocusedEntity() {   
-    const entityId = this.config.focus_entity ? this.config.focus_entity : this._getEntityId(this.config.entities[0])
+    const entityId = this.config.focus_entity ? this.config.focus_entity : this.config.entities[0].id;
     const entity = this.hass.states[entityId];
     
     if (!entity) {
