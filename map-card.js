@@ -6,29 +6,89 @@ import {
 
 import "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
 
+
+
 /*
  * Native Map
- * https://github.com/home-assistant/frontend/blob/dev/src/components/map/ha-map.ts 
+ * https://github.com/home-assistant/frontend/blob/master/src/components/map/ha-map.ts 
+ * https://github.com/home-assistant/frontend/blob/master/src/panels/lovelace/cards/hui-map-card.ts
  */
 
 
 class EntityConfig {
+  /** @type {String} */
   id;
+  /** @type {String} */
   display;
+  /** @type {Int} */
   size;
-  hoursToShow;
+  /** @type {Date} */
+  historyStart;
+  /** @type {Date} */
+  historyEnd;
+  /** @type {String} */
+  historyLineColor;
 
   constructor(config) {
     this.id = (typeof config === 'string' || config instanceof String)? config : config.entity;
     this.display = config.display ? config.display : "marker";
     this.size = config.size ? config.size : 24;
-    this.hoursToShow = config.hours_to_show ? config.hours_to_show : 0;
+    this.historyStart = config.history_start ? this._convertToAbsoluteDate(config.history_start) : null;
+    this.historyEnd = config.history_end ? this._convertToAbsoluteDate(config.history_end) : null;
+    this.historyLineColor = config.history_line_color ?? this._generateRandomColor();
   }
 
-  get showPath(){
-    return this.hoursToShow > 0;
+  get hasHistory() {
+    return this.historyStart != null;
+  }  
+
+  _generateRandomColor() {
+    return "#" + ((1 << 24) * Math.random() | 0).toString(16).padStart(6, "0");
   }
-  
+
+  _convertToAbsoluteDate(inputStr) {  
+    // Check if the input string is a relative timestamp  
+    var relativeTimePattern = /^\d+\s+(second|minute|hour|day|month|year)s?\s+ago$/i;  
+    if (inputStr === 'now') {
+      return new Date();
+    } else if (relativeTimePattern.test(inputStr)) {  
+      // Split the input string into parts  
+      var parts = inputStr.split(' ');  
+
+      // Get the number and the unit of time  
+      var num = parseInt(parts[0]);  
+      var unit = parts[1];  
+
+      // Create a new Date object for the current time  
+      var date = new Date();  
+
+      // Subtract the appropriate amount of time  
+      if (unit.startsWith('second')) {  
+          date.setSeconds(date.getSeconds() - num);  
+      } else if (unit.startsWith('minute')) {  
+          date.setMinutes(date.getMinutes() - num);  
+      } else if (unit.startsWith('hour')) {  
+          date.setHours(date.getHours() - num);  
+      } else if (unit.startsWith('day')) {  
+          date.setDate(date.getDate() - num);  
+      } else if (unit.startsWith('month')) {  
+          date.setMonth(date.getMonth() - num);  
+      } else if (unit.startsWith('year')) {  
+          date.setFullYear(date.getFullYear() - num);  
+      }    
+      return date;  
+    } else {  
+      // If the input string is not a relative timestamp, try to parse it as an absolute date  
+      var date = new Date(inputStr);  
+      if (isNaN(date.getTime())) {  
+        // If the date could not be parsed, throw an error  
+        throw new Error("Invalid input string for Date: " + inputStr);  
+      } else {  
+        return date;  
+      }  
+    }  
+  }  
+
 }
 
 class LayerConfig {
@@ -106,13 +166,13 @@ class MapConfig {
     }
   }
 
-  hasTitle() {
+  get hasTitle() {
     return this.title != null;
   }
 
   /** @returns {Int} */
   get mapHeight() {
-    if (this.hasTitle()) {
+    if (this.hasTitle) {
       return (this.cardSize * 50) + 20 - 76 - 2;
     } else {
       return (this.cardSize * 50) + 20;
