@@ -71,7 +71,7 @@ Either the name of the `entity` or:
 | `size`                | 24                | Size of the icon (not supported for `marker`)                                                 |
 | `history_start`       |                   | Either a `date (__2022-03-01T12:00:00Z__)` or a `relative timestamp (__5 hours ago__)`        |
 | `history_end`         |                   | Either a `date (__2022-03-01T12:00:00Z__)` or a `relative timestamp (__now__)`                |
-| `history_line_color`  | Random Color      |                                                                                               |
+| `history_line_color`  | Random Color      | Can defined as `red`, `rgb(255,0,0)`, `rgba(255,0,0,0.1)`, `#ff0000`, `var(--red-color)`      |
 
 If `history_start` is set it will display a line with all the previous locations, as does the `hours_to_show` functionality does. This map does only render the entity specified (the HA map renders also the source `device_tracker`).
 
