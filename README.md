@@ -67,7 +67,7 @@ Either the name of the `entity` or:
 | name                  | Default           | note                                                                                          |
 |-----------------------|-------------------|-----------------------------------------------------------------------------------------------|
 | `entity`              |                   | The entity id                                                                                 |
-| `display`             | `marker`          | Either `icon` or `marker`. `marker` will display the picture if available                     |
+| `display`             | `marker`          | `icon`, `state` or `marker`. `marker` will display the picture if available                   |
 | `size`                | 24                | Size of the icon (not supported for `marker`)                                                 |
 | `history_start`       |                   | Either a `date (__2022-03-01T12:00:00Z__)` or a `relative timestamp (__5 hours ago__)`        |
 | `history_end`         |                   | Either a `date (__2022-03-01T12:00:00Z__)` or a `relative timestamp (__now__)`                |

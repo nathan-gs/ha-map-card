@@ -292,8 +292,8 @@ class Entity {
     return this.config.hasHistory;
   }
 
-  update(latitude, longitude) {
-    this.marker.setLatLng([latitude, longitude]);  
+  update(map, latitude, longitude, state) {
+    this.marker.setLatLng([latitude, longitude]);
   }
 
   setupHistory(historyService) {
@@ -341,6 +341,44 @@ class MarkerEntity extends Entity {
 
 }
 
+class StateEntity extends Entity {
+
+  _currentState;
+  
+  constructor(config, latitude, longitude, state) {
+    super();
+    this.config = config;
+    this.marker = this._createMapMarker(latitude, longitude, state);
+  }
+
+  _createMapMarker(latitude, longitude, state) {
+    const marker = L.marker([latitude, longitude], {
+      icon: L.divIcon({
+        html: `
+          <ha-entity-marker
+            entity-id="${this.id}"
+            entity-name="${state}"
+          ></ha-entity-marker>
+        `,
+        iconSize: [48, 48],
+        className: "",
+      }),
+      title: this.id,
+    });
+    return marker;
+  }
+
+  update(map, latitude, longitude, state) {    
+    if(state != this._currentState) {
+      this.marker.remove();
+      this.marker = this._createMapMarker(latitude, longitude, state);
+      this.marker.addTo(map);
+    }
+    this.marker.setLatLng([latitude, longitude]);    
+  }
+  
+}
+
 class IconEntity extends Entity {
 
   constructor(config, latitude, longitude, icon, title) {
@@ -383,14 +421,6 @@ class TimelineEntry {
   }  
 } 
 
-/**
- * 
- * Usage:
- * let hist = new HAHistory(this.hass);
-  hist.getHistory("device_tracker.nphone", new Date("2024-05-18T00:00Z"), new Date("2024-05-18T21:00Z"), (entry) => {
-    console.log(entry);
-  });
- */
 class HaHistoryService {  
   constructor(hass) {  
     this.hass = hass;  
@@ -468,7 +498,7 @@ class MapCard extends LitElement {
           latitude,
           longitude,
         } = stateObj.attributes;
-        ent.update(latitude, longitude);
+        ent.update(this.map, latitude, longitude, this.hass.formatEntityState(stateObj));
         ent.renderHistory().forEach((marker) => {
           this.map.addLayer(marker)
         });
@@ -505,6 +535,9 @@ class MapCard extends LitElement {
       switch(configEntity.display) {
         case "icon":
           entity = new IconEntity(configEntity, latitude, longitude, icon, friendly_name);
+          break;
+        case "state":
+          entity = new StateEntity(configEntity, latitude, longitude, hass.formatEntityState(stateObj));
           break;
         case 'marker':
         default: 
