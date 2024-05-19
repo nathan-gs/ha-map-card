@@ -28,6 +28,10 @@ class EntityConfig {
   historyEnd;
   /** @type {String} */
   historyLineColor;
+  /** @type {Boolean} */
+  historyShowDots;
+  /** @type {Boolean} */
+  historyShowLines;
 
   constructor(config) {
     this.id = (typeof config === 'string' || config instanceof String)? config : config.entity;
@@ -36,6 +40,8 @@ class EntityConfig {
     this.historyStart = config.history_start ? this._convertToAbsoluteDate(config.history_start) : null;
     this.historyEnd = config.history_end ? this._convertToAbsoluteDate(config.history_end) : null;
     this.historyLineColor = config.history_line_color ?? this._generateRandomColor();
+    this.historyShowDots = config.history_show_dots ?? true;
+    this.historyShowLines = config.history_show_lines ?? true;
   }
 
   get hasHistory() {
@@ -196,11 +202,15 @@ class EntityHistory {
   color;
   /** @type {[Polyline|CircleMarker]} */
   mapPaths = [];
+  showDots = true;
+  showLines = true;
   needRerender = false;
 
-  constructor(entityId, color) {
+  constructor(entityId, color, showDots, showLines) {
     this.entityId = entityId;
     this.color = color;
+    this.showDots = showDots;
+    this.showLines = showLines;
   }
 
   retrieve = (entry) => {
@@ -221,25 +231,29 @@ class EntityHistory {
     for (let i = 0; i < this.entries.length - 1; i++) {
       const entry = this.entries[i];
 
-      this.mapPaths.push(
-        L.circleMarker([entry.latitude, entry.longitude], 
-          {
-            color: this.color,
-            radius: 3,
-            interactive: true,
-          }
-        ).bindTooltip(entry.timestamp.toLocaleString(), {direction: 'top'})
-      );
+      if(this.showDots) {
+        this.mapPaths.push(
+          L.circleMarker([entry.latitude, entry.longitude], 
+            {
+              color: this.color,
+              radius: 3,
+              interactive: true,
+            }
+          ).bindTooltip(entry.timestamp.toLocaleString(), {direction: 'top'})
+        );
+      }
 
       const nextEntry = this.entries[i + 1];
       const latlngs = [[entry.latitude, entry.longitude], [nextEntry.latitude, nextEntry.longitude]];
 
-      this.mapPaths.push(
-        L.polyline(latlngs, {
-          color: this.color,
-          interactive: false,
-        })
-      );
+      if(this.showLines) {
+        this.mapPaths.push(
+          L.polyline(latlngs, {
+            color: this.color,
+            interactive: false,
+          })
+        );
+      }
     }
 
     this.needRerender = false;
@@ -282,9 +296,9 @@ class Entity {
     this.marker.setLatLng([latitude, longitude]);  
   }
 
-  retrieveHistory(historyService) {
+  setupHistory(historyService) {
     if(this.hasHistory) {
-      const entHist = new EntityHistory(this.id, this.config.historyLineColor);
+      const entHist = new EntityHistory(this.id, this.config.historyLineColor, this.config.historyShowDots, this.config.historyShowLines);
       historyService.getHistory(entHist.entityId, this.config.historyStart, this.config.historyEnd, entHist.retrieve);      
       this.histories.push(entHist);
     }  
@@ -443,8 +457,8 @@ class MapCard extends LitElement {
       if (this.firstRenderWithMap) {
         const historyService = new HaHistoryService(this.hass);
         this.entities = this._firstRender(this.map, this.hass, this.config.entities);
-        this.entities.filter((ent) => ent.hasHistory).map((ent) => {
-          ent.retrieveHistory(historyService);
+        this.entities.forEach((ent) => {
+          ent.setupHistory(historyService);
         });
         this.firstRenderWithMap = false;
       }

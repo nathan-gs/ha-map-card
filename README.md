@@ -61,7 +61,7 @@ y: 3.652
 
 If `x` & `y` or `focus_entity` is not set it will take the lat/long from the __first entity__.
 
-###### `entities` options
+###### Entities options
 
 Either the name of the `entity` or:
 | name                  | Default           | note                                                                                          |
@@ -72,10 +72,12 @@ Either the name of the `entity` or:
 | `history_start`       |                   | Either a `date (__2022-03-01T12:00:00Z__)` or a `relative timestamp (__5 hours ago__)`        |
 | `history_end`         |                   | Either a `date (__2022-03-01T12:00:00Z__)` or a `relative timestamp (__now__)`                |
 | `history_line_color`  | Random Color      | Can defined as `red`, `rgb(255,0,0)`, `rgba(255,0,0,0.1)`, `#ff0000`, `var(--red-color)`      |
+| `history_show_lines`  | true              | Show the path                                                                                 |
+| `history_show_dots`   | true              | Show little dots on the path                                                                  |
 
 If `history_start` is set it will display a line with all the previous locations, as does the `hours_to_show` functionality does. This map does only render the entity specified (the HA map renders also the source `device_tracker`).
 
-###### `WMS` and `tile_layers` options
+###### WMS and tile_layers options
 
 | name      | note                                                                                                                                                        |
 |-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
