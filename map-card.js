@@ -54,7 +54,7 @@ class EntityConfig {
 
   _convertToAbsoluteDate(inputStr) {  
     // Check if the input string is a relative timestamp  
-    var relativeTimePattern = /^\d+\s+(second|minute|hour|day|month|year)s?\s+ago$/i;  
+    var relativeTimePattern = /^\d+\s+(second|minute|hour|day|week|month|year)s?\s+ago$/i;  
     if (inputStr === 'now') {
       return new Date();
     } else if (relativeTimePattern.test(inputStr)) {  
@@ -77,6 +77,8 @@ class EntityConfig {
           date.setHours(date.getHours() - num);  
       } else if (unit.startsWith('day')) {  
           date.setDate(date.getDate() - num);  
+      } else if (unit.startsWith('week')) {  
+        date.setDate(date.getDate() - num * 7);  
       } else if (unit.startsWith('month')) {  
           date.setMonth(date.getMonth() - num);  
       } else if (unit.startsWith('year')) {  
