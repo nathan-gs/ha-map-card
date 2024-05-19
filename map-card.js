@@ -271,6 +271,69 @@ class IconEntity extends Entity {
   }
 }
 
+class TimelineEntry {  
+  /** @type {Date} */
+  timestamp;
+  /** @type {Double} */
+  latitude;
+  /** @type {Double} */
+  longitude;
+
+  constructor(timestamp, latitude, longitude) {  
+    this.timestamp = timestamp;  
+    this.latitude = latitude;  
+    this.longitude = longitude;  
+  }  
+} 
+
+/**
+ * 
+ * Usage:
+ * let hist = new HAHistory(this.hass);
+  hist.getHistory("device_tracker.nphone", new Date("2024-05-18T00:00Z"), new Date("2024-05-18T21:00Z"), (entry) => {
+    console.log(entry);
+  });
+ */
+class HAHistory {  
+  constructor(hass) {  
+    this.hass = hass;  
+  }  
+
+  /** 
+   * @param {String} entityId  
+   * @param {Date} start  
+   * @param {Date} end
+   * @param {Function} f
+   **/
+  getHistory(entityId, start, end, f) {  
+    const params = {  
+      type: 'history/stream',  
+      entity_ids: [entityId],
+      significant_changes_only: true,
+      start_time: start.toISOString(),
+      end_time: end.toISOString()
+    };  
+
+    // 
+
+    try {  
+      this.hass.connection.subscribeMessage(
+        (message) => {
+          message.states[entityId].map((state) => {
+            if(state.a.latitude && state.a.longitude) {
+              f(new TimelineEntry(new Date(state.lu * 1000), state.a.latitude, state.a.longitude))
+            }
+          });
+        },
+        params);
+    } catch (error) {  
+      console.error(`Error retrieving history for entity ${entityId}: ${error}`);  
+      console.error(error);
+      return null;  
+    }  
+  }  
+}  
+
 class MapCard extends LitElement {
   static get properties() {
     return {
@@ -293,11 +356,11 @@ class MapCard extends LitElement {
     this.resizeObserver = this._setupResizeObserver();
   }
   
-  render() {    
+  render() {
     if (this.map) {
       // First render is without the map
       if (this.firstRenderWithMap) {
-        this.entities = this._firstRender(this.map, this.hass, this.config.entities);
+                this.entities = this._firstRender(this.map, this.hass, this.config.entities);
         this.firstRenderWithMap = false;
       }
       this.entities.forEach((ent) => {
