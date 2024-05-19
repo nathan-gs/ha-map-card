@@ -73,7 +73,7 @@ Either the name of the `entity` or:
 | `history_end`         |                   | Either a `date (__2022-03-01T12:00:00Z__)` or a `relative timestamp (__now__)`                |
 | `history_line_color`  | Random Color      |                                                                                               |
 
-If `history_start` is set it will display a line with all the previous locations, as does the `hours_to_show` functionality does.
+If `history_start` is set it will display a line with all the previous locations, as does the `hours_to_show` functionality does. This map does only render the entity specified (the HA map renders also the source `device_tracker`).
 
 ###### `WMS` and `tile_layers` options
 
