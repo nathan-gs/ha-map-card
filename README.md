@@ -73,7 +73,7 @@ Either the name of the `entity` or:
 | `history_end`         |                   | Examples: `2022-03-01T18:00:00Z`, `2 hours ago`, `now`                                        |
 | `history_line_color`  | Random Color      |                                                                                               |
 
-If `history_start` & `history_end` are set it will display a line with all the previous locations (like with `hours_to_show` functionality for a stock HA map card). This card does only render the entity specified (`hours_to_show` affects all entities in the stock HA map card).
+If `history_start` & `history_end` are set the card will display a line with all the previous locations (a track) for a particular entity.
 
 ###### `WMS` and `tile_layers` options
 
