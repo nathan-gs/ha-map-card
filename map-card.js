@@ -186,10 +186,76 @@ class MapConfig {
 
 }
 
+class EntityHistory {
+
+  /** @type {String} */
+  entityId;
+  /** @type {[TimelineEntry]} */
+  entries = [];
+  /** @type {String} */
+  color;
+  /** @type {[Polyline|CircleMarker]} */
+  mapPaths = [];
+  needRerender = false;
+
+  constructor(entityId, color) {
+    this.entityId = entityId;
+    this.color = color;
+  }
+
+  retrieve = (entry) => {
+    this.entries.push(entry);
+    this.needRerender = true;
+  };
+
+  /**
+   * @returns {[Polyline|CircleMarker]}
+   */
+  render() {
+    if(this.needRerender == false || this.entries.length == 0) {
+      return [];
+    }
+    this.mapPaths.forEach((marker) => marker.remove());
+    this.mapPaths = [];
+
+    for (let i = 0; i < this.entries.length - 1; i++) {
+      const entry = this.entries[i];
+
+      this.mapPaths.push(
+        L.circleMarker([entry.latitude, entry.longitude], 
+          {
+            color: this.color,
+            radius: 3,
+            interactive: true,
+          }
+        ).bindTooltip(entry.timestamp.toLocaleString(), {direction: 'top'})
+      );
+
+      const nextEntry = this.entries[i + 1];
+      const latlngs = [[entry.latitude, entry.longitude], [nextEntry.latitude, nextEntry.longitude]];
+
+      this.mapPaths.push(
+        L.polyline(latlngs, {
+          color: this.color,
+          interactive: false,
+        })
+      );
+    }
+
+    this.needRerender = false;
+    return this.mapPaths;
+  }
+
+
+
+}
+
 class Entity {
   /** @type {EntityConfig} */
   config;  
   marker;
+  /** @type {[EntityHistory]} */
+  histories = [];
 
   get id() {
     return this.config.id;
@@ -208,8 +274,25 @@ class Entity {
       .toUpperCase();
   }
 
+  get hasHistory() {
+    return this.config.hasHistory;
+  }
+
   update(latitude, longitude) {
     this.marker.setLatLng([latitude, longitude]);  
+  }
+
+  retrieveHistory(historyService) {
+    if(this.hasHistory) {
+      const entHist = new EntityHistory(this.id, this.config.historyLineColor);
+      historyService.getHistory(entHist.entityId, this.config.historyStart, this.config.historyEnd, entHist.retrieve);      
+      this.histories.push(entHist);
+    }  
+  }
+
+  /** @returns {[Polyline|CircleMarker]} */
+  renderHistory() {
+    return this.histories.map((entHist) => entHist.render()).flat();  
   }
 }
 
@@ -294,7 +377,7 @@ class TimelineEntry {
     console.log(entry);
   });
  */
-class HAHistory {  
+class HaHistoryService {  
   constructor(hass) {  
     this.hass = hass;  
   }  
@@ -313,8 +396,6 @@ class HAHistory {
       start_time: start.toISOString(),
       end_time: end.toISOString()
     };  
-
-    // 
 
     try {  
       this.hass.connection.subscribeMessage(
@@ -360,7 +441,11 @@ class MapCard extends LitElement {
     if (this.map) {
       // First render is without the map
       if (this.firstRenderWithMap) {
-                this.entities = this._firstRender(this.map, this.hass, this.config.entities);
+        const historyService = new HaHistoryService(this.hass);
+        this.entities = this._firstRender(this.map, this.hass, this.config.entities);
+        this.entities.filter((ent) => ent.hasHistory).map((ent) => {
+          ent.retrieveHistory(historyService);
+        });
         this.firstRenderWithMap = false;
       }
       this.entities.forEach((ent) => {
@@ -370,6 +455,9 @@ class MapCard extends LitElement {
           longitude,
         } = stateObj.attributes;
         ent.update(latitude, longitude);
+        ent.renderHistory().forEach((marker) => {
+          this.map.addLayer(marker)
+        });
       });
 
     }
