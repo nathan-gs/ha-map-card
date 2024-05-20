@@ -69,13 +69,13 @@ Either the name of the `entity` or:
 | `entity`              |                   | The entity id                                                                                 |
 | `display`             | `marker`          | `icon`, `state` or `marker`. `marker` will display the picture if available                   |
 | `size`                | 24                | Size of the icon (not supported for `marker`)                                                 |
-| `history_start`       |                   | Either a `date (__2022-03-01T12:00:00Z__)` or a `relative timestamp (__5 hours ago__)`        |
-| `history_end`         | `now`             | Either a `date (__2022-03-01T12:00:00Z__)` or a `relative timestamp (__now__)`                |
+| `history_start`       |                   | Examples: `2022-03-01T12:00:00Z`, `5 hours ago`                                               |
+| `history_end`         |                   | Examples: `2022-03-01T18:00:00Z`, `2 hours ago`, `now`                                        |
 | `history_line_color`  | Random Color      | Can defined as `red`, `rgb(255,0,0)`, `rgba(255,0,0,0.1)`, `#ff0000`, `var(--red-color)`      |
 | `history_show_lines`  | true              | Show the path                                                                                 |
 | `history_show_dots`   | true              | Show little dots on the path                                                                  |
 
-If `history_start` is set it will display a line with all the previous locations, as does the `hours_to_show` functionality does. This map does only render the entity specified (the HA map renders also the source `device_tracker`).
+If `history_start` & `history_end` are set the card will display a line with all the previous locations (a track) for a particular entity.
 
 ###### WMS and tile_layers options
 
