@@ -28,14 +28,20 @@ class EntityConfig {
   historyEnd;
   /** @type {String} */
   historyLineColor;
+  /** @type {Boolean} */
+  historyShowDots;
+  /** @type {Boolean} */
+  historyShowLines;
 
   constructor(config) {
     this.id = (typeof config === 'string' || config instanceof String)? config : config.entity;
     this.display = config.display ? config.display : "marker";
     this.size = config.size ? config.size : 24;
     this.historyStart = config.history_start ? this._convertToAbsoluteDate(config.history_start) : null;
-    this.historyEnd = config.history_end ? this._convertToAbsoluteDate(config.history_end) : null;
+    this.historyEnd = config.history_end ? this._convertToAbsoluteDate(config.history_end) : "now";
     this.historyLineColor = config.history_line_color ?? this._generateRandomColor();
+    this.historyShowDots = config.history_show_dots ?? true;
+    this.historyShowLines = config.history_show_lines ?? true;
   }
 
   get hasHistory() {
@@ -48,9 +54,9 @@ class EntityConfig {
 
   _convertToAbsoluteDate(inputStr) {  
     // Check if the input string is a relative timestamp  
-    var relativeTimePattern = /^\d+\s+(second|minute|hour|day|month|year)s?\s+ago$/i;  
+    var relativeTimePattern = /^\d+\s+(second|minute|hour|day|week|month|year)s?\s+ago$/i;  
     if (inputStr === 'now') {
-      return new Date();
+      return null;
     } else if (relativeTimePattern.test(inputStr)) {  
       // Split the input string into parts  
       var parts = inputStr.split(' ');  
@@ -71,6 +77,8 @@ class EntityConfig {
           date.setHours(date.getHours() - num);  
       } else if (unit.startsWith('day')) {  
           date.setDate(date.getDate() - num);  
+      } else if (unit.startsWith('week')) {  
+        date.setDate(date.getDate() - num * 7);  
       } else if (unit.startsWith('month')) {  
           date.setMonth(date.getMonth() - num);  
       } else if (unit.startsWith('year')) {  
@@ -196,11 +204,15 @@ class EntityHistory {
   color;
   /** @type {[Polyline|CircleMarker]} */
   mapPaths = [];
+  showDots = true;
+  showLines = true;
   needRerender = false;
 
-  constructor(entityId, color) {
+  constructor(entityId, color, showDots, showLines) {
     this.entityId = entityId;
     this.color = color;
+    this.showDots = showDots;
+    this.showLines = showLines;
   }
 
   retrieve = (entry) => {
@@ -209,7 +221,7 @@ class EntityHistory {
   };
 
   /**
-   * @returns {[Polyline|CircleMarker]}
+   * @returns {[(Polyline|CircleMarker)]}
    */
   render() {
     if(this.needRerender == false || this.entries.length == 0) {
@@ -221,25 +233,29 @@ class EntityHistory {
     for (let i = 0; i < this.entries.length - 1; i++) {
       const entry = this.entries[i];
 
-      this.mapPaths.push(
-        L.circleMarker([entry.latitude, entry.longitude], 
-          {
-            color: this.color,
-            radius: 3,
-            interactive: true,
-          }
-        ).bindTooltip(entry.timestamp.toLocaleString(), {direction: 'top'})
-      );
+      if(this.showDots) {
+        this.mapPaths.push(
+          L.circleMarker([entry.latitude, entry.longitude], 
+            {
+              color: this.color,
+              radius: 3,
+              interactive: true,
+            }
+          ).bindTooltip(entry.timestamp.toLocaleString(), {direction: 'top'})
+        );
+      }
 
       const nextEntry = this.entries[i + 1];
       const latlngs = [[entry.latitude, entry.longitude], [nextEntry.latitude, nextEntry.longitude]];
 
-      this.mapPaths.push(
-        L.polyline(latlngs, {
-          color: this.color,
-          interactive: false,
-        })
-      );
+      if(this.showLines) {
+        this.mapPaths.push(
+          L.polyline(latlngs, {
+            color: this.color,
+            interactive: false,
+          })
+        );
+      }
     }
 
     this.needRerender = false;
@@ -278,14 +294,14 @@ class Entity {
     return this.config.hasHistory;
   }
 
-  update(latitude, longitude) {
-    this.marker.setLatLng([latitude, longitude]);  
+  update(map, latitude, longitude, state) {
+    this.marker.setLatLng([latitude, longitude]);
   }
 
-  retrieveHistory(historyService) {
+  setupHistory(historyService) {
     if(this.hasHistory) {
-      const entHist = new EntityHistory(this.id, this.config.historyLineColor);
-      historyService.getHistory(entHist.entityId, this.config.historyStart, this.config.historyEnd, entHist.retrieve);      
+      const entHist = new EntityHistory(this.id, this.config.historyLineColor, this.config.historyShowDots, this.config.historyShowLines);
+      historyService.subscribe(entHist.entityId, this.config.historyStart, this.config.historyEnd, entHist.retrieve);      
       this.histories.push(entHist);
     }  
   }
@@ -325,6 +341,44 @@ class MarkerEntity extends Entity {
     return marker;
   }
 
+}
+
+class StateEntity extends Entity {
+
+  _currentState;
+  
+  constructor(config, latitude, longitude, state) {
+    super();
+    this.config = config;
+    this.marker = this._createMapMarker(latitude, longitude, state);
+  }
+
+  _createMapMarker(latitude, longitude, state) {
+    const marker = L.marker([latitude, longitude], {
+      icon: L.divIcon({
+        html: `
+          <ha-entity-marker
+            entity-id="${this.id}"
+            entity-name="${state}"
+          ></ha-entity-marker>
+        `,
+        iconSize: [48, 48],
+        className: "",
+      }),
+      title: this.id,
+    });
+    return marker;
+  }
+
+  update(map, latitude, longitude, state) {    
+    if(state != this._currentState) {
+      this.marker.remove();
+      this.marker = this._createMapMarker(latitude, longitude, state);
+      this.marker.addTo(map);
+    }
+    this.marker.setLatLng([latitude, longitude]);    
+  }
+  
 }
 
 class IconEntity extends Entity {
@@ -367,38 +421,36 @@ class TimelineEntry {
     this.latitude = latitude;  
     this.longitude = longitude;  
   }  
-} 
+}
 
-/**
- * 
- * Usage:
- * let hist = new HAHistory(this.hass);
-  hist.getHistory("device_tracker.nphone", new Date("2024-05-18T00:00Z"), new Date("2024-05-18T21:00Z"), (entry) => {
-    console.log(entry);
-  });
- */
 class HaHistoryService {  
+
+  connection = {};
+
   constructor(hass) {  
     this.hass = hass;  
   }  
 
   /** 
-   * @param {String} entityId  
+   * @param {String} entityId
    * @param {Date} start  
    * @param {Date} end
    * @param {Function} f
    **/
-  getHistory(entityId, start, end, f) {  
-    const params = {  
+  subscribe(entityId, start, end, f) {  
+    let params = {  
       type: 'history/stream',  
       entity_ids: [entityId],
       significant_changes_only: true,
-      start_time: start.toISOString(),
-      end_time: end.toISOString()
-    };  
+      start_time: start.toISOString()
+    };
+
+    if(end) {
+      params.end_time = end.toISOString();
+    }
 
     try {  
-      this.hass.connection.subscribeMessage(
+      this.connection[entityId] = this.hass.connection.subscribeMessage(
         (message) => {
           message.states[entityId].map((state) => {
             if(state.a.latitude && state.a.longitude) {
@@ -407,12 +459,20 @@ class HaHistoryService {
           });
         },
         params);
-    } catch (error) {  
+      console.log("HaHistoryService: successfully subscribed to history from " + entityId);
+    } catch (error) {        
       console.error(`Error retrieving history for entity ${entityId}: ${error}`);  
       console.error(error);
-      return null;  
     }  
   }  
+
+  unsubscribe() {
+    for (const entityId in this.connection) {
+      this.connection[entityId]?.then((unsub) => unsub?.());
+      this.connection[entityId] = undefined;
+      console.log("HaHistoryService: unsubscribed " + entityId);
+    }
+  }
 }  
 
 class MapCard extends LitElement {
@@ -429,6 +489,8 @@ class MapCard extends LitElement {
   /** @type {L.Map} */
   map;
   resizeObserver;
+  /** @type {HaHistoryService} */
+  historyService;
 
 
   firstUpdated() {
@@ -441,10 +503,10 @@ class MapCard extends LitElement {
     if (this.map) {
       // First render is without the map
       if (this.firstRenderWithMap) {
-        const historyService = new HaHistoryService(this.hass);
+        this.historyService = new HaHistoryService(this.hass);
         this.entities = this._firstRender(this.map, this.hass, this.config.entities);
-        this.entities.filter((ent) => ent.hasHistory).map((ent) => {
-          ent.retrieveHistory(historyService);
+        this.entities.forEach((ent) => {
+          ent.setupHistory(this.historyService);
         });
         this.firstRenderWithMap = false;
       }
@@ -454,7 +516,7 @@ class MapCard extends LitElement {
           latitude,
           longitude,
         } = stateObj.attributes;
-        ent.update(latitude, longitude);
+        ent.update(this.map, latitude, longitude, this.hass.formatEntityState(stateObj));
         ent.renderHistory().forEach((marker) => {
           this.map.addLayer(marker)
         });
@@ -485,12 +547,16 @@ class MapCard extends LitElement {
         friendly_name
       } = stateObj.attributes;
       if (!(latitude && longitude)) {
-        console.log(ent + " has no latitude & longitude");
+        console.warn(configEntity.id + " has no latitude & longitude");
+        return;
       }
       let entity = null;
       switch(configEntity.display) {
         case "icon":
           entity = new IconEntity(configEntity, latitude, longitude, icon, friendly_name);
+          break;
+        case "state":
+          entity = new StateEntity(configEntity, latitude, longitude, hass.formatEntityState(stateObj));
           break;
         case 'marker':
         default: 
@@ -500,7 +566,7 @@ class MapCard extends LitElement {
       }
       entity.marker.addTo(map);
       return entity;
-    });
+    }).filter((ent) => ent != null);
   }
 
   _setupResizeObserver() {
@@ -572,9 +638,8 @@ class MapCard extends LitElement {
       this.map = undefined;
     }
 
-    if (this.resizeObserver) {
-      this.resizeObserver.unobserve(this);
-    }
+    this.resizeObserver?.unobserve(this);
+    this.historyService?.unsubscribe();
   }
 
   /** @returns {[Double, Double]} */
@@ -638,6 +703,10 @@ class MapCard extends LitElement {
         border: 1px solid var(--ha-marker-color, var(--primary-color));
         color: var(--primary-text-color);
         background-color: var(--card-background-color);
+      }
+      .marker:not(:has(.entity-picture)) {
+        text-align: center;
+        font-size: 70%;
       }
     `;
   }
