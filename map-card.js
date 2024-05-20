@@ -321,6 +321,7 @@ class MarkerEntity extends Entity {
   }
 
   _createMapMarker(latitude, longitude, icon, title, entityPicture) {
+    console.debug("MarkerEntity: creating marker for " + this.id);
     const marker = L.marker([latitude, longitude], {
       icon: L.divIcon({
         html: `
@@ -354,6 +355,7 @@ class StateEntity extends Entity {
   }
 
   _createMapMarker(latitude, longitude, state) {
+    console.debug("StateEntity: creating marker for " + this.id);
     const marker = L.marker([latitude, longitude], {
       icon: L.divIcon({
         html: `
@@ -367,11 +369,13 @@ class StateEntity extends Entity {
       }),
       title: this.id,
     });
+    this._currentState = state;
     return marker;
   }
 
   update(map, latitude, longitude, state) {    
     if(state != this._currentState) {
+      console.debug("StateEntity: updating marker for " + this.id + " from " + this._currentState + " to " + state);
       this.marker.remove();
       this.marker = this._createMapMarker(latitude, longitude, state);
       this.marker.addTo(map);
@@ -390,6 +394,7 @@ class IconEntity extends Entity {
   }
 
   _createMapMarker(latitude, longitude, icon, title) {
+    console.debug("IconEntity: creating marker for " + this.id);
     let iconHtml = "";
     if(icon) {
       iconHtml = `<div class="marker" ${this._markerCss(this.config.size)}><ha-icon icon="${icon}">icon</ha-icon></div>`
@@ -459,7 +464,7 @@ class HaHistoryService {
           });
         },
         params);
-      console.log("HaHistoryService: successfully subscribed to history from " + entityId);
+      console.debug("HaHistoryService: successfully subscribed to history from " + entityId);
     } catch (error) {        
       console.error(`Error retrieving history for entity ${entityId}: ${error}`);  
       console.error(error);
@@ -470,7 +475,7 @@ class HaHistoryService {
     for (const entityId in this.connection) {
       this.connection[entityId]?.then((unsub) => unsub?.());
       this.connection[entityId] = undefined;
-      console.log("HaHistoryService: unsubscribed " + entityId);
+      console.debug("HaHistoryService: unsubscribed " + entityId);
     }
   }
 }  
