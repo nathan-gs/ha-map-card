@@ -75,6 +75,10 @@ Either the name of the `entity` or:
 | `history_show_lines`  | true                                  | Show the path                                                                                 |
 | `history_show_dots`   | true                                  | Show little dots on the path                                                                  |
 | `css`                 | `text-align: center; font-size: 60%;` | CSS for the marker (only for `state` and `marker`)                                            |
+| `fixed_x`             |                                       | Display a fixed marker, this will ignore the latitude/longitude attributes                    |
+| `fixed_y`             |                                       | Display a fixed marker, this will ignore the latitude/longitude attributes                    |
+| `fallback_x`          |                                       | If the latitude/longitude is missing, use these fixed attributes                              |
+| `fallback_y`          |                                       | If the latitude/longitude is missing, use these fixed attributes                              |
 
 If `history_start` & `history_end` are set the card will display a line with all the previous locations (a track) for a particular entity.
 

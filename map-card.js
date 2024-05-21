@@ -32,6 +32,14 @@ class EntityConfig {
   historyShowDots;
   /** @type {Boolean} */
   historyShowLines;
+  /** @type {Double} */
+  fixedX;
+  /** @type {Double} */
+  fixedY;
+  /** @type {Double} */
+  fallbackX;
+  /** @type {Double} */
+  fallbackY;
   /** @type {String} */
   css;
   
@@ -45,6 +53,10 @@ class EntityConfig {
     this.historyLineColor = config.history_line_color ?? this._generateRandomColor();
     this.historyShowDots = config.history_show_dots ?? true;
     this.historyShowLines = config.history_show_lines ?? true;
+    this.fixedX = config.fixed_x;
+    this.fixedY = config.fixed_y;
+    this.fallbackX = config.fallback_x;
+    this.fallbackY = config.fallback_y;
     this.css = config.css ?? "text-align: center; font-size: 60%;";
   }
 
@@ -298,8 +310,22 @@ class Entity {
     return this.config.hasHistory;
   }
 
+  _latlong(latitude, longitude) {
+    if(this.config.fixedX && this.config.fixedY) {
+      return [this.config.fixedX, this.config.fixedY];
+    }
+    if(latitude == null || longitude == null) {
+      console.warn("Entity: " + this.id + " has no latitude & longitude");
+      if(this.config.fallbackX == null || this.config.fallbackY == null) {
+        console.error("Entity: " + this.id + " has no fallback latitude & longitude");
+        throw Error("Entity: " + this.id + " has no latitude & longitude and no fallback configured")
+      }
+    }
+    return [latitude ?? this.config.fallbackX, longitude ?? this.config.fallbackY];
+  }
+
   update(map, latitude, longitude, state) {
-    this.marker.setLatLng([latitude, longitude]);
+    this.marker.setLatLng(this._latlong(latitude, longitude));
   }
 
   setupHistory(historyService) {
@@ -326,7 +352,7 @@ class MarkerEntity extends Entity {
 
   _createMapMarker(latitude, longitude, icon, title, entityPicture) {
     console.debug("MarkerEntity: creating marker for " + this.id);
-    const marker = L.marker([latitude, longitude], {
+    const marker = L.marker(this._latlong(latitude, longitude), {
       icon: L.divIcon({
         html: `
           <ha-entity-marker
@@ -361,7 +387,7 @@ class StateEntity extends Entity {
 
   _createMapMarker(latitude, longitude, state) {
     console.debug("StateEntity: creating marker for " + this.id);
-    const marker = L.marker([latitude, longitude], {
+    const marker = L.marker(this._latlong(latitude, longitude), {
       icon: L.divIcon({
         html: `
           <ha-entity-marker
@@ -386,7 +412,7 @@ class StateEntity extends Entity {
       this.marker = this._createMapMarker(latitude, longitude, state);
       this.marker.addTo(map);
     }
-    this.marker.setLatLng([latitude, longitude]);    
+    super.update(map, latitude, longitude, state);
   }
   
 }
@@ -405,9 +431,9 @@ class IconEntity extends Entity {
     if(icon) {
       iconHtml = `<div class="marker" ${this._markerCss(this.config.size)}><ha-icon icon="${icon}">icon</ha-icon></div>`
     } else {
-        iconHtml = `<div class="marker" ${this._markerCss(this.config.size)}>${this._abbr(title)}</div>`
+      iconHtml = `<div class="marker" ${this._markerCss(this.config.size)}>${this._abbr(title)}</div>`
     }
-    const marker = L.marker([latitude, longitude], {
+    const marker = L.marker(this._latlong(latitude, longitude), {
       icon: L.divIcon({
         html: iconHtml,
         iconSize: [this.config.size, this.config.size],
@@ -524,10 +550,10 @@ class MapCard extends LitElement {
       if (this.firstRenderWithMap) {
         this.historyService = new HaHistoryService(this.hass);
         try {
-        this.entities = this._firstRender(this.map, this.hass, this.config.entities);
-        this.entities.forEach((ent) => {
-          ent.setupHistory(this.historyService);
-        });
+          this.entities = this._firstRender(this.map, this.hass, this.config.entities);
+          this.entities.forEach((ent) => {
+            ent.setupHistory(this.historyService);
+          });
           this.hasError = false;
         } catch (e) {
           this.hasError = true;
@@ -545,10 +571,10 @@ class MapCard extends LitElement {
           longitude,
         } = stateObj.attributes;
         try {
-        ent.update(this.map, latitude, longitude, this.hass.formatEntityState(stateObj));
-        ent.renderHistory().forEach((marker) => {
-          this.map.addLayer(marker)
-        });
+          ent.update(this.map, latitude, longitude, this.hass.formatEntityState(stateObj));
+          ent.renderHistory().forEach((marker) => {
+            this.map.addLayer(marker)
+          });
           this.hasError = false;
         } catch (e) {
           this.hasError = true;
@@ -557,8 +583,8 @@ class MapCard extends LitElement {
           L.control.attribution().addAttribution("Error found, check Console").addTo(this.map);
         }
       });
-
-    }
+  
+      }
 
     return html`
             <link rel="stylesheet" href="/static/images/leaflet/leaflet.css">
@@ -582,10 +608,6 @@ class MapCard extends LitElement {
         gps_accuracy: gpsAccuracy,
         friendly_name
       } = stateObj.attributes;
-      if (!(latitude && longitude)) {
-        console.warn(configEntity.id + " has no latitude & longitude");
-        return;
-      }
       let entity = null;
       switch(configEntity.display) {
         case "icon":
@@ -602,7 +624,7 @@ class MapCard extends LitElement {
       }
       entity.marker.addTo(map);
       return entity;
-    }).filter((ent) => ent != null);
+    });
   }
 
   _setupResizeObserver() {
@@ -680,7 +702,7 @@ class MapCard extends LitElement {
   }
 
   /** @returns {[Double, Double]} */
-  _getLatLong() {
+  _getLatLong() { 
     if(Number.isFinite(this.config.x) && Number.isFinite(this.config.y)) {
       return [this.config.x, this.config.y];
     } else {
