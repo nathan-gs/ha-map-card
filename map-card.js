@@ -647,6 +647,7 @@ class MapCard extends LitElement {
     if (this.map) {
       this.map.remove();
       this.map = undefined;
+      this.firstRenderWithMap = true;
     }
 
     this.resizeObserver?.unobserve(this);
