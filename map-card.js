@@ -32,6 +32,9 @@ class EntityConfig {
   historyShowDots;
   /** @type {Boolean} */
   historyShowLines;
+  /** @type {String} */
+  css;
+  
 
   constructor(config) {
     this.id = (typeof config === 'string' || config instanceof String)? config : config.entity;
@@ -42,6 +45,7 @@ class EntityConfig {
     this.historyLineColor = config.history_line_color ?? this._generateRandomColor();
     this.historyShowDots = config.history_show_dots ?? true;
     this.historyShowLines = config.history_show_lines ?? true;
+    this.css = config.css ?? "text-align: center; font-size: 60%;";
   }
 
   get hasHistory() {
@@ -332,6 +336,7 @@ class MarkerEntity extends Entity {
             entity-picture="${
               entityPicture ?? ""
             }"
+            style="${this.config.css}"
           ></ha-entity-marker>
         `,
         iconSize: [48, 48],
@@ -362,6 +367,7 @@ class StateEntity extends Entity {
           <ha-entity-marker
             entity-id="${this.id}"
             entity-name="${state}"
+            style="${this.config.css}"
           ></ha-entity-marker>
         `,
         iconSize: [48, 48],
@@ -708,10 +714,6 @@ class MapCard extends LitElement {
         border: 1px solid var(--ha-marker-color, var(--primary-color));
         color: var(--primary-text-color);
         background-color: var(--card-background-color);
-      }
-      .marker:not(:has(.entity-picture)) {
-        text-align: center;
-        font-size: 70%;
       }
     `;
   }

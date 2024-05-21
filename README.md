@@ -61,19 +61,20 @@ y: 3.652
 
 If `x` & `y` or `focus_entity` is not set it will take the lat/long from the __first entity__.
 
-###### Entities options
+###### Entity options
 
 Either the name of the `entity` or:
-| name                  | Default           | note                                                                                          |
-|-----------------------|-------------------|-----------------------------------------------------------------------------------------------|
-| `entity`              |                   | The entity id                                                                                 |
-| `display`             | `marker`          | `icon`, `state` or `marker`. `marker` will display the picture if available                   |
-| `size`                | 24                | Size of the icon (not supported for `marker`)                                                 |
-| `history_start`       |                   | Examples: `2022-03-01T12:00:00Z`, `5 hours ago`                                               |
-| `history_end`         | `now`             | Examples: `2022-03-01T18:00:00Z`, `2 hours ago`, `now`                                        |
-| `history_line_color`  | Random Color      | Can defined as `red`, `rgb(255,0,0)`, `rgba(255,0,0,0.1)`, `#ff0000`, `var(--red-color)`      |
-| `history_show_lines`  | true              | Show the path                                                                                 |
-| `history_show_dots`   | true              | Show little dots on the path                                                                  |
+| name                  | Default                               | note                                                                                          |
+|-----------------------|---------------------------------------|-----------------------------------------------------------------------------------------------|
+| `entity`              |                                       | The entity id                                                                                 |
+| `display`             | `marker`                              | `icon`, `state` or `marker`. `marker` will display the picture if available                   |
+| `size`                | 24                                    | Size of the icon (not supported for `marker`)                                                 |
+| `history_start`       |                                       | Examples: `2022-03-01T12:00:00Z`, `5 hours ago`                                               |
+| `history_end`         | `now`                                 | Examples: `2022-03-01T18:00:00Z`, `2 hours ago`, `now`                                        |
+| `history_line_color`  | Random Color                          | Can defined as `red`, `rgb(255,0,0)`, `rgba(255,0,0,0.1)`, `#ff0000`, `var(--red-color)`      |
+| `history_show_lines`  | true                                  | Show the path                                                                                 |
+| `history_show_dots`   | true                                  | Show little dots on the path                                                                  |
+| `css`                 | `text-align: center; font-size: 60%;` | CSS for the marker (only for `state` and `marker`)                                            |
 
 If `history_start` & `history_end` are set the card will display a line with all the previous locations (a track) for a particular entity.
 
