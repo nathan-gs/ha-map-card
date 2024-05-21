@@ -170,7 +170,7 @@ class MapConfig {
   _setConfigWithDefault(input, d = null) {
     if (!input) {
       if (d == null) {
-        throw new Error("Missing key " + name);
+        throw new Error("Missing key ");
       }
       return d;
     } else {
@@ -502,7 +502,8 @@ class MapCard extends LitElement {
   resizeObserver;
   /** @type {HaHistoryService} */
   historyService;
-
+  hasError = false;
+  hadError = false;
 
   firstUpdated() {
     this.map = this._setupMap();
@@ -511,26 +512,50 @@ class MapCard extends LitElement {
   }
   
   render() {
+    
     if (this.map) {
+      if(!this.hasError && this.hadError) {
+        L.control.attribution().removeAttribution("Error found, check Console").addTo(this.map);
+        L.control.attribution().removeAttribution("Error found in first run, check Console").addTo(this.map);
+        this.hadError = false;
+      }
+
       // First render is without the map
       if (this.firstRenderWithMap) {
         this.historyService = new HaHistoryService(this.hass);
+        try {
         this.entities = this._firstRender(this.map, this.hass, this.config.entities);
         this.entities.forEach((ent) => {
           ent.setupHistory(this.historyService);
         });
+          this.hasError = false;
+        } catch (e) {
+          this.hasError = true;
+          this.hadError = true;
+          console.error(e);
+          L.control.attribution().addAttribution("Error found in first run, check Console").addTo(this.map);                   
+        }
         this.firstRenderWithMap = false;
       }
+
       this.entities.forEach((ent) => {
         const stateObj = this.hass.states[ent.id];
         const {
           latitude,
           longitude,
         } = stateObj.attributes;
+        try {
         ent.update(this.map, latitude, longitude, this.hass.formatEntityState(stateObj));
         ent.renderHistory().forEach((marker) => {
           this.map.addLayer(marker)
         });
+          this.hasError = false;
+        } catch (e) {
+          this.hasError = true;
+          this.hadError = true;
+          console.error(e);
+          L.control.attribution().addAttribution("Error found, check Console").addTo(this.map);
+        }
       });
 
     }
