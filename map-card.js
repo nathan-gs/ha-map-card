@@ -49,7 +49,7 @@ class EntityConfig {
     this.display = config.display ? config.display : "marker";
     this.size = config.size ? config.size : 24;
     this.historyStart = config.history_start ? this._convertToAbsoluteDate(config.history_start) : null;
-    this.historyEnd = config.history_end ? this._convertToAbsoluteDate(config.history_end) : "now";
+    this.historyEnd = this._convertToAbsoluteDate(config.history_end ?? "now");
     this.historyLineColor = config.history_line_color ?? this._generateRandomColor();
     this.historyShowDots = config.history_show_dots ?? true;
     this.historyShowLines = config.history_show_lines ?? true;
