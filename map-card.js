@@ -765,38 +765,46 @@ class MapCard extends LitElement {
   }
 }
 
-class MapCardEntityMarker  extends LitElement {
+class MapCardEntityMarker extends LitElement {
   static get properties() {
     return {
-      'entity-id': {},
-      'entity-name': {},
-      'entity-picture': {},
-      'entity-color': {}
+      'entityId': {type: String, attribute: 'entity-id'},
+      'entityName': {type: String, attribute: 'entity-name'},
+      'entityPicture': {type: String, attribute: 'entity-picture'},
+      'entityColor': {type: String, attribute: 'entity-color'}
     };
   }
 
   render() {
    return html`
       <div
-        class="marker ${this['entity-picture'] ? "picture" : ""}"
-        style="border-color: ${this['entity-color']}"
+        class="marker ${this.entityPicture ? "picture" : ""}"
+        style="border-color: ${this.entityColor}"
         @click=${this._badgeTap}
       >
-        ${this['entity-picture']
+        ${this.entityPicture
           ? html`<div
               class="entity-picture"
-              style="background-image: url(${this['entity-picture']})"
+              style="background-image: url(${this.entityPicture})"
             ></div>`
-          : this['entity-name']}
+          : this.entityName}
       </div>
     `;
   };
 
   _badgeTap(ev) {
     ev.stopPropagation();
-    if (this['entity-id']) {
-      const event = new Event('hass-more-info', {bubbles: true});
-      event.detail = { entityId: this['entity-id'] };
+    if (this.entityId) {
+      // https://developers.home-assistant.io/blog/2023/07/07/action-event-custom-cards/
+      const actions = {
+        entity: this.entityId,
+        tap_action: {
+          action: "more-info",
+        }
+      };
+
+      const event = new Event('hass-action', {bubbles: true, composed: true});
+      event.detail = { config: actions, action: 'tap'};
       this.dispatchEvent(event);
     }
   }
