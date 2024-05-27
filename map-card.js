@@ -355,7 +355,7 @@ class MarkerEntity extends Entity {
     const marker = L.marker(this._latlong(latitude, longitude), {
       icon: L.divIcon({
         html: `
-          <ha-entity-marker
+          <map-card-entity-marker
             entity-id="${this.id}"
             entity-name="${this._abbr(title)}"
             entity-icon="${icon}"
@@ -724,8 +724,6 @@ class MapCard extends LitElement {
     return [entity.attributes.latitude, entity.attributes.longitude];
   }
 
-  
-
   static get styles() {
     return css`       
       #map {
@@ -767,8 +765,72 @@ class MapCard extends LitElement {
   }
 }
 
+class MapCardEntityMarker  extends LitElement {
+  static get properties() {
+    return {
+      'entity-id': {},
+      'entity-name': {},
+      'entity-picture': {},
+      'entity-color': {}
+    };
+  }
+
+  render() {
+   return html`
+      <div
+        class="marker ${this['entity-picture'] ? "picture" : ""}"
+        style="border-color: ${this['entity-color']}"
+        @click=${this._badgeTap}
+      >
+        ${this['entity-picture']
+          ? html`<div
+              class="entity-picture"
+              style="background-image: url(${this['entity-picture']})"
+            ></div>`
+          : this['entity-name']}
+      </div>
+    `;
+  };
+
+  _badgeTap(ev) {
+    ev.stopPropagation();
+    if (this['entity-id']) {
+      const event = new Event('hass-more-info', {bubbles: true});
+      event.detail = { entityId: this['entity-id'] };
+      this.dispatchEvent(event);
+    }
+  }
+
+  static get styles() {
+    return css`
+      .marker {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-sizing: border-box;
+        width: 48px;
+        height: 48px;
+        font-size: var(--ha-marker-font-size, 1.5em);
+        border-radius: 50%;
+        border: 1px solid var(--ha-marker-color, var(--primary-color));
+        color: var(--primary-text-color);
+        background-color: var(--card-background-color);
+      }
+      .marker.picture {
+        overflow: hidden;
+      }
+      .entity-picture {
+        background-size: cover;
+        height: 100%;
+        width: 100%;
+      }
+    `;
+  }
+}
+
 if (!customElements.get("map-card")) {
   customElements.define("map-card", MapCard);
+  customElements.define("map-card-entity-marker", MapCardEntityMarker);
   console.info(
     `%cnathan-gs/ha-map-card: VERSION`,
     'color: orange; font-weight: bold; background: black'
