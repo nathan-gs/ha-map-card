@@ -289,8 +289,23 @@ class Entity {
   /** @type {[EntityHistory]} */
   histories = [];
 
+  _currentState;
+
   get id() {
     return this.config.id;
+  }
+
+  get display() {
+    return this.config.display;
+  }
+
+  constructor(config, latitude, longitude, icon, title, state, picture) {
+    this.config = config;
+    if(this.display == "state") {
+      title = state;
+      this._currentState = state;
+    }
+    this.marker = this._createMapMarker(latitude, longitude, icon, title, picture);
   }
 
   _markerCss(size) {
@@ -298,6 +313,9 @@ class Entity {
   }
 
   _abbr(title) {
+    if(title.length < 5) {
+      return title;
+    }
     return title
       .split(" ")
       .map((part) => part[0])
@@ -325,6 +343,15 @@ class Entity {
   }
 
   update(map, latitude, longitude, state) {
+    if(this.display == "state") {
+      if(state != this._currentState) {
+        console.debug("Entity: updating marker for " + this.id + " from " + this._currentState + " to " + state);
+        this.marker.remove();
+        this.marker = this._createMapMarker(latitude, longitude, null, state, null);
+        this.marker.addTo(map);
+        this._currentState = state;
+      }
+    }
     this.marker.setLatLng(this._latlong(latitude, longitude));
   }
 
@@ -340,103 +367,31 @@ class Entity {
   renderHistory() {
     return this.histories.map((entHist) => entHist.render()).flat();  
   }
-}
 
-class MarkerEntity extends Entity {
+  _createMapMarker(latitude, longitude, icon, title, picture) {
+    console.debug("MarkerEntity: creating marker for " + this.id + " with display mode " + this.display);
+    if(this.display == "icon") {
+      picture = null;
+    }
+    if(this.display == "state") {
+      picture = null;
+      icon = null;
+    }
 
-  constructor(config, latitude, longitude, icon, title, picture) {
-    super();
-    this.config = config;
-    this.marker = this._createMapMarker(latitude, longitude, icon, title, picture);
-  }
-
-  _createMapMarker(latitude, longitude, icon, title, entityPicture) {
-    console.debug("MarkerEntity: creating marker for " + this.id);
     const marker = L.marker(this._latlong(latitude, longitude), {
       icon: L.divIcon({
         html: `
           <map-card-entity-marker
             entity-id="${this.id}"
-            entity-name="${this._abbr(title)}"
-            entity-icon="${icon}"
-            entity-picture="${
-              entityPicture ?? ""
+            title="${this._abbr(title)}"
+            icon="${icon ?? ""}"
+            picture="${
+              picture ?? ""
             }"
             style="${this.config.css}"
-          ></ha-entity-marker>
+          ></map-card-entity-marker>
         `,
         iconSize: [48, 48],
-        className: "",
-      }),
-      title: this.id,
-    });
-    return marker;
-  }
-
-}
-
-class StateEntity extends Entity {
-
-  _currentState;
-  
-  constructor(config, latitude, longitude, state) {
-    super();
-    this.config = config;
-    this.marker = this._createMapMarker(latitude, longitude, state);
-  }
-
-  _createMapMarker(latitude, longitude, state) {
-    console.debug("StateEntity: creating marker for " + this.id);
-    const marker = L.marker(this._latlong(latitude, longitude), {
-      icon: L.divIcon({
-        html: `
-          <ha-entity-marker
-            entity-id="${this.id}"
-            entity-name="${state}"
-            style="${this.config.css}"
-          ></ha-entity-marker>
-        `,
-        iconSize: [48, 48],
-        className: "",
-      }),
-      title: this.id,
-    });
-    this._currentState = state;
-    return marker;
-  }
-
-  update(map, latitude, longitude, state) {    
-    if(state != this._currentState) {
-      console.debug("StateEntity: updating marker for " + this.id + " from " + this._currentState + " to " + state);
-      this.marker.remove();
-      this.marker = this._createMapMarker(latitude, longitude, state);
-      this.marker.addTo(map);
-    }
-    super.update(map, latitude, longitude, state);
-  }
-  
-}
-
-class IconEntity extends Entity {
-
-  constructor(config, latitude, longitude, icon, title) {
-    super();
-    this.config = config;
-    this.marker = this._createMapMarker(latitude, longitude, icon, title);
-  }
-
-  _createMapMarker(latitude, longitude, icon, title) {
-    console.debug("IconEntity: creating marker for " + this.id);
-    let iconHtml = "";
-    if(icon) {
-      iconHtml = `<div class="marker" ${this._markerCss(this.config.size)}><ha-icon icon="${icon}">icon</ha-icon></div>`
-    } else {
-      iconHtml = `<div class="marker" ${this._markerCss(this.config.size)}>${this._abbr(title)}</div>`
-    }
-    const marker = L.marker(this._latlong(latitude, longitude), {
-      icon: L.divIcon({
-        html: iconHtml,
-        iconSize: [this.config.size, this.config.size],
         className: "",
       }),
       title: this.id,
@@ -608,20 +563,10 @@ class MapCard extends LitElement {
         gps_accuracy: gpsAccuracy,
         friendly_name
       } = stateObj.attributes;
-      let entity = null;
-      switch(configEntity.display) {
-        case "icon":
-          entity = new IconEntity(configEntity, latitude, longitude, icon, friendly_name);
-          break;
-        case "state":
-          entity = new StateEntity(configEntity, latitude, longitude, hass.formatEntityState(stateObj));
-          break;
-        case 'marker':
-        default: 
-          let resolvedPicture = entityPicture ? this.hass.hassUrl(entityPicture) : null;
-          entity = new MarkerEntity(configEntity, latitude, longitude, icon, friendly_name, resolvedPicture);
-          break;
-      }
+      const state = hass.formatEntityState(stateObj);
+      const picture = entityPicture ? hass.hassUrl(entityPicture) : null;
+
+      const entity = new Entity(configEntity, latitude, longitude, icon, friendly_name, state, picture);      
       entity.marker.addTo(map);
       return entity;
     });
@@ -769,25 +714,21 @@ class MapCardEntityMarker extends LitElement {
   static get properties() {
     return {
       'entityId': {type: String, attribute: 'entity-id'},
-      'entityName': {type: String, attribute: 'entity-name'},
-      'entityPicture': {type: String, attribute: 'entity-picture'},
-      'entityColor': {type: String, attribute: 'entity-color'}
+      'title': {type: String, attribute: 'title'},
+      'picture': {type: String, attribute: 'picture'},
+      'icon': {type: String, attribute: 'icon'},
+      'color': {type: String, attribute: 'color'}
     };
   }
 
   render() {
    return html`
       <div
-        class="marker ${this.entityPicture ? "picture" : ""}"
-        style="border-color: ${this.entityColor}"
+        class="marker ${this.picture ? "picture" : ""}"
+        style="border-color: ${this.color}"
         @click=${this._badgeTap}
       >
-        ${this.entityPicture
-          ? html`<div
-              class="entity-picture"
-              style="background-image: url(${this.entityPicture})"
-            ></div>`
-          : this.entityName}
+        ${this._inner()}
       </div>
     `;
   };
@@ -807,6 +748,16 @@ class MapCardEntityMarker extends LitElement {
       event.detail = { config: actions, action: 'tap'};
       this.dispatchEvent(event);
     }
+  }
+
+  _inner() {
+    if(this.picture) {
+      return html`<div class="entity-picture" style="background-image: url(${this.picture})"></div>`
+    }
+    if(this.icon) {
+      return html`<ha-icon icon="${this.icon}">icon</ha-icon>`
+    }
+    return this.title;
   }
 
   static get styles() {
