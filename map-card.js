@@ -413,7 +413,9 @@ class HaHistoryService {
       params.end_time = end.toISOString();
     }
 
-    try {  
+    try {
+      if(this.connection[entityId]) this.unsubscribeEntity(entityId);
+
       this.connection[entityId] = this.hass.connection.subscribeMessage(
         (message) => {
           message.states[entityId]?.map((state) => {
@@ -432,10 +434,14 @@ class HaHistoryService {
 
   unsubscribe() {
     for (const entityId in this.connection) {
+      this.unsubscribeEntity(entityId);
+    }
+  }
+
+  unsubscribeEntity(entityId) {
       this.connection[entityId]?.then((unsub) => unsub?.());
       this.connection[entityId] = undefined;
       console.debug("HaHistoryService: unsubscribed " + entityId);
-    }
   }
 }
 
@@ -456,7 +462,7 @@ class HaDateRangeService {
     this.hass = hass;
     this.pollStartAt = Date.now();
 
-   console.log("HaDateRangeService: initializing");
+   console.debug("HaDateRangeService: initializing");
     // Get collection, once we have it subscribe to listen for date changes.
     this.getEnergyDataCollectionPoll(
       (con) => { this.onConnect(con); }
@@ -467,12 +473,12 @@ class HaDateRangeService {
   onConnect(energyCollection) {
 
     energyCollection.subscribe(collection => { 
-        console.log("HaDateRangeService: date range changed");
+        console.debug("HaDateRangeService: date range changed");
         this.listeners.forEach(function(callback) { 
           callback(collection); 
         }); 
     });
-    console.log("HaDateRangeService: Successfully connected to date range component");
+    console.debug("HaDateRangeService: Successfully connected to date range component");
   };
 
   // Wait for energyCollection to become available.
@@ -527,20 +533,20 @@ class MapCard extends LitElement {
     this.resizeObserver = this._setupResizeObserver();
   };
 
-  refreshHistory(start, end) {
-     this.entities.forEach((ent) => {
+  refreshEntityHistory(ent, start, end) {
       // If entity is using a fixed time period, don't update history
       if (ent.config.historyStart) {
         return;
       }
 
-      this.map.removeLayer(this.historyLayerGroups[ent.id]);
+      // Remove layer if it already exists.
+      if(this.historyLayerGroups[ent.id]) this.map.removeLayer(this.historyLayerGroups[ent.id]);
+
       this.historyLayerGroups[ent.id] = new L.LayerGroup();
       this.map.addLayer(this.historyLayerGroups[ent.id]);
 
       // Subscribe new history
       ent.setupHistory(this.historyService, start, end);
-    });
   }
 
   render() {
@@ -569,13 +575,12 @@ class MapCard extends LitElement {
 
             // If entity has set a specific start time, use that
             if (ent.config.historyStart) {
-
               ent.setupHistory(this.historyService, ent.config.historyStart, ent.config.historyEnd);
             } 
             // If data selection is enabled. Setup listener.
             else if(this.config.historyDateSelection) {
               this.dateRangeService.onDateRangeChange((c) => {
-                this.refreshHistory(c.start, c.end);
+                this.refreshEntityHistory(ent, c.start, c.end);
               });
             }
           });
