@@ -42,7 +42,8 @@ class EntityConfig {
   fallbackY;
   /** @type {String} */
   css;
-  
+  /** @type {String} */
+  picture;
 
   constructor(config) {
     this.id = (typeof config === 'string' || config instanceof String)? config : config.entity;
@@ -58,6 +59,7 @@ class EntityConfig {
     this.fallbackX = config.fallback_x;
     this.fallbackY = config.fallback_y;
     this.css = config.css ?? "text-align: center; font-size: 60%;";
+    this.picture = config.picture ?? null;
   }
 
   get hasHistory() {
@@ -149,7 +151,8 @@ class MapConfig {
   tileLayers;
   /** @type {TileLayerConfig} */
   tileLayer;
-
+  /** @type {Int} */
+  map_height;
 
   constructor(inputConfig) {
     this.title = inputConfig.title;
@@ -158,6 +161,7 @@ class MapConfig {
     this.y = inputConfig.y;
     this.zoom = this._setConfigWithDefault(inputConfig.zoom, 12);
     this.cardSize = this._setConfigWithDefault(inputConfig.card_size, 5);
+    this.map_height = inputConfig.map_height;
     
     this.entities = (inputConfig["entities"] ? inputConfig.entities : []).map((ent) => {
       return new EntityConfig(ent);
@@ -196,6 +200,9 @@ class MapConfig {
 
   /** @returns {Int} */
   get mapHeight() {
+    if(this.map_height){
+      return this.map_height;
+    }
     if (this.hasTitle) {
       return (this.cardSize * 50) + 20 - 76 - 2;
     } else {
@@ -559,12 +566,16 @@ class MapCard extends LitElement {
         passive,
         icon,
         radius,
-        entity_picture: entityPicture,
+        entity_picture,
         gps_accuracy: gpsAccuracy,
         friendly_name
       } = stateObj.attributes;
       const state = hass.formatEntityState(stateObj);
-      const picture = entityPicture ? hass.hassUrl(entityPicture) : null;
+
+      // If no configured picture, fallback to entity picture
+      let picture = configEntity.picture ?? entity_picture;
+      // Skip if neither found and return null
+      picture = picture ? hass.hassUrl(picture) : null;
 
       const entity = new Entity(configEntity, latitude, longitude, icon, friendly_name, state, picture);      
       entity.marker.addTo(map);
