@@ -493,7 +493,7 @@ class HaDateRangeService {
       if (energyCollection) {
         complete(energyCollection);
       } else if (Date.now() - this.pollStartAt > this.TIMEOUT) {
-        new Error('Unable to connect to energy date selector. Make sure to add a `type: energy-date-selection` card to this screen.');
+        console.error('Unable to connect to energy date selector. Make sure to add a `type: energy-date-selection` card to this screen.');
       } else {
         setTimeout(() => this.getEnergyDataCollectionPoll(complete), 100);
       }
