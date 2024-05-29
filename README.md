@@ -47,6 +47,8 @@ y: 3.652
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------|
 | `x`                      |                                                                                                                              | Longitude                                    |
 | `y`                      |                                                                                                                              | Latitude                                     |
+| `history_start`          |                                       																						  | Examples: `2022-03-01T12:00:00Z`, `5 hours ago`  |
+| `history_end`            | `now`                                 																						  | Examples: `2022-03-01T18:00:00Z`, `2 hours ago`, `now` |
 | `focus_entity`           |                                                                                                                              | Entity to focus on (instead of X & Y)        |
 | `title`                  |                                                                                                                              | If empty, don't show a title                 |
 | `zoom`                   | 12                                                                                                                           | The zoom level                               |
@@ -57,9 +59,12 @@ y: 3.652
 | `tile_layer_url`         | https://tile.openstreetmap.org/{z}/{x}/{y}.png                                                                               | Override the default map source              |
 | `tile_layer_attribution` | &amp;copy; &lt;a href&#x3D;&quot;http:&#x2F;&#x2F;www.openstreetmap.org&#x2F;copyright&quot;&gt;OpenStreetMap&lt;&#x2F;a&gt; | Set the correct map attribution              |
 | `tile_layer_options` | {}                                                                                                                               | The `options` for the default [TileLayer](https://leafletjs.com/reference.html#tilelayer) |
+| `history_date_selection` | false                                                                                                                        | Will link with a `energy-date-selection` on the page to provide a user controllable date range selector |
 
 
 If `x` & `y` or `focus_entity` is not set it will take the lat/long from the __first entity__.
+
+If using `history_date_selection:true`, please ensure a component with the template `type: energy-date-selection` has been added to the page. If this is set top level `history_start`/`history_end` configuration is ignored in favour of the selected date ranges. `history_start` will continue to override the selected date range and global settings.
 
 ###### Entity options
 
@@ -69,8 +74,8 @@ Either the name of the `entity` or:
 | `entity`              |                                       | The entity id                                                                                 |
 | `display`             | `marker`                              | `icon`, `state` or `marker`. `marker` will display the picture if available                   |
 | `size`                | 24                                    | Size of the icon (not supported for `marker`)                                                 |
-| `history_start`       |                                       | Examples: `2022-03-01T12:00:00Z`, `5 hours ago`                                               |
-| `history_end`         | `now`                                 | Examples: `2022-03-01T18:00:00Z`, `2 hours ago`, `now`                                        |
+| `history_start`       |                                       | Will inherit from map config if not set.                                               |
+| `history_end`         | `now`                                 | Will inherit from map config if not set.                                           |
 | `history_line_color`  | Random Color                          | Can defined as `red`, `rgb(255,0,0)`, `rgba(255,0,0,0.1)`, `#ff0000`, `var(--red-color)`      |
 | `history_show_lines`  | true                                  | Show the path                                                                                 |
 | `history_show_dots`   | true                                  | Show little dots on the path                                                                  |
