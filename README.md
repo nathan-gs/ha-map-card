@@ -48,6 +48,7 @@ y: 3.652
 | `x`                      |                                                                                                                              | Longitude                                    |
 | `y`                      |                                                                                                                              | Latitude                                     |
 | `focus_entity`           |                                                                                                                              | Entity to focus on (instead of X & Y)        |
+| `map_height`             |                                                                                                                              | Set a fixed minium height for the map in pixels      |
 | `title`                  |                                                                                                                              | If empty, don't show a title                 |
 | `zoom`                   | 12                                                                                                                           | The zoom level                               |
 | `card_size`              | 5                                                                                                                            | The Home Assistant card size                 |
@@ -68,6 +69,7 @@ Either the name of the `entity` or:
 |-----------------------|---------------------------------------|-----------------------------------------------------------------------------------------------|
 | `entity`              |                                       | The entity id                                                                                 |
 | `display`             | `marker`                              | `icon`, `state` or `marker`. `marker` will display the picture if available                   |
+| `picture`             |                                     | Set a custom picture to use on the marker.                                            |
 | `size`                | 24                                    | Size of the icon (not supported for `marker`)                                                 |
 | `history_start`       |                                       | Examples: `2022-03-01T12:00:00Z`, `5 hours ago`                                               |
 | `history_end`         | `now`                                 | Examples: `2022-03-01T18:00:00Z`, `2 hours ago`, `now`                                        |
