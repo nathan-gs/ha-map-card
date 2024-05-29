@@ -68,7 +68,7 @@ Either the name of the `entity` or:
 |-----------------------|---------------------------------------|-----------------------------------------------------------------------------------------------|
 | `entity`              |                                       | The entity id                                                                                 |
 | `display`             | `marker`                              | `icon`, `state` or `marker`. `marker` will display the picture if available                   |
-| `size`                | 24                                    | Size of the icon (not supported for `marker`)                                                 |
+| `size`                | 48                                    | Size of the icon                                                |
 | `history_start`       |                                       | Examples: `2022-03-01T12:00:00Z`, `5 hours ago`                                               |
 | `history_end`         | `now`                                 | Examples: `2022-03-01T18:00:00Z`, `2 hours ago`, `now`                                        |
 | `history_line_color`  | Random Color                          | Can defined as `red`, `rgb(255,0,0)`, `rgba(255,0,0,0.1)`, `#ff0000`, `var(--red-color)`      |
