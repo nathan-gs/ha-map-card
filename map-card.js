@@ -355,10 +355,10 @@ class Entity {
     this.marker.setLatLng(this._latlong(latitude, longitude));
   }
 
-  setupHistory(historyService) {
+  setupHistory(historyService, start, end) {
     if(this.hasHistory) {
       const entHist = new EntityHistory(this.id, this.config.historyLineColor, this.config.historyShowDots, this.config.historyShowLines);
-      historyService.subscribe(entHist.entityId, this.config.historyStart, this.config.historyEnd, entHist.retrieve);      
+      historyService.subscribe(entHist.entityId, start, end, entHist.retrieve);      
       this.histories.push(entHist);
     }  
   }
@@ -444,7 +444,7 @@ class HaHistoryService {
     try {  
       this.connection[entityId] = this.hass.connection.subscribeMessage(
         (message) => {
-          message.states[entityId].map((state) => {
+          message.states[entityId]?.map((state) => {
             if(state.a.latitude && state.a.longitude) {
               f(new TimelineEntry(new Date(state.lu * 1000), state.a.latitude, state.a.longitude))
             }
@@ -465,7 +465,68 @@ class HaHistoryService {
       console.debug("HaHistoryService: unsubscribed " + entityId);
     }
   }
-}  
+}
+
+/**
+ * Attempt to locate "energy-date-selection" component on the page to act as date range selector.
+ * If found, subscribe to date changes triggered by it.
+ */
+class HaDateRangeService {  
+
+  hass;
+  // Give up if not found.
+  TIMEOUT = 10000;
+  listeners = [];
+  pollStartAt;
+  
+  constructor(hass) {
+    // Store ref to HASS
+    this.hass = hass;
+    this.pollStartAt = Date.now();
+
+    console.log("!!! Connect");
+    // Get collection, once we have it subscribe to listen for date changes.
+    this.getEnergyDataCollectionPoll(
+      (con) => { this.onConnect(con); }
+    );
+  }
+
+  // Once connected, subscribe to date range changes
+  onConnect(energyCollection) {
+    console.log("!!! Connected");
+    energyCollection.subscribe(collection => { 
+        console.log("HaDateRangeService: date range changed");
+        this.listeners.forEach(function(callback) { 
+          callback(collection); 
+        }); 
+    });
+    console.log("HaDateRangeService: successfully connected to date range component");
+  };
+
+  // Wait for energyCollection to become available.
+  getEnergyDataCollectionPoll(complete)
+  {
+      let energyCollection = null;
+      // Has HA inited collection
+      if (this.hass.connection['_energy']) {
+        energyCollection =  this.hass.connection['_energy'];
+      }
+       
+      if (energyCollection) {
+        console.log("COMPLETE");
+        complete(energyCollection);
+      } else if (Date.now() - this.pollStartAt > this.TIMEOUT) {
+        new Error('Unable to connect to energy date selector. Make sure to add a `type: energy-date-selection` card to this screen.');
+      } else {
+        setTimeout(() => this.getEnergyDataCollectionPoll(complete), 100);
+      }
+  };
+
+  // Register listener
+  onDateRangeChange(method) {
+    this.listeners.push(method);
+  }
+}
 
 class MapCard extends LitElement {
   static get properties() {
@@ -486,12 +547,30 @@ class MapCard extends LitElement {
   hasError = false;
   hadError = false;
 
+  dateRangeService;
+  layerGroups = {};
+
   firstUpdated() {
     this.map = this._setupMap();
     // redraw the map every time it resizes
     this.resizeObserver = this._setupResizeObserver();
+
+    console.log("first updated");
+    this.dateRangeService = new HaDateRangeService(this.hass);
+  };
+
+  replaceHistory(start, end) {
+     this.entities.forEach((ent) => {
+      console.log("replacing history for " + ent.id);
+      this.map.removeLayer(this.layerGroups[ent.id]);
+      this.layerGroups[ent.id] = new L.LayerGroup();
+      this.map.addLayer(this.layerGroups[ent.id]);
+
+      // Subscribe new history
+      ent.setupHistory(this.historyService, start, end);
+    });
   }
-  
+
   render() {
     
     if (this.map) {
@@ -507,7 +586,17 @@ class MapCard extends LitElement {
         try {
           this.entities = this._firstRender(this.map, this.hass, this.config.entities);
           this.entities.forEach((ent) => {
-            ent.setupHistory(this.historyService);
+            console.log(ent.config);
+            ent.setupHistory(this.historyService, ent.config.historyStart, ent.config.historyEnd);
+            this.layerGroups[ent.id] = new L.LayerGroup();;
+            this.map.addLayer(this.layerGroups[ent.id]);
+
+            console.log(this.dateRangeService);
+            this.dateRangeService.onDateRangeChange((c) => {
+              console.log("change", c.start, c.end);
+              this.replaceHistory(c.start, c.end);
+            });
+            
           });
           this.hasError = false;
         } catch (e) {
@@ -527,8 +616,9 @@ class MapCard extends LitElement {
         } = stateObj.attributes;
         try {
           ent.update(this.map, latitude, longitude, this.hass.formatEntityState(stateObj));
+
           ent.renderHistory().forEach((marker) => {
-            this.map.addLayer(marker)
+            marker.addTo(this.layerGroups[ent.id]);
           });
           this.hasError = false;
         } catch (e) {
@@ -539,7 +629,7 @@ class MapCard extends LitElement {
         }
       });
   
-      }
+    }
 
     return html`
             <link rel="stylesheet" href="/static/images/leaflet/leaflet.css">
