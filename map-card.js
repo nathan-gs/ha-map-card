@@ -6,14 +6,11 @@ import {
 
 import "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
 
-
-
 /*
  * Native Map
  * https://github.com/home-assistant/frontend/blob/master/src/components/map/ha-map.ts 
  * https://github.com/home-assistant/frontend/blob/master/src/panels/lovelace/cards/hui-map-card.ts
  */
-
 
 class EntityConfig {
   /** @type {String} */
@@ -42,14 +39,17 @@ class EntityConfig {
   fallbackY;
   /** @type {String} */
   css;
+
+  // Cannot be set via config. Passed from parent
+  historyDateSelection;
   
 
-  constructor(config) {
+  constructor(config, defaults) {
     this.id = (typeof config === 'string' || config instanceof String)? config : config.entity;
     this.display = config.display ? config.display : "marker";
     this.size = config.size ? config.size : 24;
-    this.historyStart = config.history_start ? this._convertToAbsoluteDate(config.history_start) : null;
-    this.historyEnd = this._convertToAbsoluteDate(config.history_end ?? "now");
+    this.historyStart = config.history_start ? HaMapUtilities.convertToAbsoluteDate(config.history_start) : defaults.historyStart;
+    this.historyEnd = config.history_end ? HaMapUtilities.convertToAbsoluteDate(config.history_end) : defaults.historyEnd;
     this.historyLineColor = config.history_line_color ?? this._generateRandomColor();
     this.historyShowDots = config.history_show_dots ?? true;
     this.historyShowLines = config.history_show_lines ?? true;
@@ -58,61 +58,16 @@ class EntityConfig {
     this.fallbackX = config.fallback_x;
     this.fallbackY = config.fallback_y;
     this.css = config.css ?? "text-align: center; font-size: 60%;";
+    this.historyDateSelection = defaults.historyDateSelection;
   }
 
   get hasHistory() {
-    return this.historyStart != null;
+    return this.historyStart != null || this.historyDateSelection === true;
   }  
 
   _generateRandomColor() {
     return "#" + ((1 << 24) * Math.random() | 0).toString(16).padStart(6, "0");
   }
-
-  _convertToAbsoluteDate(inputStr) {  
-    // Check if the input string is a relative timestamp  
-    var relativeTimePattern = /^\d+\s+(second|minute|hour|day|week|month|year)s?\s+ago$/i;  
-    if (inputStr === 'now') {
-      return null;
-    } else if (relativeTimePattern.test(inputStr)) {  
-      // Split the input string into parts  
-      var parts = inputStr.split(' ');  
-
-      // Get the number and the unit of time  
-      var num = parseInt(parts[0]);  
-      var unit = parts[1];  
-
-      // Create a new Date object for the current time  
-      var date = new Date();  
-
-      // Subtract the appropriate amount of time  
-      if (unit.startsWith('second')) {  
-          date.setSeconds(date.getSeconds() - num);  
-      } else if (unit.startsWith('minute')) {  
-          date.setMinutes(date.getMinutes() - num);  
-      } else if (unit.startsWith('hour')) {  
-          date.setHours(date.getHours() - num);  
-      } else if (unit.startsWith('day')) {  
-          date.setDate(date.getDate() - num);  
-      } else if (unit.startsWith('week')) {  
-        date.setDate(date.getDate() - num * 7);  
-      } else if (unit.startsWith('month')) {  
-          date.setMonth(date.getMonth() - num);  
-      } else if (unit.startsWith('year')) {  
-          date.setFullYear(date.getFullYear() - num);  
-      }    
-      return date;  
-    } else {  
-      // If the input string is not a relative timestamp, try to parse it as an absolute date  
-      var date = new Date(inputStr);  
-      if (isNaN(date.getTime())) {  
-        // If the date could not be parsed, throw an error  
-        throw new Error("Invalid input string for Date: " + inputStr);  
-      } else {  
-        return date;  
-      }  
-    }  
-  }  
-
 }
 
 class LayerConfig {
@@ -150,6 +105,12 @@ class MapConfig {
   /** @type {TileLayerConfig} */
   tileLayer;
 
+   /** @type {Date} */
+  historyStart;
+  /** @type {Date} */
+  historyEnd;
+
+  historyDateSelection;
 
   constructor(inputConfig) {
     this.title = inputConfig.title;
@@ -158,9 +119,22 @@ class MapConfig {
     this.y = inputConfig.y;
     this.zoom = this._setConfigWithDefault(inputConfig.zoom, 12);
     this.cardSize = this._setConfigWithDefault(inputConfig.card_size, 5);
-    
+
+    // Default historyStart/historyEnd can be set at the top level.
+    // Entities can override this.
+    // If historyDateSelection is true, this is disabled
+    this.historyDateSelection = inputConfig.history_date_selection ? true : false;
+    if (this.historyDateSelection) {
+      this.historyStart = null;
+      this.historyEnd = null;
+    } else {
+      this.historyStart = inputConfig.history_start ? HaMapUtilities.convertToAbsoluteDate(inputConfig.history_start) : null;
+      this.historyEnd = HaMapUtilities.convertToAbsoluteDate(inputConfig.history_end ?? "now");
+    }
+
     this.entities = (inputConfig["entities"] ? inputConfig.entities : []).map((ent) => {
-      return new EntityConfig(ent);
+      // Pass historyStart/ historyEnd defaults down to entity
+      return new EntityConfig(ent, {historyStart: this.historyStart, historyEnd: this.historyEnd, historyDateSelection: this.historyDateSelection});
     });
     this.wms = (this._setConfigWithDefault(inputConfig.wms, [])).map((wms) => {
       return new WmsLayerConfig(wms.url, wms.options);
@@ -277,8 +251,6 @@ class EntityHistory {
     this.needRerender = false;
     return this.mapPaths;
   }
-
-
 
 }
 
@@ -484,7 +456,7 @@ class HaDateRangeService {
     this.hass = hass;
     this.pollStartAt = Date.now();
 
-    console.log("!!! Connect");
+   console.log("HaDateRangeService: initializing");
     // Get collection, once we have it subscribe to listen for date changes.
     this.getEnergyDataCollectionPoll(
       (con) => { this.onConnect(con); }
@@ -493,14 +465,14 @@ class HaDateRangeService {
 
   // Once connected, subscribe to date range changes
   onConnect(energyCollection) {
-    console.log("!!! Connected");
+
     energyCollection.subscribe(collection => { 
         console.log("HaDateRangeService: date range changed");
         this.listeners.forEach(function(callback) { 
           callback(collection); 
         }); 
     });
-    console.log("HaDateRangeService: successfully connected to date range component");
+    console.log("HaDateRangeService: Successfully connected to date range component");
   };
 
   // Wait for energyCollection to become available.
@@ -513,7 +485,6 @@ class HaDateRangeService {
       }
        
       if (energyCollection) {
-        console.log("COMPLETE");
         complete(energyCollection);
       } else if (Date.now() - this.pollStartAt > this.TIMEOUT) {
         new Error('Unable to connect to energy date selector. Make sure to add a `type: energy-date-selection` card to this screen.');
@@ -548,23 +519,24 @@ class MapCard extends LitElement {
   hadError = false;
 
   dateRangeService;
-  layerGroups = {};
+  historyLayerGroups = {};
 
   firstUpdated() {
     this.map = this._setupMap();
     // redraw the map every time it resizes
     this.resizeObserver = this._setupResizeObserver();
-
-    console.log("first updated");
-    this.dateRangeService = new HaDateRangeService(this.hass);
   };
 
-  replaceHistory(start, end) {
+  refreshHistory(start, end) {
      this.entities.forEach((ent) => {
-      console.log("replacing history for " + ent.id);
-      this.map.removeLayer(this.layerGroups[ent.id]);
-      this.layerGroups[ent.id] = new L.LayerGroup();
-      this.map.addLayer(this.layerGroups[ent.id]);
+      // If entity is using a fixed time period, don't update history
+      if (ent.config.historyStart) {
+        return;
+      }
+
+      this.map.removeLayer(this.historyLayerGroups[ent.id]);
+      this.historyLayerGroups[ent.id] = new L.LayerGroup();
+      this.map.addLayer(this.historyLayerGroups[ent.id]);
 
       // Subscribe new history
       ent.setupHistory(this.historyService, start, end);
@@ -583,20 +555,29 @@ class MapCard extends LitElement {
       // First render is without the map
       if (this.firstRenderWithMap) {
         this.historyService = new HaHistoryService(this.hass);
+        // Is history date range enabled?
+        if (this.config.historyDateSelection) {
+          this.dateRangeService = new HaDateRangeService(this.hass);
+        }
+
         try {
           this.entities = this._firstRender(this.map, this.hass, this.config.entities);
           this.entities.forEach((ent) => {
-            console.log(ent.config);
-            ent.setupHistory(this.historyService, ent.config.historyStart, ent.config.historyEnd);
-            this.layerGroups[ent.id] = new L.LayerGroup();;
-            this.map.addLayer(this.layerGroups[ent.id]);
+            // Setup layer for entities history
+            this.historyLayerGroups[ent.id] = new L.LayerGroup();;
+            this.map.addLayer(this.historyLayerGroups[ent.id]);
 
-            console.log(this.dateRangeService);
-            this.dateRangeService.onDateRangeChange((c) => {
-              console.log("change", c.start, c.end);
-              this.replaceHistory(c.start, c.end);
-            });
-            
+            // If entity has set a specific start time, use that
+            if (ent.config.historyStart) {
+
+              ent.setupHistory(this.historyService, ent.config.historyStart, ent.config.historyEnd);
+            } 
+            // If data selection is enabled. Setup listener.
+            else if(this.config.historyDateSelection) {
+              this.dateRangeService.onDateRangeChange((c) => {
+                this.refreshHistory(c.start, c.end);
+              });
+            }
           });
           this.hasError = false;
         } catch (e) {
@@ -618,7 +599,7 @@ class MapCard extends LitElement {
           ent.update(this.map, latitude, longitude, this.hass.formatEntityState(stateObj));
 
           ent.renderHistory().forEach((marker) => {
-            marker.addTo(this.layerGroups[ent.id]);
+            marker.addTo(this.historyLayerGroups[ent.id]);
           });
           this.hasError = false;
         } catch (e) {
@@ -875,6 +856,56 @@ class MapCardEntityMarker extends LitElement {
       }
     `;
   }
+}
+
+/**
+ * Shared utility methods for HaMapCard
+ */
+class HaMapUtilities {
+  static convertToAbsoluteDate(inputStr) {  
+    // Check if the input string is a relative timestamp  
+    var relativeTimePattern = /^\d+\s+(second|minute|hour|day|week|month|year)s?\s+ago$/i;  
+    if (inputStr === 'now') {
+      return null;
+    } else if (relativeTimePattern.test(inputStr)) {  
+      // Split the input string into parts  
+      var parts = inputStr.split(' ');  
+
+      // Get the number and the unit of time  
+      var num = parseInt(parts[0]);  
+      var unit = parts[1];  
+
+      // Create a new Date object for the current time  
+      var date = new Date();  
+
+      // Subtract the appropriate amount of time  
+      if (unit.startsWith('second')) {  
+          date.setSeconds(date.getSeconds() - num);  
+      } else if (unit.startsWith('minute')) {  
+          date.setMinutes(date.getMinutes() - num);  
+      } else if (unit.startsWith('hour')) {  
+          date.setHours(date.getHours() - num);  
+      } else if (unit.startsWith('day')) {  
+          date.setDate(date.getDate() - num);  
+      } else if (unit.startsWith('week')) {  
+        date.setDate(date.getDate() - num * 7);  
+      } else if (unit.startsWith('month')) {  
+          date.setMonth(date.getMonth() - num);  
+      } else if (unit.startsWith('year')) {  
+          date.setFullYear(date.getFullYear() - num);  
+      }    
+      return date;  
+    } else {  
+      // If the input string is not a relative timestamp, try to parse it as an absolute date  
+      var date = new Date(inputStr);  
+      if (isNaN(date.getTime())) {  
+        // If the date could not be parsed, throw an error  
+        throw new Error("Invalid input string for Date: " + inputStr);  
+      } else {  
+        return date;  
+      }  
+    }  
+  }  
 }
 
 if (!customElements.get("map-card")) {
