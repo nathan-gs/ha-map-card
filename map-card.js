@@ -152,7 +152,7 @@ class MapConfig {
   /** @type {TileLayerConfig} */
   tileLayer;
   /** @type {Int} */
-  map_height;
+  mapHeight;
 
   constructor(inputConfig) {
     this.title = inputConfig.title;
@@ -161,7 +161,7 @@ class MapConfig {
     this.y = inputConfig.y;
     this.zoom = this._setConfigWithDefault(inputConfig.zoom, 12);
     this.cardSize = this._setConfigWithDefault(inputConfig.card_size, 5);
-    this.map_height = inputConfig.map_height;
+    this.mapHeight = inputConfig.map_height;
     
     this.entities = (inputConfig["entities"] ? inputConfig.entities : []).map((ent) => {
       return new EntityConfig(ent);
@@ -200,8 +200,8 @@ class MapConfig {
 
   /** @returns {Int} */
   get mapHeight() {
-    if(this.map_height){
-      return this.map_height;
+    if(this.mapHeight){
+      return this.mapHeight;
     }
     if (this.hasTitle) {
       return (this.cardSize * 50) + 20 - 76 - 2;
