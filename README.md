@@ -69,7 +69,8 @@ Either the name of the `entity` or:
 |-----------------------|---------------------------------------|-----------------------------------------------------------------------------------------------|
 | `entity`              |                                       | The entity id                                                                                 |
 | `display`             | `marker`                              | `icon`, `state` or `marker`. `marker` will display the picture if available                   |
-| `size`                | 48                                    | Size of the icon                                                                              |
+| `picture`             |                                     	| Set a custom picture to use on the marker.                                           			|
+| `size`                | 48                                    | Size of the icon                                               								|
 | `color`               | Random Color                          | Can defined as `red`, `rgb(255,0,0)`, `rgba(255,0,0,0.1)`, `#ff0000`, `var(--red-color)`      |
 | `css`                 | `text-align: center; font-size: 60%;` | CSS for the marker (only for `state` and `marker`)                                            |
 | `history_start`       |                                       | Will inherit from map config if not set.                                                      |

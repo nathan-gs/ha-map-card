@@ -43,6 +43,8 @@ class EntityConfig {
   historyDateSelection;
   
   /** @type {String} */
+  picture;
+  /** @type {String} */
   color;
 
   constructor(config, defaults) {
@@ -61,6 +63,7 @@ class EntityConfig {
     this.fallbackX = config.fallback_x;
     this.fallbackY = config.fallback_y;
     this.css = config.css ?? "text-align: center; font-size: 60%;";
+    this.picture = config.picture ?? null;
     this.historyDateSelection = defaults.historyDateSelection;
   }
 
@@ -107,7 +110,6 @@ class MapConfig {
   tileLayers;
   /** @type {TileLayerConfig} */
   tileLayer;
-
    /** @type {Date} */
   historyStart;
   /** @type {Date} */
@@ -640,12 +642,16 @@ class MapCard extends LitElement {
         passive,
         icon,
         radius,
-        entity_picture: entityPicture,
+        entity_picture,
         gps_accuracy: gpsAccuracy,
         friendly_name
       } = stateObj.attributes;
       const state = hass.formatEntityState(stateObj);
-      const picture = entityPicture ? hass.hassUrl(entityPicture) : null;
+
+      // If no configured picture, fallback to entity picture
+      let picture = configEntity.picture ?? entity_picture;
+      // Skip if neither found and return null
+      picture = picture ? hass.hassUrl(picture) : null;
 
       const entity = new Entity(configEntity, latitude, longitude, icon, friendly_name, state, picture);      
       entity.marker.addTo(map);
