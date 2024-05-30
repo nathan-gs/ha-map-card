@@ -39,18 +39,21 @@ class EntityConfig {
   fallbackY;
   /** @type {String} */
   css;
-
   // Cannot be set via config. Passed from parent
   historyDateSelection;
   
+  /** @type {String} */
+  color;
 
   constructor(config, defaults) {
     this.id = (typeof config === 'string' || config instanceof String)? config : config.entity;
     this.display = config.display ? config.display : "marker";
-    this.size = config.size ? config.size : 24;
+    this.size = config.size ? config.size : 48;
+    // If historyLineColor not set, inherit icon color
+    this.color = config.color ?? this._generateRandomColor();
+    this.historyLineColor = config.history_line_color ?? this.color;
     this.historyStart = config.history_start ? HaMapUtilities.convertToAbsoluteDate(config.history_start) : defaults.historyStart;
     this.historyEnd = config.history_end ? HaMapUtilities.convertToAbsoluteDate(config.history_end) : defaults.historyEnd;
-    this.historyLineColor = config.history_line_color ?? this._generateRandomColor();
     this.historyShowDots = config.history_show_dots ?? true;
     this.historyShowLines = config.history_show_lines ?? true;
     this.fixedX = config.fixed_x;
@@ -360,10 +363,12 @@ class Entity {
             picture="${
               picture ?? ""
             }"
+            color="${this.config.color}"
             style="${this.config.css}"
+            size="${this.config.size}"
           ></map-card-entity-marker>
         `,
-        iconSize: [48, 48],
+        iconSize: [this.config.size, this.config.size],
         className: "",
       }),
       title: this.id,
@@ -793,7 +798,8 @@ class MapCardEntityMarker extends LitElement {
       'title': {type: String, attribute: 'title'},
       'picture': {type: String, attribute: 'picture'},
       'icon': {type: String, attribute: 'icon'},
-      'color': {type: String, attribute: 'color'}
+      'color': {type: String, attribute: 'color'},
+      'size': {type: Number}
     };
   }
 
@@ -801,7 +807,7 @@ class MapCardEntityMarker extends LitElement {
    return html`
       <div
         class="marker ${this.picture ? "picture" : ""}"
-        style="border-color: ${this.color}"
+        style="border-color: ${this.color}; height: ${this.size}px; width: ${this.size}px;"
         @click=${this._badgeTap}
       >
         ${this._inner()}

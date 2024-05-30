@@ -73,13 +73,14 @@ Either the name of the `entity` or:
 |-----------------------|---------------------------------------|-----------------------------------------------------------------------------------------------|
 | `entity`              |                                       | The entity id                                                                                 |
 | `display`             | `marker`                              | `icon`, `state` or `marker`. `marker` will display the picture if available                   |
-| `size`                | 24                                    | Size of the icon (not supported for `marker`)                                                 |
-| `history_start`       |                                       | Will inherit from map config if not set.                                               |
-| `history_end`         | `now`                                 | Will inherit from map config if not set.                                           |
+| `size`                | 48                                    | Size of the icon                                                                              |
+| `color`               | Random Color                          | Can defined as `red`, `rgb(255,0,0)`, `rgba(255,0,0,0.1)`, `#ff0000`, `var(--red-color)`      |
+| `css`                 | `text-align: center; font-size: 60%;` | CSS for the marker (only for `state` and `marker`)                                            |
+| `history_start`       |                                       | Will inherit from map config if not set.                                                      |
+| `history_end`         | `now`                                 | Will inherit from map config if not set.                                                      |
 | `history_line_color`  | Random Color                          | Can defined as `red`, `rgb(255,0,0)`, `rgba(255,0,0,0.1)`, `#ff0000`, `var(--red-color)`      |
 | `history_show_lines`  | true                                  | Show the path                                                                                 |
 | `history_show_dots`   | true                                  | Show little dots on the path                                                                  |
-| `css`                 | `text-align: center; font-size: 60%;` | CSS for the marker (only for `state` and `marker`)                                            |
 | `fixed_x`             |                                       | Display a fixed marker, this will ignore the latitude/longitude attributes                    |
 | `fixed_y`             |                                       | Display a fixed marker, this will ignore the latitude/longitude attributes                    |
 | `fallback_x`          |                                       | If the latitude/longitude is missing, use these fixed attributes                              |
