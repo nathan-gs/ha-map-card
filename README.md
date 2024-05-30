@@ -4,10 +4,6 @@ Take a look at the blog post [introducing the custom:map-card for Home Assistant
 
 ![An example of the custom:map-card](ha-map-card-pm25.png)
 
-> #### WARNING
-> 
-> This is still very early alpha quality.
-
 ### Installation
 
 #### Manual
