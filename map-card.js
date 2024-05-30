@@ -42,7 +42,8 @@ class EntityConfig {
   fallbackY;
   /** @type {String} */
   css;
-  
+  /** @type {String} */
+  color;
 
   constructor(config) {
     this.id = (typeof config === 'string' || config instanceof String)? config : config.entity;
@@ -50,7 +51,10 @@ class EntityConfig {
     this.size = config.size ? config.size : 24;
     this.historyStart = config.history_start ? this._convertToAbsoluteDate(config.history_start) : null;
     this.historyEnd = this._convertToAbsoluteDate(config.history_end ?? "now");
-    this.historyLineColor = config.history_line_color ?? this._generateRandomColor();
+    // If historyLineColor not set, inherit icon color
+    this.color = config.color ?? this._generateRandomColor();
+    this.historyLineColor = config.history_line_color ?? this.color;
+
     this.historyShowDots = config.history_show_dots ?? true;
     this.historyShowLines = config.history_show_lines ?? true;
     this.fixedX = config.fixed_x;
@@ -388,6 +392,7 @@ class Entity {
             picture="${
               picture ?? ""
             }"
+            color="${this.config.color}"
             style="${this.config.css}"
           ></map-card-entity-marker>
         `,
