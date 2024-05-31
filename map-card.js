@@ -560,8 +560,8 @@ class MapCard extends LitElement {
     
     if (this.map) {
       if(!this.hasError && this.hadError) {
-        L.control.attribution().removeAttribution("Error found, check Console").addTo(this.map);
-        L.control.attribution().removeAttribution("Error found in first run, check Console").addTo(this.map);
+        HaMapUtilities.removeWarningOnMap(this.map, "Error found, check Console");
+        HaMapUtilities.removeWarningOnMap(this.map, "Error found in first run, check Console");
         this.hadError = false;
       }
 
@@ -596,7 +596,7 @@ class MapCard extends LitElement {
           this.hasError = true;
           this.hadError = true;
           console.error(e);
-          L.control.attribution().addAttribution("Error found in first run, check Console").addTo(this.map);                   
+          HaMapUtilities.renderWarningOnMap(this.map, "Error found in first run, check Console");
         }
         this.firstRenderWithMap = false;
       }
@@ -618,7 +618,7 @@ class MapCard extends LitElement {
           this.hasError = true;
           this.hadError = true;
           console.error(e);
-          L.control.attribution().addAttribution("Error found, check Console").addTo(this.map);
+          HaMapUtilities.renderWarningOnMap(this.map, "Error found, check Console");
         }
       });
   
@@ -935,9 +935,12 @@ class HaMapUtilities {
 
   // Show error message
   static renderWarningOnMap(map, message){
-    L.control.attribution().addAttribution(message).addTo(map);
+    L.control.attribution({prefix:'⚠️'}).addAttribution(message).addTo(map);
   }
-
+  // Hide error message
+  static removeWarningOnMap(map, message){
+    L.control.attribution({prefix:'⚠️'}).removeAttribution(message).addTo(map);
+  }
 }
 
 if (!customElements.get("map-card")) {
