@@ -634,6 +634,7 @@ class MapCard extends LitElement {
 
   _firstRender(map, hass, entities) {
     console.log("First Render with Map object, resetting size.")
+    console.log(entities);
     return entities.map((configEntity) => {
       const stateObj = hass.states[configEntity.id];
       const {
@@ -653,10 +654,19 @@ class MapCard extends LitElement {
       // Skip if neither found and return null
       picture = picture ? hass.hassUrl(picture) : null;
 
-      const entity = new Entity(configEntity, latitude, longitude, icon, friendly_name, state, picture);      
-      entity.marker.addTo(map);
-      return entity;
-    });
+      // Attempt to setup entity. Skip on fail, so one bad entity does not affect others.
+      try {
+        const entity = new Entity(configEntity, latitude, longitude, icon, friendly_name, state, picture);      
+        entity.marker.addTo(map);
+        return entity; 
+      } catch (e){
+         console.error("Entity: " + configEntity.id + " skipped due to missing data");
+         HaMapUtilities.renderWarningOnMap(this.map, "Entity: " + configEntity.id + " could not be loaded. See console for details.");
+         return null;
+      }
+    })
+    // Remove skipped entities.
+    .filter(v => v);
   }
 
   _setupResizeObserver() {
@@ -743,8 +753,8 @@ class MapCard extends LitElement {
   }
 
   /** @returns {[Double, Double]} */
-  _getLatLongFromFocusedEntity() {   
-    const entityId = this.config.focus_entity ? this.config.focus_entity : this.config.entities[0].id;
+  _getLatLongFromFocusedEntity() {
+    const entityId = this.config.focusEntity ? this.config.focusEntity : this.config.entities[0].id;
     const entity = this.hass.states[entityId];
     
     if (!entity) {
@@ -922,7 +932,13 @@ class HaMapUtilities {
         return date;  
       }  
     }  
-  }  
+  }
+
+  // Show error message
+  static renderWarningOnMap(map, message){
+    L.control.attribution().addAttribution(message).addTo(map);
+  }
+
 }
 
 if (!customElements.get("map-card")) {
