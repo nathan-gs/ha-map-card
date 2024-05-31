@@ -634,7 +634,6 @@ class MapCard extends LitElement {
 
   _firstRender(map, hass, entities) {
     console.log("First Render with Map object, resetting size.")
-    console.log(entities);
     return entities.map((configEntity) => {
       const stateObj = hass.states[configEntity.id];
       const {
