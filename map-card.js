@@ -40,7 +40,7 @@ class EntityConfig {
   /** @type {String} */
   css;
   // Cannot be set via config. Passed from parent
-  historyDateSelection;
+  historyManagedExternally;
   
   /** @type {String} */
   picture;
@@ -64,11 +64,11 @@ class EntityConfig {
     this.fallbackY = config.fallback_y;
     this.css = config.css ?? "text-align: center; font-size: 60%;";
     this.picture = config.picture ?? null;
-    this.historyDateSelection = defaults.historyDateSelection;
+    this.historyManagedExternally = defaults.historyManagedExternally;
   }
 
   get hasHistory() {
-    return this.historyStart != null || this.historyDateSelection === true;
+    return this.historyStart != null || this.historyManagedExternally === true;
   }  
 
   _generateRandomColor() {
@@ -112,6 +112,9 @@ class MapConfig {
   tileLayer;
    /** @type {Date} */
   historyStart;
+  historyStartEntity;
+  historyStartEntitySuffix;
+
   /** @type {Date} */
   historyEnd;
 
@@ -126,20 +129,44 @@ class MapConfig {
     this.cardSize = this._setConfigWithDefault(inputConfig.card_size, 5);
 
     // Default historyStart/historyEnd can be set at the top level.
-    // Entities can override this.
-    // If historyDateSelection is true, this is disabled
+    // Entities can override these dates on an individual basis.
+    // 
+    // If historyDateSelection is true, this replaces top level date functionality (and any entities that don't provide their own dates will also use this)
     this.historyDateSelection = inputConfig.history_date_selection ? true : false;
     if (this.historyDateSelection) {
       this.historyStart = null;
       this.historyEnd = null;
     } else {
-      this.historyStart = inputConfig.history_start ? HaMapUtilities.convertToAbsoluteDate(inputConfig.history_start) : null;
-      this.historyEnd = HaMapUtilities.convertToAbsoluteDate(inputConfig.history_end ?? "now");
+
+        // If historyStart is an entity or entity configuration
+        // historyStart: input_number.something
+        // or
+        // historyStart:
+        //   entity: input_number.something
+        //   suffix: days ago
+        if (
+          (
+            typeof inputConfig.history_start == 'object' && inputConfig.history_start['entity']) ||
+            typeof inputConfig.history_start == 'string' && inputConfig.history_start.includes('.')
+          ) {
+          this.historyStart = null
+          this.historyStartEntity = inputConfig.history_start['entity'] ?? inputConfig.history_start;
+          this.historyStartEntitySuffix = inputConfig.history_start['suffix'] ?? undefined;
+        } else {
+          this.historyStart = inputConfig.history_start ? HaMapUtilities.convertToAbsoluteDate(inputConfig.history_start) : null;
+          this.historyEnd = HaMapUtilities.convertToAbsoluteDate(inputConfig.history_end ?? "now");
+        }
     }
 
     this.entities = (inputConfig["entities"] ? inputConfig.entities : []).map((ent) => {
       // Pass historyStart/ historyEnd defaults down to entity
-      return new EntityConfig(ent, {historyStart: this.historyStart, historyEnd: this.historyEnd, historyDateSelection: this.historyDateSelection});
+      return new EntityConfig(ent, {
+          historyStart: this.historyStart,
+          historyEnd: this.historyEnd,
+          // tell entity to render history via externally managed system.
+          historyManagedExternally: (!!this.historyDateSelection || !!this.historyStartEntity)
+      });
+
     });
     this.wms = (this._setConfigWithDefault(inputConfig.wms, [])).map((wms) => {
       return new WmsLayerConfig(wms.url, wms.options);
@@ -432,7 +459,7 @@ class HaHistoryService {
           });
         },
         params);
-      console.debug("HaHistoryService: successfully subscribed to history from " + entityId);
+      console.debug(`HaHistoryService: successfully subscribed to history from ${entityId} showing ${params.start_time} till ${params.end_time ?? 'now'}`);
     } catch (error) {        
       console.error(`Error retrieving history for entity ${entityId}: ${error}`);  
       console.error(error);
@@ -512,6 +539,57 @@ class HaDateRangeService {
   }
 }
 
+/**
+ * Linked entity service
+ */
+class HaLinkedEntityService {  
+
+  hass;
+  connection;
+  listeners = [];
+  
+  constructor(hass, entity, suffix = 'hours ago') {
+    // Store ref to HASS
+    this.hass = hass;
+    console.debug("HaLinkedEntityService: initializing");
+
+     this.connection = this.hass.connection.subscribeMessage(
+        (message) => {
+          let state = null;
+
+          if(message.a) state = message.a[entity].s; // new?
+          if(message.c) state = message.c[entity]['+'].s; // change?
+
+          if(state) {
+            // If state is a number, attempt to parse as int, otherwise assume is and pass thru direct
+            state = isNaN(state) ? state : parseInt(state);
+            const value = state + (suffix ? ' ' + suffix : '');
+            console.debug(`HaDateRangeService: State updated to ${state}, giving value of "${value}"`);
+
+            this.listeners.forEach(function(callback) { 
+              callback({
+                // state: 2
+                // state+suffix = 2 hours
+                start: HaMapUtilities.convertToAbsoluteDate(value),
+                end:  HaMapUtilities.convertToAbsoluteDate('now')
+              }); 
+            }); 
+          }
+        },
+        {
+            type: "subscribe_entities",
+            entity_ids: [entity],
+        }
+      );
+  }
+
+  // Register listener
+  onDateRangeChange(method) {
+    this.listeners.push(method);
+  }
+}
+
+
 class MapCard extends LitElement {
   static get properties() {
     return {
@@ -531,7 +609,9 @@ class MapCard extends LitElement {
   hasError = false;
   hadError = false;
 
-  dateRangeService;
+  /** @type {HaDateRangeService|HalinkedEntityService} */
+  dateRangeManager;
+
   historyLayerGroups = {};
 
   firstUpdated() {
@@ -539,6 +619,21 @@ class MapCard extends LitElement {
     // redraw the map every time it resizes
     this.resizeObserver = this._setupResizeObserver();
   };
+
+  setUpHistory(){
+    // Setup core history service
+     this.historyService = new HaHistoryService(this.hass);
+
+    // Is history date range enabled?
+    if (this.config.historyDateSelection) {
+      this.dateRangeManager = new HaDateRangeService(this.hass);
+    // Is history managed via an external entity
+    } else if (this.config.historyStartEntity) {
+      this.dateRangeManager = new HaLinkedEntityService(this.hass, this.config.historyStartEntity, this.config.historyStartEntitySuffix);
+    }
+
+    // If no dateRangeManager, normal behavior will be stored.
+  }
 
   refreshEntityHistory(ent, start, end) {
       // If entity is using a fixed time period, don't update history
@@ -567,13 +662,10 @@ class MapCard extends LitElement {
 
       // First render is without the map
       if (this.firstRenderWithMap) {
-        this.historyService = new HaHistoryService(this.hass);
-        // Is history date range enabled?
-        if (this.config.historyDateSelection) {
-          this.dateRangeService = new HaDateRangeService(this.hass);
-        }
-
         try {
+
+          this.setUpHistory();
+
           this.entities = this._firstRender(this.map, this.hass, this.config.entities);
           this.entities.forEach((ent) => {
             // Setup layer for entities history
@@ -584,10 +676,11 @@ class MapCard extends LitElement {
             if (ent.config.historyStart) {
               ent.setupHistory(this.historyService, ent.config.historyStart, ent.config.historyEnd);
             } 
-            // If data selection is enabled. Setup listener.
-            else if(this.config.historyDateSelection) {
-              this.dateRangeService.onDateRangeChange((c) => {
-                this.refreshEntityHistory(ent, c.start, c.end);
+            // If no defined start and we have a dateRangeManager, connect to it.
+            else if(this.dateRangeManager) {
+              // HaDateRangeService, HaLinkedEntityService and future services should use same structure.
+              this.dateRangeManager.onDateRangeChange((range) => {
+                this.refreshEntityHistory(ent, range.start, range.end);
               });
             }
           });
