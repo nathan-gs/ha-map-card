@@ -290,6 +290,9 @@ class Entity {
   }
 
   _abbr(title) {
+    if(this.display == "state") {
+      return title;
+    }
     if(title.length < 5) {
       return title;
     }
