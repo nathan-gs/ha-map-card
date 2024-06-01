@@ -466,6 +466,8 @@ class HaDateRangeService {
   TIMEOUT = 10000;
   listeners = [];
   pollStartAt;
+
+  connection;
   
   constructor(hass) {
     // Store ref to HASS
@@ -481,8 +483,7 @@ class HaDateRangeService {
 
   // Once connected, subscribe to date range changes
   onConnect(energyCollection) {
-
-    energyCollection.subscribe(collection => { 
+    this.connection = energyCollection.subscribe(collection => { 
         console.debug("HaDateRangeService: date range changed");
         this.listeners.forEach(function(callback) { 
           callback(collection); 
@@ -512,6 +513,13 @@ class HaDateRangeService {
   // Register listener
   onDateRangeChange(method) {
     this.listeners.push(method);
+  }
+
+  disconnect(){
+     this.listeners = [];
+     // Unsub
+     this.connection();
+     console.debug("HaDateRangeService: Disconnecting");
   }
 }
 
@@ -563,8 +571,8 @@ class MapCard extends LitElement {
     
     if (this.map) {
       if(!this.hasError && this.hadError) {
-        L.control.attribution().removeAttribution("Error found, check Console").addTo(this.map);
-        L.control.attribution().removeAttribution("Error found in first run, check Console").addTo(this.map);
+        HaMapUtilities.removeWarningOnMap(this.map, "Error found, check Console");
+        HaMapUtilities.removeWarningOnMap(this.map, "Error found in first run, check Console");
         this.hadError = false;
       }
 
@@ -599,7 +607,7 @@ class MapCard extends LitElement {
           this.hasError = true;
           this.hadError = true;
           console.error(e);
-          L.control.attribution().addAttribution("Error found in first run, check Console").addTo(this.map);                   
+          HaMapUtilities.renderWarningOnMap(this.map, "Error found in first run, check Console");
         }
         this.firstRenderWithMap = false;
       }
@@ -621,7 +629,7 @@ class MapCard extends LitElement {
           this.hasError = true;
           this.hadError = true;
           console.error(e);
-          L.control.attribution().addAttribution("Error found, check Console").addTo(this.map);
+          HaMapUtilities.renderWarningOnMap(this.map, "Error found, check Console");
         }
       });
   
@@ -656,10 +664,19 @@ class MapCard extends LitElement {
       // Skip if neither found and return null
       picture = picture ? hass.hassUrl(picture) : null;
 
-      const entity = new Entity(configEntity, latitude, longitude, icon, friendly_name, state, picture);      
-      entity.marker.addTo(map);
-      return entity;
-    });
+      // Attempt to setup entity. Skip on fail, so one bad entity does not affect others.
+      try {
+        const entity = new Entity(configEntity, latitude, longitude, icon, friendly_name, state, picture);      
+        entity.marker.addTo(map);
+        return entity; 
+      } catch (e){
+         console.error("Entity: " + configEntity.id + " skipped due to missing data");
+         HaMapUtilities.renderWarningOnMap(this.map, "Entity: " + configEntity.id + " could not be loaded. See console for details.");
+         return null;
+      }
+    })
+    // Remove skipped entities.
+    .filter(v => v);
   }
 
   _setupResizeObserver() {
@@ -734,6 +751,7 @@ class MapCard extends LitElement {
 
     this.resizeObserver?.unobserve(this);
     this.historyService?.unsubscribe();
+    this.dateRangeService.disconnect();
   }
 
   /** @returns {[Double, Double]} */
@@ -746,8 +764,8 @@ class MapCard extends LitElement {
   }
 
   /** @returns {[Double, Double]} */
-  _getLatLongFromFocusedEntity() {   
-    const entityId = this.config.focus_entity ? this.config.focus_entity : this.config.entities[0].id;
+  _getLatLongFromFocusedEntity() {
+    const entityId = this.config.focusEntity ? this.config.focusEntity : this.config.entities[0].id;
     const entity = this.hass.states[entityId];
     
     if (!entity) {
@@ -925,7 +943,16 @@ class HaMapUtilities {
         return date;  
       }  
     }  
-  }  
+  }
+
+  // Show error message
+  static renderWarningOnMap(map, message){
+    L.control.attribution({prefix:'⚠️'}).addAttribution(message).addTo(map);
+  }
+  // Hide error message
+  static removeWarningOnMap(map, message){
+    L.control.attribution({prefix:'⚠️'}).removeAttribution(message).addTo(map);
+  }
 }
 
 if (!customElements.get("map-card")) {
