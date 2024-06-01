@@ -751,7 +751,7 @@ class MapCard extends LitElement {
 
     this.resizeObserver?.unobserve(this);
     this.historyService?.unsubscribe();
-    this.dateRangeService.disconnect();
+    this.dateRangeService?.disconnect();
   }
 
   /** @returns {[Double, Double]} */
