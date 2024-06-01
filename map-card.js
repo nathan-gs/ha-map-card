@@ -463,6 +463,8 @@ class HaDateRangeService {
   TIMEOUT = 10000;
   listeners = [];
   pollStartAt;
+
+  connection;
   
   constructor(hass) {
     // Store ref to HASS
@@ -478,8 +480,7 @@ class HaDateRangeService {
 
   // Once connected, subscribe to date range changes
   onConnect(energyCollection) {
-
-    energyCollection.subscribe(collection => { 
+    this.connection = energyCollection.subscribe(collection => { 
         console.debug("HaDateRangeService: date range changed");
         this.listeners.forEach(function(callback) { 
           callback(collection); 
@@ -509,6 +510,13 @@ class HaDateRangeService {
   // Register listener
   onDateRangeChange(method) {
     this.listeners.push(method);
+  }
+
+  disconnect(){
+     this.listeners = [];
+     // Unsub
+     this.connection();
+     console.debug("HaDateRangeService: Disconnecting");
   }
 }
 
@@ -740,6 +748,7 @@ class MapCard extends LitElement {
 
     this.resizeObserver?.unobserve(this);
     this.historyService?.unsubscribe();
+    this.dateRangeService.disconnect();
   }
 
   /** @returns {[Double, Double]} */
