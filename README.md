@@ -43,8 +43,8 @@ y: 3.652
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------|
 | `x`                      |                                                                                                                              | Longitude                                    |
 | `y`                      |                                                                                                                              | Latitude                                     |
-| `history_start`          |                                       																						  | Examples: `2022-03-01T12:00:00Z`, `5 hours ago`  |
-| `history_end`            | `now`                                 																						  | Examples: `2022-03-01T18:00:00Z`, `2 hours ago`, `now` |
+| `history_start`          |                                       																						  | Date - e.g. `2022-03-01T12:00:00Z` <br/> Time code - e.g. `5 hours ago` <br/> Entity: `input_number.example_number_value`  <br/> See #History options for full details.  |
+| `history_end`            | `now`                                 																						  | Date - e.g. `2022-03-01T12:00:00Z` <br/> Time code - e.g. `5 hours ago` <br/> Entity: `input_number.example_number_value`  <br/> See #History options for full details. |
 | `focus_entity`           |                                                                                                                              | Entity to focus on (instead of X & Y)        |
 | `title`                  |                                                                                                                              | If empty, don't show a title                 |
 | `zoom`                   | 12                                                                                                                           | The zoom level                               |
@@ -55,12 +55,13 @@ y: 3.652
 | `tile_layer_url`         | https://tile.openstreetmap.org/{z}/{x}/{y}.png                                                                               | Override the default map source              |
 | `tile_layer_attribution` | &amp;copy; &lt;a href&#x3D;&quot;http:&#x2F;&#x2F;www.openstreetmap.org&#x2F;copyright&quot;&gt;OpenStreetMap&lt;&#x2F;a&gt; | Set the correct map attribution              |
 | `tile_layer_options` | {}                                                                                                                               | The `options` for the default [TileLayer](https://leafletjs.com/reference.html#tilelayer) |
-| `history_date_selection` | false                                                                                                                        | Will link with a `energy-date-selection` on the page to provide a user controllable date range selector |
+| `history_date_selection` | false                                                                                                                        | Will link with a `energy-date-selection` on the page to provide an interactive  date range picker. |
+| `debug` | false                                                                                                                        | Enable debug messages in console.
 
 
 If `x` & `y` or `focus_entity` is not set it will take the lat/long from the __first entity__.
 
-If using `history_date_selection:true`, please ensure a component with the template `type: energy-date-selection` has been added to the page. If this is set top level `history_start`/`history_end` configuration is ignored in favour of the selected date ranges. `history_start` will continue to override the selected date range and global settings.
+
 
 ###### Entity options
 
@@ -73,8 +74,8 @@ Either the name of the `entity` or:
 | `size`                | 48                                    | Size of the icon                                               								|
 | `color`               | Random Color                          | Can defined as `red`, `rgb(255,0,0)`, `rgba(255,0,0,0.1)`, `#ff0000`, `var(--red-color)`      |
 | `css`                 | `text-align: center; font-size: 60%;` | CSS for the marker (only for `state` and `marker`)                                            |
-| `history_start`       |                                       | Will inherit from map config if not set.                                                      |
-| `history_end`         | `now`                                 | Will inherit from map config if not set.                                                      |
+| `history_start`       |                                       | Will inherit from map config if not set. <br/> Date - e.g. `2022-03-01T12:00:00Z` <br/> Time code - e.g. `5 hours ago` <br/> Entity: `input_number.example_number_value`  <br/> See #History options for full details.  |
+| `history_end`         | `now`                                 | Will inherit from map config if not set. <br/> Date - e.g. `2022-03-01T12:00:00Z` <br/> Time code - e.g. `5 hours ago` <br/> Entity: `input_number.example_number_value`  <br/> See #History options for full details.  |
 | `history_line_color`  | Random Color                          | Can defined as `red`, `rgb(255,0,0)`, `rgba(255,0,0,0.1)`, `#ff0000`, `var(--red-color)`      |
 | `history_show_lines`  | true                                  | Show the path                                                                                 |
 | `history_show_dots`   | true                                  | Show little dots on the path                                                                  |
@@ -84,6 +85,27 @@ Either the name of the `entity` or:
 | `fallback_y`          |                                       | If the latitude/longitude is missing, use these fixed attributes                              |
 
 If `history_start` & `history_end` are set the card will display a line with all the previous locations (a track) for a particular entity.
+
+###### History options.
+
+If `history_date_selection:true`, any entities that do not define their own `history_start` and `history_end` configuration will be automatically linked to this. Please ensure a card of `type: energy-date-selection`  exists on the page before enabling this.
+This can be added via the "Add Card" dialog by selecting Manual and entering the text `type: energy-date-selection`.
+
+Alterntativly `history_start` and `history_end` can be set to 
+* A specific date such as  `2022-03-01T12:00:00Z`
+* A time code such as `10 days ago` `4 hours ago` `1 week ago` etc.
+* An entity that will provide either a `date` or `number` (which will be used as the amount of hours ago to show). e.g. `input_number.example_number_value` 
+
+If you want to specify your own unit, configure the `history_start`/`history_end` as the below.
+```
+history_start:
+  entity: input_number.example_number_value
+  suffix: days ago
+```
+
+Each entity can individually override the base config by setting its own `history_start`/`history_end`, using any of the options above.
+Any entity without its own settings will inherit the map level config.
+
 
 ###### WMS and tile_layers options
 
