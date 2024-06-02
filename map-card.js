@@ -148,12 +148,15 @@ class MapConfig {
   tileLayers;
   /** @type {TileLayerConfig} */
   tileLayer;
-   /** @type {Date} */
+   /** @type {Date|Entity} */
   historyStart;
-  /** @type {Date} */
+  /** @type {Date|Entity} */
   historyEnd;
 
   historyDateSelection;
+
+  /** @type {Bool} */
+  debug = false;
 
   constructor(inputConfig) {
     this.title = inputConfig.title;
@@ -162,6 +165,12 @@ class MapConfig {
     this.y = inputConfig.y;
     this.zoom = this._setConfigWithDefault(inputConfig.zoom, 12);
     this.cardSize = this._setConfigWithDefault(inputConfig.card_size, 5);
+
+    // Enable debug messaging. 
+    // Card is quite chatty with this enabled.
+    if (inputConfig.debug){
+      HaMapUtilities.enableDebug();
+    }
 
     // Default historyStart/historyEnd can be set at the top level.
     // Entities can override these dates on an individual basis.
@@ -172,7 +181,7 @@ class MapConfig {
       this.historyStart = null;
       this.historyEnd = null;
     } else {
-      // Pass as is.
+        // Pass as is.
         this.historyStart = inputConfig.history_start ?? null;
         this.historyEnd = inputConfig.history_end ?? "now";
     }
@@ -380,7 +389,7 @@ class Entity {
   update(map, latitude, longitude, state) {
     if(this.display == "state") {
       if(state != this._currentState) {
-        console.debug("Entity: updating marker for " + this.id + " from " + this._currentState + " to " + state);
+        HaMapUtilities.debug("[Entity] updating marker for " + this.id + " from " + this._currentState + " to " + state);
         this.marker.remove();
         this.marker = this._createMapMarker(latitude, longitude, null, state, null);
         this.marker.addTo(map);
@@ -404,7 +413,7 @@ class Entity {
   }
 
   _createMapMarker(latitude, longitude, icon, title, picture) {
-    console.debug("MarkerEntity: creating marker for " + this.id + " with display mode " + this.display);
+    HaMapUtilities.debug("[MarkerEntity] Creating marker for " + this.id + " with display mode " + this.display);
     if(this.display == "icon") {
       picture = null;
     }
@@ -490,7 +499,7 @@ class HaHistoryService {
           });
         },
         params);
-      console.debug(`HaHistoryService: successfully subscribed to history from ${entityId} showing ${params.start_time} till ${params.end_time ?? 'now'}`);
+      HaMapUtilities.debug(`[HaHistoryService] successfully subscribed to history from ${entityId} showing ${params.start_time} till ${params.end_time ?? 'now'}`);
     } catch (error) {        
       console.error(`Error retrieving history for entity ${entityId}: ${error}`);  
       console.error(error);
@@ -506,7 +515,7 @@ class HaHistoryService {
   unsubscribeEntity(entityId) {
       this.connection[entityId]?.then((unsub) => unsub?.());
       this.connection[entityId] = undefined;
-      console.debug("HaHistoryService: unsubscribed " + entityId);
+      HaMapUtilities.debug("[HaHistoryService] unsubscribed history for " + entityId);
   }
 }
 
@@ -529,7 +538,7 @@ class HaDateRangeService {
     this.hass = hass;
     this.pollStartAt = Date.now();
 
-   console.debug("HaDateRangeService: initializing");
+   HaMapUtilities.debug("[HaDateRangeService] initializing");
     // Get collection, once we have it subscribe to listen for date changes.
     this.getEnergyDataCollectionPoll(
       (con) => { this.onConnect(con); }
@@ -539,12 +548,12 @@ class HaDateRangeService {
   // Once connected, subscribe to date range changes
   onConnect(energyCollection) {
     this.connection = energyCollection.subscribe(collection => { 
-        console.debug("HaDateRangeService: date range changed");
+        HaMapUtilities.debug("[HaDateRangeService] date range changed");
         this.listeners.forEach(function(callback) { 
           callback(collection); 
         }); 
     });
-    console.debug("HaDateRangeService: Successfully connected to date range component");
+    HaMapUtilities.debug("[HaDateRangeService] Successfully connected to date range component");
   };
 
   // Wait for energyCollection to become available.
@@ -574,7 +583,7 @@ class HaDateRangeService {
      this.listeners = [];
      // Unsub
      this.connection();
-     console.debug("HaDateRangeService: Disconnecting");
+     HaMapUtilities.debug("HaDateRangeService: Disconnecting");
   }
 }
 
@@ -594,7 +603,7 @@ class HaLinkedEntityService {
 
   setUpConnection(entity)
   {
-    console.debug(`HaLinkedEntityService: initializing connection for ${entity}`);
+    HaMapUtilities.debug(`[HaLinkedEntityService] initializing connection for ${entity}`);
     const connection  = this.hass.connection.subscribeMessage(
         (message) => {
           let state = null;
@@ -606,7 +615,7 @@ class HaLinkedEntityService {
             // If state is a number, attempt to parse as int, otherwise assume is and pass thru direct
             state = isNaN(state) ? state : parseInt(state);
 
-            console.debug(`HaLinkedEntityService: ${entity} state updated to ${state}`);
+            HaMapUtilities.debug(`[HaLinkedEntityService] ${entity} state updated to ${state}`);
 
             // Hit callback for all listeners listing to entities changes
             this.listeners[entity].forEach(function(callback) { 
@@ -638,9 +647,12 @@ class HaLinkedEntityService {
   disconnect() {
      this.listeners = {};
      // Unsub
-     this.connections.map((c) => c());
+     for (let [k, conn] of Object.entries(this.connections)) {
+       conn.then(unsub => unsub());
+     }
+
      this.connections = {};
-     console.debug("HaLinkedEntityService: Disconnecting");
+     HaMapUtilities.debug("[HaLinkedEntityService] Disconnecting");
   }
 }
 
@@ -691,7 +703,7 @@ class MapCard extends LitElement {
   }
 
   refreshEntityHistory(ent) {
-      console.log(`Refreshing history for ${ent.id}: ${ent.currentHistoryStart} -> ${ent.currentHistoryEnd}`);
+      HaMapUtilities.debug(`[MapCard] Refreshing history for ${ent.id}: ${ent.currentHistoryStart} -> ${ent.currentHistoryEnd}`);
       // Remove layer if it already exists.
       if(this.historyLayerGroups[ent.id]) this.map.removeLayer(this.historyLayerGroups[ent.id]);
 
@@ -729,7 +741,7 @@ class MapCard extends LitElement {
 
             if (!ent.hasHistory) {
               historyDebug += `- Not enabled`;
-              console.debug(historyDebug);
+              HaMapUtilities.debug(historyDebug);
               return;
             }
 
@@ -742,7 +754,7 @@ class MapCard extends LitElement {
               });
 
               historyDebug += `- Using DateRangeManager`;
-              console.debug(historyDebug);
+              HaMapUtilities.debug(historyDebug);
               return;
             }
 
@@ -790,7 +802,7 @@ class MapCard extends LitElement {
             }
 
             // Provide summary of config for each entities history
-            console.debug(historyDebug);
+            HaMapUtilities.debug(historyDebug);
 
             // Render history now if this isn't dynamic.
             if (ent.config.historyStart && ent.config.historyEnd){
@@ -840,7 +852,7 @@ class MapCard extends LitElement {
   }
 
   _firstRender(map, hass, entities) {
-    console.log("First Render with Map object, resetting size.")
+    HaMapUtilities.debug("First Render with Map object, resetting size.")
     return entities.map((configEntity) => {
       const stateObj = hass.states[configEntity.id];
       const {
@@ -1097,6 +1109,21 @@ class MapCardEntityMarker extends LitElement {
  * Shared utility methods for HaMapCard
  */
 class HaMapUtilities {
+  static _debugEnabled = false;
+
+  static enableDebug() {
+    HaMapUtilities._debugEnabled = true;
+    HaMapUtilities.debug("Debug enabled.");
+  }
+
+  /**
+   * Log debug message to console (if debug enabled).
+   */
+  static debug(message) {
+    if (!HaMapUtilities._debugEnabled) return;
+    console.debug("[HaMapCard] " + message);
+  }
+
   static convertToAbsoluteDate(inputStr) {  
     // Check if the input string is a relative timestamp  
     var relativeTimePattern = /^\d+\s+(second|minute|hour|day|week|month|year)s?\s+ago$/i;  
