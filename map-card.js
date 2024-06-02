@@ -85,8 +85,8 @@ class EntityConfig {
 
     // If end is an entity, setup entity config
     if (this.isHistoryEntityConfig(historyEnd)) {
-      this.historyEndEntity = historyStart['entity'] ?? historyStart;
-      this.historyEndEntitySuffix = historyStart['suffix'] ?? 'hours ago';
+      this.historyEndEntity = historyEnd['entity'] ?? historyEnd;
+      this.historyEndEntitySuffix = historyEnd['suffix'] ?? 'hours ago';
     } else {
       this.historyEnd = HaMapUtilities.convertToAbsoluteDate(historyEnd ?? 'now');
     }
@@ -241,13 +241,14 @@ class MapConfig {
   get entitiesWithShowPath() {
     return this.entities.filter((ent) => ent.showPath);
   }
-
 }
 
 class EntityHistory {
 
   /** @type {String} */
   entityId;
+  /** @type {String} */
+  entityTitle;
   /** @type {[TimelineEntry]} */
   entries = [];
   /** @type {String} */
@@ -258,8 +259,9 @@ class EntityHistory {
   showLines = true;
   needRerender = false;
 
-  constructor(entityId, color, showDots, showLines) {
+  constructor(entityId, entityTitle, color, showDots, showLines) {
     this.entityId = entityId;
+    this.entityTitle = entityTitle;
     this.color = color;
     this.showDots = showDots;
     this.showLines = showLines;
@@ -291,7 +293,7 @@ class EntityHistory {
               radius: 3,
               interactive: true,
             }
-          ).bindTooltip(entry.timestamp.toLocaleString(), {direction: 'top'})
+          ).bindTooltip(`${this.entityTitle} ${entry.timestamp.toLocaleString()}`, {direction: 'top'})
         );
       }
 
@@ -318,6 +320,8 @@ class Entity {
   /** @type {EntityConfig} */
   config;  
   marker;
+  /** @type {[String]} */
+  title;
   /** @type {[EntityHistory]} */
   histories = [];
 
@@ -346,6 +350,7 @@ class Entity {
       title = state;
       this._currentState = state;
     }
+    this.title = title;
     this.marker = this._createMapMarker(latitude, longitude, icon, title, picture);
   }
 
@@ -401,7 +406,7 @@ class Entity {
 
   setupHistory(historyService, start, end) {
     if(this.hasHistory) {
-      const entHist = new EntityHistory(this.id, this.config.historyLineColor, this.config.historyShowDots, this.config.historyShowLines);
+      const entHist = new EntityHistory(this.id, this.title, this.config.historyLineColor, this.config.historyShowDots, this.config.historyShowLines);
       historyService.subscribe(entHist.entityId, start, end, entHist.retrieve);      
       this.histories.push(entHist);
     }  
@@ -428,6 +433,7 @@ class Entity {
           <map-card-entity-marker
             entity-id="${this.id}"
             title="${this._abbr(title)}"
+            tooltip="${title}"
             icon="${icon ?? ""}"
             picture="${
               picture ?? ""
@@ -583,7 +589,7 @@ class HaDateRangeService {
      this.listeners = [];
      // Unsub
      this.connection();
-     HaMapUtilities.debug("HaDateRangeService: Disconnecting");
+     HaMapUtilities.debug("[HaDateRangeService] Disconnecting");
   }
 }
 
@@ -601,8 +607,12 @@ class HaLinkedEntityService {
     this.hass = hass;
   }
 
-  setUpConnection(entity)
+  // Don't wait, we'll fire events when ready
+  async setUpConnection(entity)
   {
+    // Skip if already connected
+    if (this.connections[entity]) return;
+
     HaMapUtilities.debug(`[HaLinkedEntityService] initializing connection for ${entity}`);
     const connection  = this.hass.connection.subscribeMessage(
         (message) => {
@@ -634,12 +644,12 @@ class HaLinkedEntityService {
 
   // Register listener
   onStateChange(entity, method) {
-    // Track entity if not already tracked.
-    if (!this.connections[entity]) {
-      this.setUpConnection(entity);
-    }
+    // Setup connection if we need it.
+    this.setUpConnection(entity);
+    
     // Setup listeners array for entity
     if(!this.listeners[entity]) this.listeners[entity] = [];
+
     // Add callback
     this.listeners[entity].push(method);
   }
@@ -678,7 +688,6 @@ class MapCard extends LitElement {
   linkedEntityService;
   /** @type {HaDateRangeService} */
   dateRangeManager;
-
 
   hasError = false;
   hadError = false;
@@ -731,7 +740,6 @@ class MapCard extends LitElement {
 
           this.entities = this._firstRender(this.map, this.hass, this.config.entities);
 
-          
           this.entities.forEach((ent) => {
             // Setup layer for entities history
             this.historyLayerGroups[ent.id] = new L.LayerGroup();
@@ -774,10 +782,10 @@ class MapCard extends LitElement {
                   this.refreshEntityHistory(ent);
                 }
               );
-             historyDebug += `- Start: linked entity "${ent.config.historyStartEntity}"\n`;
+              historyDebug += `- Start: linked entity "${ent.config.historyStartEntity}"\n`;
             } else {
               ent.currentHistoryStart = ent.config.historyStart;
-              historyDebug +=`- Start: fixed date ${ent.currentHistoryStart}\n`;
+              historyDebug += `- Start: fixed date ${ent.currentHistoryStart}\n`;
             }
 
             // If have end entity, link it.
@@ -959,7 +967,7 @@ class MapCard extends LitElement {
 
     this.resizeObserver?.unobserve(this);
     this.historyService?.unsubscribe();
-    this.dateRangeService?.disconnect();
+    this.dateRangeManager?.disconnect();
     this.linkedEntityService?.disconnect();
   }
 
@@ -1032,6 +1040,7 @@ class MapCardEntityMarker extends LitElement {
     return {
       'entityId': {type: String, attribute: 'entity-id'},
       'title': {type: String, attribute: 'title'},
+      'tooltip': {type: String, attribute: 'tooltip'},
       'picture': {type: String, attribute: 'picture'},
       'icon': {type: String, attribute: 'icon'},
       'color': {type: String, attribute: 'color'},
@@ -1045,7 +1054,8 @@ class MapCardEntityMarker extends LitElement {
         class="marker ${this.picture ? "picture" : ""}"
         style="border-color: ${this.color}; height: ${this.size}px; width: ${this.size}px;"
         @click=${this._badgeTap}
-      >
+        title="${this.tooltip}"
+        >
         ${this._inner()}
       </div>
     `;
