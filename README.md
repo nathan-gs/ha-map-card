@@ -43,8 +43,8 @@ y: 3.652
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------|
 | `x`                      |                                                                                                                              | Longitude                                    |
 | `y`                      |                                                                                                                              | Latitude                                     |
-| `history_start`          |                                       																						  | Date - e.g. `2022-03-01T12:00:00Z` <br/> Time code - e.g. `5 hours ago` <br/> Entity: `input_number.example_number_value`  <br/> See #History options for full details.  |
-| `history_end`            | `now`                                 																						  | Date - e.g. `2022-03-01T12:00:00Z` <br/> Time code - e.g. `5 hours ago` <br/> Entity: `input_number.example_number_value`  <br/> See #History options for full details. |
+| `history_start`          |                                       																						  | Date: `2022-03-01T12:00:00Z` <br/>Time code: `5 hours ago` <br/>Entity: `input_number.example_number`  <br/>See [History options](#history-options) for full details.  |
+| `history_end`            | `now`                                 																						  | Date: `2022-03-01T12:00:00Z` <br/>Time code: `5 hours ago` <br/>Entity: `input_number.example_number`  <br/>See [History options](#history-options) for full details. |
 | `focus_entity`           |                                                                                                                              | Entity to focus on (instead of X & Y)        |
 | `title`                  |                                                                                                                              | If empty, don't show a title                 |
 | `zoom`                   | 12                                                                                                                           | The zoom level                               |
@@ -63,7 +63,7 @@ If `x` & `y` or `focus_entity` is not set it will take the lat/long from the __f
 
 
 
-###### Entity options
+##### Entity options
 
 Either the name of the `entity` or:
 | name                  | Default                               | note                                                                                          |
@@ -74,8 +74,8 @@ Either the name of the `entity` or:
 | `size`                | 48                                    | Size of the icon                                               								|
 | `color`               | Random Color                          | Can defined as `red`, `rgb(255,0,0)`, `rgba(255,0,0,0.1)`, `#ff0000`, `var(--red-color)`      |
 | `css`                 | `text-align: center; font-size: 60%;` | CSS for the marker (only for `state` and `marker`)                                            |
-| `history_start`       |                                       | Will inherit from map config if not set. <br/> Date - e.g. `2022-03-01T12:00:00Z` <br/> Time code - e.g. `5 hours ago` <br/> Entity: `input_number.example_number_value`  <br/> See #History options for full details.  |
-| `history_end`         | `now`                                 | Will inherit from map config if not set. <br/> Date - e.g. `2022-03-01T12:00:00Z` <br/> Time code - e.g. `5 hours ago` <br/> Entity: `input_number.example_number_value`  <br/> See #History options for full details.  |
+| `history_start`       |                                       | Will inherit from map config if not set. <br/>Date: `2022-03-01T12:00:00Z` <br/>Time code: `5 hours ago` <br/>Entity: `input_number.example_number`  <br/>See [History options](#history-options) for full details.  |
+| `history_end`         | `now`                                 | Will inherit from map config if not set. <br/>Date: `2022-03-01T12:00:00Z` <br/>Time code: `5 hours ago` <br/>Entity: `input_number.example_number`  <br/>See [History options](#history-options) for full details.  |
 | `history_line_color`  | Random Color                          | Can defined as `red`, `rgb(255,0,0)`, `rgba(255,0,0,0.1)`, `#ff0000`, `var(--red-color)`      |
 | `history_show_lines`  | true                                  | Show the path                                                                                 |
 | `history_show_dots`   | true                                  | Show little dots on the path                                                                  |
@@ -84,14 +84,13 @@ Either the name of the `entity` or:
 | `fallback_x`          |                                       | If the latitude/longitude is missing, use these fixed attributes                              |
 | `fallback_y`          |                                       | If the latitude/longitude is missing, use these fixed attributes                              |
 
-If `history_start` & `history_end` are set the card will display a line with all the previous locations (a track) for a particular entity.
-
-###### History options.
+##### History options.
 
 If `history_date_selection:true`, any entities that do not define their own `history_start` and `history_end` configuration will be automatically linked to this. Please ensure a card of `type: energy-date-selection`  exists on the page before enabling this.
+
 This can be added via the "Add Card" dialog by selecting Manual and entering the text `type: energy-date-selection`.
 
-Alterntativly `history_start` and `history_end` can be set to 
+Alternatively `history_start` and `history_end` can be set to 
 * A specific date such as  `2022-03-01T12:00:00Z`
 * A time code such as `10 days ago` `4 hours ago` `1 week ago` etc.
 * An entity that will provide either a `date` or `number` (which will be used as the amount of hours ago to show). e.g. `input_number.example_number_value` 
@@ -107,7 +106,7 @@ Each entity can individually override the base config by setting its own `histor
 Any entity without its own settings will inherit the map level config.
 
 
-###### WMS and tile_layers options
+##### WMS and tile_layers options
 
 | name      | note                                                                                                                                                        |
 |-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
