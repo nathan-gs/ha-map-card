@@ -63,7 +63,7 @@ If `x` & `y` or `focus_entity` is not set it will take the lat/long from the __f
 
 
 
-##### Entity options
+#### Entity options
 
 Either the name of the `entity` or:
 | name                  | Default                               | note                                                                                          |
@@ -84,7 +84,7 @@ Either the name of the `entity` or:
 | `fallback_x`          |                                       | If the latitude/longitude is missing, use these fixed attributes                              |
 | `fallback_y`          |                                       | If the latitude/longitude is missing, use these fixed attributes                              |
 
-##### History options.
+#### History options.
 
 If `history_date_selection:true`, any entities that do not define their own `history_start` and `history_end` configuration will be automatically linked to this. Please ensure a card of `type: energy-date-selection`  exists on the page before enabling this.
 
@@ -106,7 +106,7 @@ Each entity can individually override the base config by setting its own `histor
 Any entity without its own settings will inherit the map level config.
 
 
-##### WMS and tile_layers options
+#### WMS and tile_layers options
 
 | name      | note                                                                                                                                                        |
 |-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -114,9 +114,14 @@ Any entity without its own settings will inherit the map level config.
 | `options` | The leaflet layer [WMS options](https://leafletjs.com/reference.html#tilelayer-wms) or [Tile Layer options](https://leafletjs.com/reference.html#tilelayer) |
 
 
-##### Extra Tile Layers
+#### Extra Tile Layers
 
 The [leaflet-extras](https://github.com/leaflet-extras/leaflet-providers) has a nice list of available [tile layer providers](https://leaflet-extras.github.io/leaflet-providers/preview/).
+
+#### Development
+* `git clone git@github.com:nathan-gs/ha-map-card.git`
+* `npm install`
+* `npm run build` (`npm run watch` to update on change)
 
 ### Mentions & Discussions
 
