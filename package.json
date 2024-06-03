@@ -1,6 +1,6 @@
 {
   "name": "ha-map-card",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A better Map Card for Home Assistant",
   "main": "src/index.js",
   "scripts": {

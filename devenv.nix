@@ -32,6 +32,13 @@
   scripts.release.exec = ''
     devenv test
     npm run build
+    outstanding_changes=$(git status --porcelain=v1 2>/dev/null | wc -l)
+    if [ $outstanding_changes -gt 0 ];
+    then
+      echo Aborting, uncommitted changes.
+      git status
+      exit 1
+    fi
     VERSION=$(get-version)
 
     sed -i "s/HA_MAP_CARD_VERSION/$VERSION/" dist/map-card.js
