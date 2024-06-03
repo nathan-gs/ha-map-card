@@ -25,3 +25,7 @@ jobs:
       with:
         artifacts: "dist/map-card.js"
         generateReleaseNotes: true
+    - name: HACS validation
+      uses: "hacs/action@main"
+      with:
+        category: "plugin"
