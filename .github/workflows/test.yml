@@ -1,9 +1,9 @@
-name: Releases
+name: Test
 
 on: 
   push:
-    tags:
-    - 'v*'
+  pull_request:
+  workflow_dispatch:
 
 jobs:
 
@@ -19,9 +19,5 @@ jobs:
         name: devenv
     - name: Install devenv.sh
       run: nix profile install nixpkgs#devenv
-    - run: devenv shell release-github
-      name: Release on Github
-    - uses: ncipollo/release-action@v1
-      with:
-        artifacts: "dist/map-card.js"
-        generateReleaseNotes: true
+    - run: devenv shell test
+      name: Run tests

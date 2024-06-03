@@ -118,10 +118,21 @@ Any entity without its own settings will inherit the map level config.
 
 The [leaflet-extras](https://github.com/leaflet-extras/leaflet-providers) has a nice list of available [tile layer providers](https://leaflet-extras.github.io/leaflet-providers/preview/).
 
-#### Development
-* `git clone git@github.com:nathan-gs/ha-map-card.git`
+### Development
+
+`git clone git@github.com:nathan-gs/ha-map-card.git`
+
+This project uses [devenv.sh](https://devenv.sh/).
+
+1. Install devenv
+2. `devenv shell` and then `watch` or `devenv shell watch` to immediatly drop into a watched shell.
+
+#### NPM alternatives
+
 * `npm install`
 * `npm run build` (`npm run watch` to update on change)
+
+
 
 ### Mentions & Discussions
 
