@@ -1,6 +1,7 @@
 import EntityConfig from "./EntityConfig.js"
 import TileLayerConfig from "./TileLayerConfig.js"
 import WmsLayerConfig from "./WmsLayerConfig.js"
+import HaMapUtilities from "../util/HaMapUtilities.js";
 
 export default class MapConfig {
   /** @type {String} */

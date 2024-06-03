@@ -101,16 +101,3 @@ export default class EntityConfig {
     return "#" + ((1 << 24) * Math.random() | 0).toString(16).padStart(6, "0");
   }
 }
-
-class LayerConfig {
-  /** @type {String} */
-  url;
-  /** @type {Object} */
-  options;
-
-  constructor(url, options, attribution = null) {
-    this.url = url;
-    this.options = {...{attribution: attribution}, ...options};
-  }
-
-}

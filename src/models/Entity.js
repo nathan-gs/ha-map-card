@@ -1,6 +1,7 @@
 
 import EntityHistory from "../models/EntityHistory.js";
 import HaMapUtilities from "../util/HaMapUtilities.js";
+import L from 'leaflet';
 
 
 export default class Entity {

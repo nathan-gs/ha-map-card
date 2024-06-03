@@ -209,11 +209,11 @@ export default class MapCard extends LitElement {
       const {
         latitude,
         longitude,
-        passive,
+        //passive,
         icon,
-        radius,
+        //radius,
         entity_picture,
-        gps_accuracy: gpsAccuracy,
+        //gps_accuracy: gpsAccuracy,
         friendly_name
       } = stateObj.attributes;
       const state = hass.formatEntityState(stateObj);
@@ -229,7 +229,7 @@ export default class MapCard extends LitElement {
         entity.marker.addTo(map);
         return entity; 
       } catch (e){
-         console.error("Entity: " + configEntity.id + " skipped due to missing data");
+         console.error("Entity: " + configEntity.id + " skipped due to missing data", e);
          HaMapUtilities.renderWarningOnMap(this.map, "Entity: " + configEntity.id + " could not be loaded. See console for details.");
          return null;
       }

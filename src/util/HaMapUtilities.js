@@ -1,3 +1,5 @@
+import L from 'leaflet';
+
 /**
  * Shared utility methods for HaMapCard
  */
@@ -31,7 +33,7 @@ export default class HaMapUtilities {
       var unit = parts[1];  
 
       // Create a new Date object for the current time  
-      var date = new Date();  
+      const date = new Date();  
 
       // Subtract the appropriate amount of time  
       if (unit.startsWith('second')) {  
@@ -52,7 +54,7 @@ export default class HaMapUtilities {
       return date;  
     } else {  
       // If the input string is not a relative timestamp, try to parse it as an absolute date  
-      var date = new Date(inputStr);  
+      const date = new Date(inputStr);  
       if (isNaN(date.getTime())) {  
         // If the date could not be parsed, throw an error  
         throw new Error("Invalid input string for Date: " + inputStr);  

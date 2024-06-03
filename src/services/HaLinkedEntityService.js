@@ -12,6 +12,7 @@ export default class HaLinkedEntityService {
   constructor(hass, entity, suffix = 'hours ago') {
     // Store ref to HASS
     this.hass = hass;
+    suffix;
   }
 
   // Don't wait, we'll fire events when ready
@@ -62,13 +63,14 @@ export default class HaLinkedEntityService {
   }
 
   disconnect() {
-     this.listeners = {};
-     // Unsub
-     for (let [k, conn] of Object.entries(this.connections)) {
-       conn.then(unsub => unsub());
-     }
+    this.listeners = {};
+    // Unsub
+    for (let [k, conn] of Object.entries(this.connections)) {
+      k
+      conn.then(unsub => unsub());
+    }
 
-     this.connections = {};
-     HaMapUtilities.debug("[HaLinkedEntityService] Disconnecting");
+    this.connections = {};
+    HaMapUtilities.debug("[HaLinkedEntityService] Disconnecting");
   }
 }
