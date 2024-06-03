@@ -1,5 +1,4 @@
 {
     "name": "map-card",
-    "render_readme": true,
-    "filename":"dist/map-card.js"
+    "render_readme": true
 }
