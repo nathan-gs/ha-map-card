@@ -7,7 +7,7 @@ on:
 
 jobs:
 
-  build:
+  test:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -21,7 +21,11 @@ jobs:
       run: nix profile install nixpkgs#devenv
     - run: devenv test
       name: Run tests
-    - name: HACS validation
-      uses: "hacs/action@main"
-      with:
-        category: "plugin"
+  validate-hacs:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v4"
+      - name: HACS validation
+        uses: "hacs/action@main"
+        with:
+          category: "plugin"
