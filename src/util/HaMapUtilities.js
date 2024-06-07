@@ -4,20 +4,7 @@ import L from 'leaflet';
  * Shared utility methods for HaMapCard
  */
 export default class HaMapUtilities {
-  static _debugEnabled = false;
 
-  static enableDebug() {
-    HaMapUtilities._debugEnabled = true;
-    HaMapUtilities.debug("Debug enabled.");
-  }
-
-  /**
-   * Log debug message to console (if debug enabled).
-   */
-  static debug(message) {
-    if (!HaMapUtilities._debugEnabled) return;
-    console.debug("[HaMapCard] " + message);
-  }
 
   static convertToAbsoluteDate(inputStr) {  
     // Check if the input string is a relative timestamp  

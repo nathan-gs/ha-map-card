@@ -1,4 +1,5 @@
-import HaMapUtilities from "../util/HaMapUtilities.js"
+import Logger from "../util/Logger.js"
+
 
 /**
  * Attempt to locate "energy-date-selection" component on the page to act as date range selector.
@@ -19,7 +20,7 @@ export default class HaDateRangeService {
     this.hass = hass;
     this.pollStartAt = Date.now();
 
-   HaMapUtilities.debug("[HaDateRangeService] initializing");
+   Logger.debug("[HaDateRangeService] initializing");
     // Get collection, once we have it subscribe to listen for date changes.
     this.getEnergyDataCollectionPoll(
       (con) => { this.onConnect(con); }
@@ -29,12 +30,12 @@ export default class HaDateRangeService {
   // Once connected, subscribe to date range changes
   onConnect(energyCollection) {
     this.connection = energyCollection.subscribe(collection => { 
-        HaMapUtilities.debug("[HaDateRangeService] date range changed");
+        Logger.debug("[HaDateRangeService] date range changed");
         this.listeners.forEach(function(callback) { 
           callback(collection); 
         }); 
     });
-    HaMapUtilities.debug("[HaDateRangeService] Successfully connected to date range component");
+    Logger.debug("[HaDateRangeService] Successfully connected to date range component");
   };
 
   // Wait for energyCollection to become available.
@@ -49,7 +50,7 @@ export default class HaDateRangeService {
       if (energyCollection) {
         complete(energyCollection);
       } else if (Date.now() - this.pollStartAt > this.TIMEOUT) {
-        console.error('Unable to connect to energy date selector. Make sure to add a `type: energy-date-selection` card to this screen.');
+        Logger.error('Unable to connect to energy date selector. Make sure to add a `type: energy-date-selection` card to this screen.');
       } else {
         setTimeout(() => this.getEnergyDataCollectionPoll(complete), 100);
       }
@@ -64,6 +65,6 @@ export default class HaDateRangeService {
      this.listeners = [];
      // Unsub
      this.connection();
-     HaMapUtilities.debug("[HaDateRangeService] Disconnecting");
+     Logger.debug("[HaDateRangeService] Disconnecting");
   }
 }

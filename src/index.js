@@ -1,9 +1,3 @@
-import {
-  LitElement,
-  html,
-  css,
-} from "lit";
-
 import MapCard from "./components/MapCard.js"
 import MapCardEntityMarker from "./components/MapCardEntityMarker.js"
 

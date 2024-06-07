@@ -1,7 +1,8 @@
 import EntityConfig from "./EntityConfig.js"
 import TileLayerConfig from "./TileLayerConfig.js"
 import WmsLayerConfig from "./WmsLayerConfig.js"
-import HaMapUtilities from "../util/HaMapUtilities.js";
+import Logger from "../util/Logger.js"
+
 
 export default class MapConfig {
   /** @type {String} */
@@ -42,7 +43,7 @@ export default class MapConfig {
     // Enable debug messaging. 
     // Card is quite chatty with this enabled.
     if (inputConfig.debug){
-      HaMapUtilities.enableDebug();
+      Logger.enableDebug();
     }
 
     // Default historyStart/historyEnd can be set at the top level.

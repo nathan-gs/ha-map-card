@@ -1,5 +1,6 @@
-import HaMapUtilities from "../util/HaMapUtilities.js"
 import TimelineEntry from "../models/TimelineEntry.js"
+import Logger from "../util/Logger.js"
+
 
 export default class HaHistoryService {  
 
@@ -34,15 +35,15 @@ export default class HaHistoryService {
         (message) => {
           message.states[entityId]?.map((state) => {
             if(state.a.latitude && state.a.longitude) {
-              f(new TimelineEntry(new Date(state.lu * 1000), state.a.latitude, state.a.longitude))
+              Logger.debug("[HaHistoryService]: received new msg for entity id: " + entityId);
+              f(new TimelineEntry(new Date(state.lu * 1000), state.a.latitude, state.a.longitude));
             }
           });
         },
         params);
-      HaMapUtilities.debug(`[HaHistoryService] successfully subscribed to history from ${entityId} showing ${params.start_time} till ${params.end_time ?? 'now'}`);
+      Logger.debug(`[HaHistoryService] successfully subscribed to history from ${entityId} showing ${params.start_time} till ${params.end_time ?? 'now'}`);
     } catch (error) {        
-      console.error(`Error retrieving history for entity ${entityId}: ${error}`);  
-      console.error(error);
+      Logger.error(`Error retrieving history for entity ${entityId}: ${error}`, error);  
     }  
   }  
 
@@ -55,6 +56,6 @@ export default class HaHistoryService {
   unsubscribeEntity(entityId) {
       this.connection[entityId]?.then((unsub) => unsub?.());
       this.connection[entityId] = undefined;
-      HaMapUtilities.debug("[HaHistoryService] unsubscribed history for " + entityId);
+      Logger.debug("[HaHistoryService] unsubscribed history for " + entityId);
   }
 }

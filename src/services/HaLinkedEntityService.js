@@ -1,4 +1,4 @@
-import HaMapUtilities from "../util/HaMapUtilities.js";
+import Logger from "../util/Logger.js"
 
 /**
  * Linked entity service
@@ -21,7 +21,7 @@ export default class HaLinkedEntityService {
     // Skip if already connected
     if (this.connections[entity]) return;
 
-    HaMapUtilities.debug(`[HaLinkedEntityService] initializing connection for ${entity}`);
+    Logger.debug(`[HaLinkedEntityService] initializing connection for ${entity}`);
     const connection  = this.hass.connection.subscribeMessage(
         (message) => {
           let state = null;
@@ -33,7 +33,7 @@ export default class HaLinkedEntityService {
             // If state is a number, attempt to parse as int, otherwise assume is and pass thru direct
             state = isNaN(state) ? state : parseInt(state);
 
-            HaMapUtilities.debug(`[HaLinkedEntityService] ${entity} state updated to ${state}`);
+            Logger.debug(`[HaLinkedEntityService] ${entity} state updated to ${state}`);
 
             // Hit callback for all listeners listing to entities changes
             this.listeners[entity].forEach(function(callback) { 
@@ -71,6 +71,6 @@ export default class HaLinkedEntityService {
     }
 
     this.connections = {};
-    HaMapUtilities.debug("[HaLinkedEntityService] Disconnecting");
+    Logger.debug("[HaLinkedEntityService] Disconnecting");
   }
 }

@@ -6,6 +6,7 @@ import HaHistoryService from "../services/HaHistoryService.js"
 import HaDateRangeService from "../services/HaDateRangeService.js"
 import HaLinkedEntityService from "../services/HaLinkedEntityService.js"
 import HaMapUtilities from "../util/HaMapUtilities.js"
+import Logger from "../util/Logger.js"
 
 import Entity from "../models/Entity.js"
 
@@ -55,7 +56,7 @@ export default class MapCard extends LitElement {
   }
 
   refreshEntityHistory(ent) {
-      HaMapUtilities.debug(`[MapCard] Refreshing history for ${ent.id}: ${ent.currentHistoryStart} -> ${ent.currentHistoryEnd}`);
+      Logger.debug(`Refreshing history for ${ent.id}: ${ent.currentHistoryStart} -> ${ent.currentHistoryEnd}`);
       // Remove layer if it already exists.
       if(this.historyLayerGroups[ent.id]) this.map.removeLayer(this.historyLayerGroups[ent.id]);
 
@@ -92,7 +93,7 @@ export default class MapCard extends LitElement {
 
             if (!ent.hasHistory) {
               historyDebug += `- Not enabled`;
-              HaMapUtilities.debug(historyDebug);
+              Logger.debug(historyDebug);
               return;
             }
 
@@ -105,7 +106,7 @@ export default class MapCard extends LitElement {
               });
 
               historyDebug += `- Using DateRangeManager`;
-              HaMapUtilities.debug(historyDebug);
+              Logger.debug(historyDebug);
               return;
             }
 
@@ -153,7 +154,7 @@ export default class MapCard extends LitElement {
             }
 
             // Provide summary of config for each entities history
-            HaMapUtilities.debug(historyDebug);
+            Logger.debug(historyDebug);
 
             // Render history now if this isn't dynamic.
             if (ent.config.historyStart && ent.config.historyEnd){
@@ -165,7 +166,7 @@ export default class MapCard extends LitElement {
         } catch (e) {
           this.hasError = true;
           this.hadError = true;
-          console.error(e);
+          Logger.error(e);
           HaMapUtilities.renderWarningOnMap(this.map, "Error found in first run, check Console");
         }
         this.firstRenderWithMap = false;
@@ -187,7 +188,7 @@ export default class MapCard extends LitElement {
         } catch (e) {
           this.hasError = true;
           this.hadError = true;
-          console.error(e);
+          Logger.error(e);
           HaMapUtilities.renderWarningOnMap(this.map, "Error found, check Console");
         }
       });
@@ -203,7 +204,7 @@ export default class MapCard extends LitElement {
   }
 
   _firstRender(map, hass, entities) {
-    HaMapUtilities.debug("First Render with Map object, resetting size.")
+    Logger.debug("First Render with Map object, resetting size.")
     return entities.map((configEntity) => {
       const stateObj = hass.states[configEntity.id];
       const {
@@ -229,9 +230,9 @@ export default class MapCard extends LitElement {
         entity.marker.addTo(map);
         return entity; 
       } catch (e){
-         console.error("Entity: " + configEntity.id + " skipped due to missing data", e);
-         HaMapUtilities.renderWarningOnMap(this.map, "Entity: " + configEntity.id + " could not be loaded. See console for details.");
-         return null;
+        Logger.error("Entity: " + configEntity.id + " skipped due to missing data", e);
+        HaMapUtilities.renderWarningOnMap(this.map, "Entity: " + configEntity.id + " could not be loaded. See console for details.");
+        return null;
       }
     })
     // Remove skipped entities.

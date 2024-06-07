@@ -1,8 +1,7 @@
 
 import EntityHistory from "../models/EntityHistory.js";
-import HaMapUtilities from "../util/HaMapUtilities.js";
 import L from 'leaflet';
-
+import Logger from "../util/Logger.js"
 
 export default class Entity {
   /** @type {EntityConfig} */
@@ -70,9 +69,9 @@ export default class Entity {
       return [this.config.fixedX, this.config.fixedY];
     }
     if(latitude == null || longitude == null) {
-      console.warn("Entity: " + this.id + " has no latitude & longitude");
+      Logger.warn("Entity: " + this.id + " has no latitude & longitude");
       if(this.config.fallbackX == null || this.config.fallbackY == null) {
-        console.error("Entity: " + this.id + " has no fallback latitude & longitude");
+        Logger.error("Entity: " + this.id + " has no fallback latitude & longitude");
         throw Error("Entity: " + this.id + " has no latitude & longitude and no fallback configured")
       }
     }
@@ -82,7 +81,7 @@ export default class Entity {
   update(map, latitude, longitude, state) {
     if(this.display == "state") {
       if(state != this._currentState) {
-        HaMapUtilities.debug("[Entity] updating marker for " + this.id + " from " + this._currentState + " to " + state);
+        Logger.debug("[Entity] updating marker for " + this.id + " from " + this._currentState + " to " + state);
         this.marker.remove();
         this.marker = this._createMapMarker(latitude, longitude, null, state, null);
         this.marker.addTo(map);
@@ -106,7 +105,7 @@ export default class Entity {
   }
 
   _createMapMarker(latitude, longitude, icon, title, picture) {
-    HaMapUtilities.debug("[MarkerEntity] Creating marker for " + this.id + " with display mode " + this.display);
+    Logger.debug("[MarkerEntity] Creating marker for " + this.id + " with display mode " + this.display);
     if(this.display == "icon") {
       picture = null;
     }
