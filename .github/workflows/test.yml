@@ -22,6 +22,7 @@ jobs:
     - run: devenv test
       name: Run tests
   validate-hacs:
+    if: github.repository == 'nathan-gs/ha-map-card'
     runs-on: "ubuntu-latest"
     steps:
       - uses: "actions/checkout@v4"
