@@ -9,3 +9,12 @@ if (!customElements.get("map-card")) {
     'color: orange; font-weight: bold; background: black'
   )
 }
+
+// Register card so that it appears in the "Card Picker"
+window.customCards.push({
+    name: 'Map Card',
+    description: 'A more powerful Map Card for Home Assistant',
+    type: 'map-card',
+    preview: true,
+    documentationURL: `https://github.com/nathan-gs/ha-map-card`,
+});
