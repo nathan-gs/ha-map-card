@@ -156,8 +156,8 @@ export default class MapCard extends LitElement {
             // Provide summary of config for each entities history
             Logger.debug(historyDebug);
 
-            // Render history now if this isn't dynamic.
-            if (ent.config.historyStart && ent.config.historyEnd){
+            // Render history now if start is fixed and end isn't dynamic
+            if (ent.config.historyStart && !ent.config.historyEndEntity) {
               ent.setupHistory(this.historyService, ent.config.historyStart, ent.config.historyEnd);
             }
             
@@ -336,6 +336,23 @@ export default class MapCard extends LitElement {
       throw new Error(`Entity ${entityId} has no longitude & latitude.`);
     }
     return [entity.attributes.latitude, entity.attributes.longitude];
+  }
+
+  static getStubConfig(hass) {
+    // Find a power entity for default
+    const sampleEntities = Object.keys(hass.states).filter(
+      (entityId) => {
+        const entity = hass.states[entityId];
+        return (entity.state && entity.attributes && entity.attributes.latitude && entity.attributes.longitude); 
+      }  
+    );
+
+    // Sample config
+    return {
+      type: 'custom:map-card',
+      history_start: '24 hours ago',
+      entities: sampleEntities
+    };
   }
 
   static get styles() {
