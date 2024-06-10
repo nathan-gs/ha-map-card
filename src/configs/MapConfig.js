@@ -71,16 +71,17 @@ export default class MapConfig {
     });
 
     this.wms = (this._setConfigWithDefault(Array.isArray(inputConfig.wms) ? inputConfig.wms : [], [])).map((wms) => {
-      return new WmsLayerConfig(wms.url, wms.options);
+      return new WmsLayerConfig(wms.url, wms.options, wms.history);
     });
 
     this.tileLayers = (this._setConfigWithDefault(Array.isArray(inputConfig.tile_layers) ? inputConfig.tile_layers : [], [])).map((tile) => {
-      return new TileLayerConfig(tile.url, tile.options);
+      return new TileLayerConfig(tile.url, tile.options, tile.history);
     });
 
     this.tileLayer = new TileLayerConfig(
       this._setConfigWithDefault(inputConfig.tile_layer_url, "https://tile.openstreetmap.org/{z}/{x}/{y}.png"),
       this._setConfigWithDefault(inputConfig.tile_layer_options, {}),
+      null, // Default layer doesn't pass history by default.
       this._setConfigWithDefault(inputConfig.tile_layer_attribution, '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>')
     );
     if(!(Number.isFinite(this.x) && Number.isFinite(this.y)) && this.focusEntity == null && this.entities.length == 0) {
