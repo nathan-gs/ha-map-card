@@ -205,6 +205,11 @@ export default class MapCard extends LitElement {
 
   _firstRender(map, hass, entities) {
     Logger.debug("First Render with Map object, resetting size.")
+
+    // Load layers (need hass to be available)
+    this._addWmsLayers(map);
+    this._addTileLayers(map);
+
     return entities.map((configEntity) => {
       const stateObj = hass.states[configEntity.id];
       const {
@@ -237,6 +242,7 @@ export default class MapCard extends LitElement {
     })
     // Remove skipped entities.
     .filter(v => v);
+
   }
 
   _setupResizeObserver() {
@@ -266,18 +272,85 @@ export default class MapCard extends LitElement {
     map.addLayer(
       L.tileLayer(this.config.tileLayer.url, this.config.tileLayer.options)
     );
-    this._addWmsLayers(map);
-    this._addTileLayers(map);
     return map;
   }
 
-  _addWmsLayers(map) {
+  async _addWmsLayers(map) {
     this.config.wms.forEach((l) => {
-      L.tileLayer.wms(l.url, l.options).addTo(map);
+      // Layer
+      let layer = L.tileLayer.wms(l.url, l.options).addTo(map);
+
+      // Enable history Features
+      if (l.historyProperty) {
+        Logger.debug("WMS History detected. Enabling date tracking.");
+        this.initWMSLayerHistory(map, l, layer);
+      }
     });
   }
 
-  _addTileLayers(map) {
+  initWMSLayerHistory(map, l, layer)
+  {
+    let options = l.options;
+
+    // Layer swapper
+    let swapLayer = function(date) {
+      // Set date into `historyProperty` in WMS options
+      options[l.historyProperty] = date.toISOString();
+
+      // Draw our new layer
+      let newLayer = L.tileLayer.wms(l.url, options).addTo(map);
+      // When its ready, remove the old one.
+      newLayer.on('load', () => {
+        newLayer.off();// remove events
+        map.removeLayer(layer);
+        // And make this the new layer
+        layer = newLayer;
+      });
+
+      Logger.debug(`WMS Layer refreshed with ${l.historyProperty} = ${date}`);
+    }
+
+    // If source is auto
+    if (l.historySource == 'auto'){
+      // if we have a manager - use it
+      if (this.dateRangeManager) {
+        Logger.debug(`WMS Layer linked to date range.`);
+        this.dateRangeManager.onDateRangeChange((range) => {
+          swapLayer(range.start);
+        });
+      }
+      // if we use an entity, listen to it
+      else if (ent.config.historyStartEntity) {
+        Logger.debug(`WMS Layer linked entity history_start: ${ent.config.historyStartEntity}`);
+        this.linkedEntityService.onStateChange(
+           ent.config.historyStartEntity,
+           (newState) => {
+              // state: 2
+              // value = state+suffix = 2 hours
+              const suffix = ent.config.historyStartEntitySuffix;
+              const value = newState + (suffix ? ' ' + suffix : '');
+              const date = HaMapUtilities.convertToAbsoluteDate(value);
+
+              swapLayer(date);
+            }
+        );  
+      } else if(ent.config.historyStart) {
+        Logger.debug(`WMS Layer set with fixed history_start ${ent.config.historyStart.toISOString()}`);
+        swapLayer(ent.config.historyStart.toISOString());
+      }
+    } else {
+      // if historySource is its own entity. Listen to taht instead.
+      Logger.debug(`WMS Layer set to track custom date entity ${l.historySource}`);
+      this.linkedEntityService.onStateChange(
+           l.historySource, // Must provide a date.
+           (newState) => {
+              swapLayer(newState);
+            }
+        );
+    }
+  }
+
+  async _addTileLayers(map) {
     this.config.tileLayers.forEach((l) => {
       L.tileLayer(l.url, l.options).addTo(map);
     });
