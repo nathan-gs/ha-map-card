@@ -68,12 +68,13 @@ export default class MapConfig {
           // Is the date range manager enabled
           dateRangeManagerEnabled: (!!this.historyDateSelection)
       });
-
     });
-    this.wms = (this._setConfigWithDefault(inputConfig.wms, [])).map((wms) => {
+
+    this.wms = (this._setConfigWithDefault(Array.isArray(inputConfig.wms) ? inputConfig.wms : [], [])).map((wms) => {
       return new WmsLayerConfig(wms.url, wms.options);
     });
-    this.tileLayers = (this._setConfigWithDefault(inputConfig.tile_layers, [])).map((tile) => {
+
+    this.tileLayers = (this._setConfigWithDefault(Array.isArray(inputConfig.tile_layers) ? inputConfig.tile_layers : [], [])).map((tile) => {
       return new TileLayerConfig(tile.url, tile.options);
     });
 
