@@ -59,4 +59,13 @@ export default class HaMapUtilities {
   static removeWarningOnMap(map, message){
     L.control.attribution({prefix:'⚠️'}).removeAttribution(message).addTo(map);
   }
+
+  // entity path or object with an entity:
+  static isHistoryEntityConfig(value) {
+    return (
+        value &&
+        (typeof value == 'object' && value['entity']) ||
+        (typeof value == 'string' && value.includes('.'))
+      );
+  }
 }

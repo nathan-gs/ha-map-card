@@ -70,11 +70,16 @@ export default class MapConfig {
       });
     });
 
-    this.wms = (this._setConfigWithDefault(Array.isArray(inputConfig.wms) ? inputConfig.wms : [], [])).map((wms) => {
+
+    // Allow as none array
+    let wms = this._setConfigWithDefault(inputConfig.wms, []);
+    this.wms = (this._setConfigWithDefault(Array.isArray(wms) ? wms : [wms], [])).map((wms) => {
       return new WmsLayerConfig(wms.url, wms.options, wms.history);
     });
 
-    this.tileLayers = (this._setConfigWithDefault(Array.isArray(inputConfig.tile_layers) ? inputConfig.tile_layers : [], [])).map((tile) => {
+    // Allow as none array
+    let tile_layers = this._setConfigWithDefault(inputConfig.tile_layers, []);
+    this.tileLayers = (this._setConfigWithDefault(Array.isArray(tile_layers) ? tile_layers : [tile_layers], [])).map((tile) => {
       return new TileLayerConfig(tile.url, tile.options, tile.history);
     });
 

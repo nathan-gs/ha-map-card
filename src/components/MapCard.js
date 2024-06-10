@@ -294,6 +294,12 @@ export default class MapCard extends LitElement {
 
     // Layer swapper
     let swapLayer = function(date) {
+      // Force date to midnight. Some WMS services ignore requests for any other times.
+      // Useful when using "days ago" etc, given that can be a specific time.
+      if (l.historyForceMidnight) {
+        date.setUTCHours(0,0,0,0);
+      }
+
       // Set date into `historyProperty` in WMS options
       options[l.historyProperty] = date.toISOString();
 
@@ -307,47 +313,62 @@ export default class MapCard extends LitElement {
         layer = newLayer;
       });
 
-      Logger.debug(`WMS Layer refreshed with ${l.historyProperty} = ${date}`);
+      Logger.debug(`WMS Layer refreshed with ${l.historyProperty}=${date}`);
     }
 
     // If source is auto
-    if (l.historySource == 'auto'){
+    if (l.historySource == 'auto') {
       // if we have a manager - use it
       if (this.dateRangeManager) {
         Logger.debug(`WMS Layer linked to date range.`);
         this.dateRangeManager.onDateRangeChange((range) => {
           swapLayer(range.start);
         });
+
+        return;
       }
-      // if we use an entity, listen to it
-      else if (ent.config.historyStartEntity) {
-        Logger.debug(`WMS Layer linked entity history_start: ${ent.config.historyStartEntity}`);
-        this.linkedEntityService.onStateChange(
-           ent.config.historyStartEntity,
-           (newState) => {
-              // state: 2
-              // value = state+suffix = 2 hours
-              const suffix = ent.config.historyStartEntitySuffix;
+
+      // if we have a historyStart
+      if (this.config.historyStart) {
+        let historyStart = this.config.historyStart;
+
+        // If start is an entity, setup entity config
+        if (HaMapUtilities.isHistoryEntityConfig(historyStart)) {
+          let entity = historyStart['entity'] ?? historyStart;
+          Logger.debug(`WMS Layer linked entity history_start: ${entity}`);
+
+          // Link history
+          this.linkedEntityService.onStateChange(
+            entity,
+            (newState) => {
+              const suffix = historyStart['suffix'] ?? (!isNaN(newState) ? 'hours ago' : '');
               const value = newState + (suffix ? ' ' + suffix : '');
               const date = HaMapUtilities.convertToAbsoluteDate(value);
-
               swapLayer(date);
             }
-        );  
-      } else if(ent.config.historyStart) {
-        Logger.debug(`WMS Layer set with fixed history_start ${ent.config.historyStart.toISOString()}`);
-        swapLayer(ent.config.historyStart.toISOString());
-      }
-    } else {
-      // if historySource is its own entity. Listen to taht instead.
+          );  
+        } else {
+           // Fixed date?
+           Logger.debug(`WMS Layer set with fixed history_start ${historyStart}`);
+           swapLayer(HaMapUtilities.convertToAbsoluteDate(historyStart));
+        }
+
+        return;
+      } 
+    }
+
+    // History soruce is set & not auto
+    if (l.historySource) {
+      // if historySource is its own entity. Listen to that instead.
       Logger.debug(`WMS Layer set to track custom date entity ${l.historySource}`);
       this.linkedEntityService.onStateChange(
-           l.historySource, // Must provide a date.
-           (newState) => {
-              swapLayer(newState);
-            }
-        );
+        l.historySource, // Must provide a date.
+        (newState) => {
+            swapLayer(newState);
+        }
+      );
     }
+
   }
 
   async _addTileLayers(map) {
