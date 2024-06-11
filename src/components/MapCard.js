@@ -282,13 +282,25 @@ export default class MapCard extends LitElement {
 
       // Enable history Features
       if (l.historyProperty) {
-        Logger.debug("WMS History detected. Enabling date tracking.");
-        this.initWMSLayerHistory(map, l, layer);
+        Logger.debug("WMS history detected. Enabling date tracking.");
+        this.manageLayerHistory('wms', map, l, layer);
       }
     });
   }
 
-  initWMSLayerHistory(map, l, layer)
+  async _addTileLayers(map) {
+    this.config.tileLayers.forEach((l) => {
+      let layer = L.tileLayer(l.url, l.options).addTo(map);
+
+      if (l.historyProperty) {
+        Logger.debug("Tile layer history detected. Enabling date tracking.");
+        this.manageLayerHistory('tile_layer', map, l, layer);
+      }
+    });
+  }
+
+
+  manageLayerHistory(layerType, map, l, layer)
   {
     let options = l.options;
 
@@ -304,7 +316,10 @@ export default class MapCard extends LitElement {
       options[l.historyProperty] = date.toISOString();
 
       // Draw our new layer
-      let newLayer = L.tileLayer.wms(l.url, options).addTo(map);
+      let newLayer = layerType == 'wms' ? 
+        L.tileLayer.wms(l.url, options).addTo(map) :
+        L.tileLayer(l.url, options).addTo(map);
+
       // When its ready, remove the old one.
       newLayer.on('load', () => {
         newLayer.off();// remove events
@@ -313,7 +328,7 @@ export default class MapCard extends LitElement {
         layer = newLayer;
       });
 
-      Logger.debug(`WMS Layer refreshed with ${l.historyProperty}=${date}`);
+      Logger.debug(`Layer refreshed with ${l.historyProperty}=${date}`);
     }
 
     // If source is auto
@@ -371,11 +386,7 @@ export default class MapCard extends LitElement {
 
   }
 
-  async _addTileLayers(map) {
-    this.config.tileLayers.forEach((l) => {
-      L.tileLayer(l.url, l.options).addTo(map);
-    });
-  }
+
 
   setConfig(inputConfig) {
     this.config = new MapConfig(inputConfig);    
