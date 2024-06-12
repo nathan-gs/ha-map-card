@@ -68,4 +68,14 @@ export default class HaMapUtilities {
         (typeof value == 'string' && value.includes('.'))
       );
   }
+
+  static getEntityHistoryDate(state, suffix)
+  {
+      // If state isn't set, defualt to hours ago is value is numeric.
+      // If its not numeric, default to no suffix as likely is already be a date.
+      suffix = suffix ?? (!isNaN(state) ? 'hours ago' : '');
+      const value = state + (suffix ? ' ' + suffix : '');
+      console.log(value);
+      return HaMapUtilities.convertToAbsoluteDate(value);
+  }
 }

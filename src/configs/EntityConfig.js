@@ -66,7 +66,7 @@ export default class EntityConfig {
     // If start is an entity, setup entity config
     if (HaMapUtilities.isHistoryEntityConfig(historyStart)) {
       this.historyStartEntity = historyStart['entity'] ?? historyStart;
-      this.historyStartEntitySuffix = historyStart['suffix'] ??  (!isNaN(this.historyStartEntity) ? 'hours ago' : '');
+      this.historyStartEntitySuffix = historyStart['suffix'];
     } else {
         this.historyStart = historyStart ? HaMapUtilities.convertToAbsoluteDate(historyStart) : null;
     }
@@ -74,7 +74,7 @@ export default class EntityConfig {
     // If end is an entity, setup entity config
     if (HaMapUtilities.isHistoryEntityConfig(historyEnd)) {
       this.historyEndEntity = historyEnd['entity'] ?? historyEnd;
-      this.historyEndEntitySuffix = historyEnd['suffix'] ?? (!isNaN(this.historyEndEntity) ? 'hours ago' : '');
+      this.historyEndEntitySuffix = historyEnd['suffix'];
     } else {
       this.historyEnd = HaMapUtilities.convertToAbsoluteDate(historyEnd ?? 'now');
     }

@@ -115,13 +115,7 @@ export default class MapCard extends LitElement {
               this.linkedEntityService.onStateChange(
                 ent.config.historyStartEntity,
                 (newState) => {
-
-                  // state: 2
-                  // value = state+suffix = 2 hours
-                  const suffix = ent.config.historyStartEntitySuffix;
-                  const value = newState + (suffix ? ' ' + suffix : '');
-                  const date = HaMapUtilities.convertToAbsoluteDate(value);
-
+                  const date = HaMapUtilities.getEntityHistoryDate(newState, ent.config.historyStartEntitySuffix);
                   ent.setHistoryDates(date, ent.currentHistoryEnd);
                   this.refreshEntityHistory(ent);
                 }
@@ -137,12 +131,7 @@ export default class MapCard extends LitElement {
               this.linkedEntityService.onStateChange(
                 ent.config.historyEndEntity,
                 (newState) => {
-                  // state: 2
-                  // value = state+suffix = 2 hours
-                  const suffix = ent.config.historyEndEntitySuffix;
-                  const value = newState + (suffix ? ' ' + suffix : '');
-                  const date = HaMapUtilities.convertToAbsoluteDate(value);
-
+                  const date = HaMapUtilities.getEntityHistoryDate(newState, ent.config.historyEndEntitySuffix);
                   ent.setHistoryDates(ent.currentHistoryStart, date);
                   this.refreshEntityHistory(ent);
                 }
@@ -277,35 +266,39 @@ export default class MapCard extends LitElement {
 
   async _addWmsLayers(map) {
     this.config.wms.forEach((l) => {
-      // Layer
-      let layer = L.tileLayer.wms(l.url, l.options).addTo(map);
-
       // Enable history Features
       if (l.historyProperty) {
-        Logger.debug("WMS history detected. Enabling date tracking.");
-        this.manageLayerHistory('wms', map, l, layer);
+        Logger.debug("Setting up WMS layer with history.");
+        this.manageLayerHistory('wms', map, l);
+      } else {
+        Logger.debug("Rendering standard WMS.");
+        L.tileLayer.wms(l.url, l.options).addTo(map);
       }
     });
   }
 
   async _addTileLayers(map) {
     this.config.tileLayers.forEach((l) => {
-      let layer = L.tileLayer(l.url, l.options).addTo(map);
-
+      // 
       if (l.historyProperty) {
-        Logger.debug("Tile layer history detected. Enabling date tracking.");
-        this.manageLayerHistory('tile_layer', map, l, layer);
+        Logger.debug("Setting up tile layer with history.");
+        this.manageLayerHistory('tile_layer', map, l);
+      } else {
+        Logger.debug("Rendering standard Tile Layer.");
+        L.tileLayer(l.url, l.options).addTo(map);
       }
     });
   }
 
 
-  manageLayerHistory(layerType, map, l, layer)
+  manageLayerHistory(layerType, map, l)
   {
+    // Make layer
+    let layer;
     let options = l.options;
 
     // Layer swapper
-    let swapLayer = function(date) {
+    let updateLayer = function(date) {
       // Force date to midnight. Some WMS services ignore requests for any other times.
       // Useful when using "days ago" etc, given that can be a specific time.
       if (l.historyForceMidnight) {
@@ -323,7 +316,7 @@ export default class MapCard extends LitElement {
       // When its ready, remove the old one.
       newLayer.on('load', () => {
         newLayer.off();// remove events
-        map.removeLayer(layer);
+        if(layer) map.removeLayer(layer);
         // And make this the new layer
         layer = newLayer;
       });
@@ -337,7 +330,7 @@ export default class MapCard extends LitElement {
       if (this.dateRangeManager) {
         Logger.debug(`WMS Layer linked to date range.`);
         this.dateRangeManager.onDateRangeChange((range) => {
-          swapLayer(range.start);
+          updateLayer(range.start);
         });
 
         return;
@@ -356,16 +349,14 @@ export default class MapCard extends LitElement {
           this.linkedEntityService.onStateChange(
             entity,
             (newState) => {
-              const suffix = historyStart['suffix'] ?? (!isNaN(newState) ? 'hours ago' : '');
-              const value = newState + (suffix ? ' ' + suffix : '');
-              const date = HaMapUtilities.convertToAbsoluteDate(value);
-              swapLayer(date);
+              const date = HaMapUtilities.getEntityHistoryDate(newState, historyStart['suffix']);
+              updateLayer(date);
             }
           );  
         } else {
            // Fixed date?
            Logger.debug(`WMS Layer set with fixed history_start ${historyStart}`);
-           swapLayer(HaMapUtilities.convertToAbsoluteDate(historyStart));
+           updateLayer(HaMapUtilities.convertToAbsoluteDate(historyStart));
         }
 
         return;
@@ -379,7 +370,7 @@ export default class MapCard extends LitElement {
       this.linkedEntityService.onStateChange(
         l.historySource, // Must provide a date.
         (newState) => {
-            swapLayer(HaMapUtilities.convertToAbsoluteDate(newState));
+            updateLayer(HaMapUtilities.convertToAbsoluteDate(newState));
         }
       );
     }
