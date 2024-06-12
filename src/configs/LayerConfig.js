@@ -7,21 +7,18 @@ export default class LayerConfig {
   historyProperty;
   historySource;
   historyForceMidnight;
+  historySourceSuffix;
 
   constructor(url, options, historyConfig, attribution = null) {
     this.url = url;
     this.options = {...{attribution: attribution}, ...options};
 
-    this.historyProperty;
-    this.historySource;
-    this.historySourceSuffix;
-    this.historyForceMidnight;
-
     // history: propName
     // history:
     //   property: dateTime - value to set
     //   source: entity.myEntity - source for data. Default to auto (inherit from parent)
-    //   force_midnight
+    //   suffix:
+    //   force_midnight:
     if (historyConfig) {
       // Default source
       this.historySource = 'auto';
