@@ -14,6 +14,7 @@ export default class LayerConfig {
 
     this.historyProperty;
     this.historySource;
+    this.historySourceSuffix;
     this.historyForceMidnight;
 
     // history: propName
@@ -29,6 +30,7 @@ export default class LayerConfig {
         this.historyProperty = historyConfig.property;
         this.historySource = historyConfig.source ?? this.historySource;
         this.historyForceMidnight = historyConfig.force_midnight ?? false;
+        this.historySourceSuffix = historyConfig.suffix;
       } else {
         // Singular
         this.historyProperty = historyConfig;

@@ -370,7 +370,8 @@ export default class MapCard extends LitElement {
       this.linkedEntityService.onStateChange(
         l.historySource, // Must provide a date.
         (newState) => {
-            updateLayer(HaMapUtilities.convertToAbsoluteDate(newState));
+          const date = HaMapUtilities.getEntityHistoryDate(newState, l.historySourceSuffix);
+          updateLayer(date);
         }
       );
     }
