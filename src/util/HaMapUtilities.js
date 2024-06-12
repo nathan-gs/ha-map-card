@@ -75,7 +75,6 @@ export default class HaMapUtilities {
       // If its not numeric, default to no suffix as likely is already be a date.
       suffix = suffix ?? (!isNaN(state) ? 'hours ago' : '');
       const value = state + (suffix ? ' ' + suffix : '');
-      console.log(value);
       return HaMapUtilities.convertToAbsoluteDate(value);
   }
 }
