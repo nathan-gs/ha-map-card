@@ -2,8 +2,8 @@ name: HACS Validate
 
 on:
   push:
-  pull_request:
-  workflow_dispatch:
+    tags:
+    - 'v*'
 
 jobs:
   validate-hacs:
