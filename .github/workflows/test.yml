@@ -21,12 +21,3 @@ jobs:
       run: nix profile install nixpkgs#devenv
     - run: devenv test
       name: Run tests
-  validate-hacs:
-    if: github.repository == 'nathan-gs/ha-map-card'
-    runs-on: "ubuntu-latest"
-    steps:
-      - uses: "actions/checkout@v4"
-      - name: HACS validation
-        uses: "hacs/action@main"
-        with:
-          category: "plugin"
