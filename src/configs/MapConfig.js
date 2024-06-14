@@ -68,18 +68,25 @@ export default class MapConfig {
           // Is the date range manager enabled
           dateRangeManagerEnabled: (!!this.historyDateSelection)
       });
+    });
 
+
+    // Allow as none array
+    let wms = this._setConfigWithDefault(inputConfig.wms, []);
+    this.wms = (this._setConfigWithDefault(Array.isArray(wms) ? wms : [wms], [])).map((wms) => {
+      return new WmsLayerConfig(wms.url, wms.options, wms.history);
     });
-    this.wms = (this._setConfigWithDefault(inputConfig.wms, [])).map((wms) => {
-      return new WmsLayerConfig(wms.url, wms.options);
-    });
-    this.tileLayers = (this._setConfigWithDefault(inputConfig.tile_layers, [])).map((tile) => {
-      return new TileLayerConfig(tile.url, tile.options);
+
+    // Allow as none array
+    let tile_layers = this._setConfigWithDefault(inputConfig.tile_layers, []);
+    this.tileLayers = (this._setConfigWithDefault(Array.isArray(tile_layers) ? tile_layers : [tile_layers], [])).map((tile) => {
+      return new TileLayerConfig(tile.url, tile.options, tile.history);
     });
 
     this.tileLayer = new TileLayerConfig(
       this._setConfigWithDefault(inputConfig.tile_layer_url, "https://tile.openstreetmap.org/{z}/{x}/{y}.png"),
       this._setConfigWithDefault(inputConfig.tile_layer_options, {}),
+      null, // Default layer doesn't pass history by default.
       this._setConfigWithDefault(inputConfig.tile_layer_attribution, '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>')
     );
     if(!(Number.isFinite(this.x) && Number.isFinite(this.y)) && this.focusEntity == null && this.entities.length == 0) {

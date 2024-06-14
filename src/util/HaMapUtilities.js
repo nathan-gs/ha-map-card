@@ -5,7 +5,6 @@ import L from 'leaflet';
  */
 export default class HaMapUtilities {
 
-
   static convertToAbsoluteDate(inputStr) {  
     // Check if the input string is a relative timestamp  
     var relativeTimePattern = /^\d+\s+(second|minute|hour|day|week|month|year)s?\s+ago$/i;  
@@ -52,11 +51,11 @@ export default class HaMapUtilities {
   }
 
   // Show error message
-  static renderWarningOnMap(map, message){
+  static renderWarningOnMap(map, message) {
     L.control.attribution({prefix:'⚠️'}).addAttribution(message).addTo(map);
   }
   // Hide error message
-  static removeWarningOnMap(map, message){
+  static removeWarningOnMap(map, message) {
     L.control.attribution({prefix:'⚠️'}).removeAttribution(message).addTo(map);
   }
 
@@ -82,5 +81,22 @@ export default class HaMapUtilities {
 
     // :(
     return null;
+  }
+
+  // entity path or object with an entity:
+  static isHistoryEntityConfig(value) {
+    return (
+        value &&
+        (typeof value == 'object' && value['entity']) ||
+        (typeof value == 'string' && value.includes('.'))
+      );
+  }
+
+  static getEntityHistoryDate(state, suffix) {
+      // If state isn't set, defualt to hours ago is value is numeric.
+      // If its not numeric, default to no suffix as likely is already be a date.
+      suffix = suffix ?? (!isNaN(state) ? 'hours ago' : '');
+      const value = state + (suffix ? ' ' + suffix : '');
+      return HaMapUtilities.convertToAbsoluteDate(value);
   }
 }
