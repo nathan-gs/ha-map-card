@@ -59,4 +59,22 @@ export default class HaMapUtilities {
   static removeWarningOnMap(map, message){
     L.control.attribution({prefix:'⚠️'}).removeAttribution(message).addTo(map);
   }
+
+  // entity path or object with an entity:
+  static isHistoryEntityConfig(value) {
+    return (
+        value &&
+        (typeof value == 'object' && value['entity']) ||
+        (typeof value == 'string' && value.includes('.'))
+      );
+  }
+
+  static getEntityHistoryDate(state, suffix)
+  {
+      // If state isn't set, defualt to hours ago is value is numeric.
+      // If its not numeric, default to no suffix as likely is already be a date.
+      suffix = suffix ?? (!isNaN(state) ? 'hours ago' : '');
+      const value = state + (suffix ? ' ' + suffix : '');
+      return HaMapUtilities.convertToAbsoluteDate(value);
+  }
 }

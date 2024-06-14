@@ -64,17 +64,17 @@ export default class EntityConfig {
     const historyEnd = config.history_end ?? defaults.historyEnd;
 
     // If start is an entity, setup entity config
-    if (this.isHistoryEntityConfig(historyStart)) {
+    if (HaMapUtilities.isHistoryEntityConfig(historyStart)) {
       this.historyStartEntity = historyStart['entity'] ?? historyStart;
-      this.historyStartEntitySuffix = historyStart['suffix'] ?? 'hours ago';
+      this.historyStartEntitySuffix = historyStart['suffix'];
     } else {
         this.historyStart = historyStart ? HaMapUtilities.convertToAbsoluteDate(historyStart) : null;
     }
 
     // If end is an entity, setup entity config
-    if (this.isHistoryEntityConfig(historyEnd)) {
+    if (HaMapUtilities.isHistoryEntityConfig(historyEnd)) {
       this.historyEndEntity = historyEnd['entity'] ?? historyEnd;
-      this.historyEndEntitySuffix = historyEnd['suffix'] ?? 'hours ago';
+      this.historyEndEntitySuffix = historyEnd['suffix'];
     } else {
       this.historyEnd = HaMapUtilities.convertToAbsoluteDate(historyEnd ?? 'now');
     }

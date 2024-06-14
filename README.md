@@ -84,6 +84,16 @@ Either the name of the `entity` or:
 | `fallback_x`          |                                       | If the latitude/longitude is missing, use these fixed attributes                              |
 | `fallback_y`          |                                       | If the latitude/longitude is missing, use these fixed attributes                              |
 
+#### WMS and tile_layers options
+
+| name      | note                                                                                                                                                        |
+|-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `url`     | The url of the layer                                                                                                                                        |
+| `options` | The leaflet layer [WMS options](https://leafletjs.com/reference.html#tilelayer-wms) or [Tile Layer options](https://leafletjs.com/reference.html#tilelayer) |
+| `history` | If the layer or WMS supports a date or time option. Set history to the name of this property. The `history_start` value, state or date range picker will then set this property on the layer and update it as necessary. |
+
+
+
 #### History options.
 
 If `history_date_selection:true`, any entities that do not define their own `history_start` and `history_end` configuration will be automatically linked to this. Please ensure a card of `type: energy-date-selection`  exists on the page before enabling this.
@@ -105,13 +115,20 @@ history_start:
 Each entity can individually override the base config by setting its own `history_start`/`history_end`, using any of the options above.
 Any entity without its own settings will inherit the map level config.
 
+##### Advanced WMS/Tile layer options.
+More complex use of the WMS/Tile history property can be configured within the history property of the layer.
+* `property` is the option this should control
+* `source` defaults to auto (which means it will inherit from the main map settings). Set this to a date or number entity if this is different.
+* `suffix` days ago/weeks ago as with other history entities
+* `force_midnight` some WMS/Tile layers only work if the date is set as midnight.
 
-#### WMS and tile_layers options
-
-| name      | note                                                                                                                                                        |
-|-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `url`     | The url of the layer                                                                                                                                        |
-| `options` | The leaflet layer [WMS options](https://leafletjs.com/reference.html#tilelayer-wms) or [Tile Layer options](https://leafletjs.com/reference.html#tilelayer) |
+```
+  history:
+    property: time
+    source: input_number.test_number_value
+    suffix: months ago
+    force_midnight: true
+```
 
 
 #### Extra Tile Layers

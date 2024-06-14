@@ -115,13 +115,7 @@ export default class MapCard extends LitElement {
               this.linkedEntityService.onStateChange(
                 ent.config.historyStartEntity,
                 (newState) => {
-
-                  // state: 2
-                  // value = state+suffix = 2 hours
-                  const suffix = ent.config.historyStartEntitySuffix;
-                  const value = newState + (suffix ? ' ' + suffix : '');
-                  const date = HaMapUtilities.convertToAbsoluteDate(value);
-
+                  const date = HaMapUtilities.getEntityHistoryDate(newState, ent.config.historyStartEntitySuffix);
                   ent.setHistoryDates(date, ent.currentHistoryEnd);
                   this.refreshEntityHistory(ent);
                 }
@@ -137,12 +131,7 @@ export default class MapCard extends LitElement {
               this.linkedEntityService.onStateChange(
                 ent.config.historyEndEntity,
                 (newState) => {
-                  // state: 2
-                  // value = state+suffix = 2 hours
-                  const suffix = ent.config.historyEndEntitySuffix;
-                  const value = newState + (suffix ? ' ' + suffix : '');
-                  const date = HaMapUtilities.convertToAbsoluteDate(value);
-
+                  const date = HaMapUtilities.getEntityHistoryDate(newState, ent.config.historyEndEntitySuffix);
                   ent.setHistoryDates(ent.currentHistoryStart, date);
                   this.refreshEntityHistory(ent);
                 }
@@ -205,6 +194,11 @@ export default class MapCard extends LitElement {
 
   _firstRender(map, hass, entities) {
     Logger.debug("First Render with Map object, resetting size.")
+
+    // Load layers (need hass to be available)
+    this._addWmsLayers(map);
+    this._addTileLayers(map);
+
     return entities.map((configEntity) => {
       const stateObj = hass.states[configEntity.id];
       const {
@@ -237,6 +231,7 @@ export default class MapCard extends LitElement {
     })
     // Remove skipped entities.
     .filter(v => v);
+
   }
 
   _setupResizeObserver() {
@@ -266,22 +261,124 @@ export default class MapCard extends LitElement {
     map.addLayer(
       L.tileLayer(this.config.tileLayer.url, this.config.tileLayer.options)
     );
-    this._addWmsLayers(map);
-    this._addTileLayers(map);
     return map;
   }
 
-  _addWmsLayers(map) {
+  async _addWmsLayers(map) {
     this.config.wms.forEach((l) => {
-      L.tileLayer.wms(l.url, l.options).addTo(map);
+      // Enable history Features
+      if (l.historyProperty) {
+        Logger.debug("Setting up WMS layer with history.");
+        this.manageLayerHistory('wms', map, l);
+      } else {
+        Logger.debug("Rendering standard WMS.");
+        L.tileLayer.wms(l.url, l.options).addTo(map);
+      }
     });
   }
 
-  _addTileLayers(map) {
+  async _addTileLayers(map) {
     this.config.tileLayers.forEach((l) => {
-      L.tileLayer(l.url, l.options).addTo(map);
+      // 
+      if (l.historyProperty) {
+        Logger.debug("Setting up tile layer with history.");
+        this.manageLayerHistory('tile_layer', map, l);
+      } else {
+        Logger.debug("Rendering standard Tile Layer.");
+        L.tileLayer(l.url, l.options).addTo(map);
+      }
     });
   }
+
+
+  manageLayerHistory(layerType, map, l)
+  {
+    // Make layer
+    let layer;
+    let options = l.options;
+
+    // Layer swapper
+    let updateLayer = function(date) {
+      // Force date to midnight. Some WMS services ignore requests for any other times.
+      // Useful when using "days ago" etc, given that can be a specific time.
+      if (l.historyForceMidnight) {
+        date.setUTCHours(0,0,0,0);
+      }
+
+      // Set date into `historyProperty` in WMS options
+      options[l.historyProperty] = date.toISOString();
+
+      // Draw our new layer
+      let newLayer = layerType == 'wms' ? 
+        L.tileLayer.wms(l.url, options).addTo(map) :
+        L.tileLayer(l.url, options).addTo(map);
+
+      // When its ready, remove the old one.
+      newLayer.on('load', () => {
+        newLayer.off();// remove events
+        if(layer) map.removeLayer(layer);
+        // And make this the new layer
+        layer = newLayer;
+      });
+
+      Logger.debug(`Layer refreshed with ${l.historyProperty}=${date}`);
+    }
+
+    // If source is auto
+    if (l.historySource == 'auto') {
+      // if we have a manager - use it
+      if (this.dateRangeManager) {
+        Logger.debug(`WMS Layer linked to date range.`);
+        this.dateRangeManager.onDateRangeChange((range) => {
+          updateLayer(range.start);
+        });
+
+        return;
+      }
+
+      // if we have a historyStart
+      if (this.config.historyStart) {
+        let historyStart = this.config.historyStart;
+
+        // If start is an entity, setup entity config
+        if (HaMapUtilities.isHistoryEntityConfig(historyStart)) {
+          let entity = historyStart['entity'] ?? historyStart;
+          Logger.debug(`WMS Layer linked entity history_start: ${entity}`);
+
+          // Link history
+          this.linkedEntityService.onStateChange(
+            entity,
+            (newState) => {
+              const date = HaMapUtilities.getEntityHistoryDate(newState, historyStart['suffix']);
+              updateLayer(date);
+            }
+          );  
+        } else {
+           // Fixed date?
+           Logger.debug(`WMS Layer set with fixed history_start ${historyStart}`);
+           updateLayer(HaMapUtilities.convertToAbsoluteDate(historyStart));
+        }
+
+        return;
+      } 
+    }
+
+    // History soruce is set & not auto
+    if (l.historySource) {
+      // if historySource is its own entity. Listen to that instead.
+      Logger.debug(`WMS Layer set to track custom date entity ${l.historySource}`);
+      this.linkedEntityService.onStateChange(
+        l.historySource, // Must provide a date.
+        (newState) => {
+          const date = HaMapUtilities.getEntityHistoryDate(newState, l.historySourceSuffix);
+          updateLayer(date);
+        }
+      );
+    }
+
+  }
+
+
 
   setConfig(inputConfig) {
     this.config = new MapConfig(inputConfig);    
