@@ -173,12 +173,13 @@ export default class MapCard extends LitElement {
       }
 
       this.entities.forEach((ent) => {
-        const stateObj = this.hass.states[ent.id];
-        const {
-          latitude,
-          longitude,
-        } = stateObj.attributes;
-        try {
+      const stateObj = this.hass.states[ent.id];
+      // Get location
+      const latLng = HaMapUtilities.getEntityLatLng(ent.id, this.hass.states);
+      const latitude = latLng[0] ?? null;
+      const longitude = latLng[1] ?? null;
+
+      try {
           ent.update(this.map, latitude, longitude, this.hass.formatEntityState(stateObj));
 
           ent.renderHistory().forEach((marker) => {
@@ -208,8 +209,6 @@ export default class MapCard extends LitElement {
     return entities.map((configEntity) => {
       const stateObj = hass.states[configEntity.id];
       const {
-        latitude,
-        longitude,
         //passive,
         icon,
         //radius,
@@ -218,6 +217,11 @@ export default class MapCard extends LitElement {
         friendly_name
       } = stateObj.attributes;
       const state = hass.formatEntityState(stateObj);
+
+      // Get lat lng
+      let latLng = HaMapUtilities.getEntityLatLng(configEntity.id, hass.states);
+      const latitude = latLng[0] ?? null;
+      const longitude = latLng[1] ?? null;
 
       // If no configured picture, fallback to entity picture
       let picture = configEntity.picture ?? entity_picture;
@@ -332,10 +336,13 @@ export default class MapCard extends LitElement {
     if (!entity) {
       throw new Error(`Entity ${entityId} not found`);
     }
-    if (!(entity.attributes.latitude || entity.attributes.longitude)) {
-      throw new Error(`Entity ${entityId} has no longitude & latitude.`);
-    }
-    return [entity.attributes.latitude, entity.attributes.longitude];
+
+    // Get lat/lng (inc sub trackers)
+    let latLng = HaMapUtilities.getEntityLatLng(entityId, this.hass.states);
+    if (latLng) return latLng;
+
+    // Unable to find
+    throw new Error(`Entity ${entityId} has no longitude & latitude.`);
   }
 
   static getStubConfig(hass) {

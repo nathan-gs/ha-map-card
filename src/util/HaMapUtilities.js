@@ -59,4 +59,28 @@ export default class HaMapUtilities {
   static removeWarningOnMap(map, message){
     L.control.attribution({prefix:'⚠️'}).removeAttribution(message).addTo(map);
   }
+
+  // Get Lat/Lng of entity. Some entities such as "person" define device_trackers allowing
+  // multiple lat/lng sources to be used. This method will call down through these looking for a
+  // lat/lng value if none is defined on the parent entity.
+  static getEntityLatLng(entityId, states) {
+    let entity = states[entityId];
+
+    // Do we have Lng/Lat directly?
+    if (entity.attributes.latitude && entity.attributes.longitude) {
+        return [entity.attributes.latitude, entity.attributes.longitude];
+    }
+
+    // If any, see if we can get a lng/lat from one instead
+    let subTrackerIds = states[entityId]?.attributes?.device_trackers ?? []
+    for(let t=0; t<subTrackerIds.length; t++) {
+      entity = states[subTrackerIds[t]];
+      if (entity.attributes.latitude && entity.attributes.longitude) {
+          return [entity.attributes.latitude, entity.attributes.longitude];
+      }
+    }
+
+    // :(
+    return null;
+  }
 }

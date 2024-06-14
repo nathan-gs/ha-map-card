@@ -16,10 +16,17 @@ export default class HaHistoryService {
    * @param {Date} end
    * @param {Function} f
    **/
-  subscribe(entityId, start, end, f) {  
+  subscribe(entityId, start, end, f) {
+
+    // Does this entity define a collection of `device_trackers`? (such as a person entity)
+    // or should it just use the base entity itself
+    let trackerEntityIds = this.hass.states[entityId]?.attributes?.device_trackers ?? [];
+    // Always include self, as may have data points directly.
+    trackerEntityIds.push(entityId);
+
     let params = {  
       type: 'history/stream',  
-      entity_ids: [entityId],
+      entity_ids: trackerEntityIds,
       significant_changes_only: true,
       start_time: start.toISOString()
     };
@@ -33,15 +40,22 @@ export default class HaHistoryService {
 
       this.connection[entityId] = this.hass.connection.subscribeMessage(
         (message) => {
-          message.states[entityId]?.map((state) => {
-            if(state.a.latitude && state.a.longitude) {
-              Logger.debug("[HaHistoryService]: received new msg for entity id: " + entityId);
-              f(new TimelineEntry(new Date(state.lu * 1000), state.a.latitude, state.a.longitude));
-            }
+          // entities providing results
+          Object.values(message.states).map((entity) => {
+            // Each entity can return own results
+            entity?.map((state) => {
+              // Get states from each
+              if(state.a.latitude && state.a.longitude) {
+                Logger.debug("[HaHistoryService]: received new msg for entity id: " + entityId);
+                f(new TimelineEntry(new Date(state.lu * 1000), state.a.latitude, state.a.longitude));
+              }
+            });
           });
+          
         },
         params);
       Logger.debug(`[HaHistoryService] successfully subscribed to history from ${entityId} showing ${params.start_time} till ${params.end_time ?? 'now'}`);
+      Logger.debug(`[HaHistoryService] ${entityId} is connected to ${trackerEntityIds.length} location sources.`);
     } catch (error) {        
       Logger.error(`Error retrieving history for entity ${entityId}: ${error}`, error);  
     }  
