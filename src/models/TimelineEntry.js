@@ -1,9 +1,9 @@
 export default class TimelineEntry {  
   /** @type {Date} */
   timestamp;
-  /** @type {Double} */
+  /** @type {number} */
   latitude;
-  /** @type {Double} */
+  /** @type {number} */
   longitude;
 
   constructor(timestamp, latitude, longitude) {  

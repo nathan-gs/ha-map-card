@@ -1,14 +1,16 @@
 import L from 'leaflet';
+import TimelineEntry from './TimelineEntry';
+import { Polyline, CircleMarker } from 'leaflet';
 
 export default class EntityHistory {
 
-  /** @type {String} */
+  /** @type {string} */
   entityId;
-  /** @type {String} */
+  /** @type {string} */
   entityTitle;
   /** @type {[TimelineEntry]} */
   entries = [];
-  /** @type {String} */
+  /** @type {string} */
   color;
   /** @type {[Polyline|CircleMarker]} */
   mapPaths = [];
@@ -30,7 +32,7 @@ export default class EntityHistory {
   };
 
   /**
-   * @returns {[(Polyline|CircleMarker)]}
+   * @returns {[(Polyline|CircleMarker)]} 
    */
   render() {
     if(this.needRerender == false || this.entries.length == 0) {

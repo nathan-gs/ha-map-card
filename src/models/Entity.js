@@ -1,13 +1,16 @@
 
 import EntityHistory from "../models/EntityHistory.js";
 import L from 'leaflet';
+import { Polyline, CircleMarker } from "leaflet";
 import Logger from "../util/Logger.js"
+import EntityConfig from "../configs/EntityConfig.js";
 
 export default class Entity {
   /** @type {EntityConfig} */
   config;  
+  /** @type {L.Marker} */
   marker;
-  /** @type {[String]} */
+  /** @type {[string]} */
   title;
   /** @type {[EntityHistory]} */
   histories = [];
