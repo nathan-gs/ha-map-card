@@ -9,14 +9,15 @@ export default class MapCardEntityMarker extends LitElement {
       'picture': {type: String, attribute: 'picture'},
       'icon': {type: String, attribute: 'icon'},
       'color': {type: String, attribute: 'color'},
-      'size': {type: Number}
+      'size': {type: Number},
+      'darkMode': {type: Boolean, attribute: 'dark-mode'},
     };
   }
 
   render() {
    return html`
       <div
-        class="marker ${this.picture ? "picture" : ""}"
+        class="marker ${this.picture ? "picture" : ""}  ${this.darkMode ? "dark" : ""}"
         style="border-color: ${this.color}; height: ${this.size}px; width: ${this.size}px;"
         @click=${this._badgeTap}
         title="${this.tooltip}"
@@ -75,6 +76,10 @@ export default class MapCardEntityMarker extends LitElement {
         background-size: cover;
         height: 100%;
         width: 100%;
+      }
+      .marker.dark {
+        color: var(--card-background-color);
+        background-color: var(--primary-text-color);
       }
     `;
   }
