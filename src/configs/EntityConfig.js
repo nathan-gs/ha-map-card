@@ -1,46 +1,46 @@
 import HaMapUtilities from "../util/HaMapUtilities.js"
 
 export default class EntityConfig {
-  /** @type {String} */
+  /** @type {string} */
   id;
-  /** @type {String} */
+  /** @type {string} */
   display;
-  /** @type {Int} */
+  /** @type {number} */
   size;
   /** @type {Date} */
   historyStart;
   /** @type {Date} */
   historyEnd;
 
-  /** @type {String} */
+  /** @type {string} */
   historyStartEntity;
   historyStartEntitySuffix;
-  /** @type {String} */
+  /** @type {string} */
   historyEndEntity;
   historyEndEntitySuffix;
 
-  /** @type {String} */
+  /** @type {string} */
   historyLineColor;
-  /** @type {Boolean} */
+  /** @type {boolean} */
   historyShowDots;
-  /** @type {Boolean} */
+  /** @type {boolean} */
   historyShowLines;
-  /** @type {Double} */
+  /** @type {number} */
   fixedX;
-  /** @type {Double} */
+  /** @type {number} */
   fixedY;
-  /** @type {Double} */
+  /** @type {number} */
   fallbackX;
-  /** @type {Double} */
+  /** @type {number} */
   fallbackY;
-  /** @type {String} */
+  /** @type {string} */
   css;
   // Cannot be set via config. Passed from parent
   historyManagedExternally;
   
-  /** @type {String} */
+  /** @type {string} */
   picture;
-  /** @type {String} */
+  /** @type {string} */
   color;
 
   // Is valye of this config item a HistoryEntity vs a date

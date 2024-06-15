@@ -1,6 +1,6 @@
 {
   "name": "ha-map-card",
-  "version": "1.1.0",
+  "version": "1.2.1",
   "description": "A better Map Card for Home Assistant",
   "main": "src/index.js",
   "scripts": {
@@ -26,9 +26,9 @@
     "@eslint/js": "^9.4.0",
     "@rollup/plugin-commonjs": "^25.0.8",
     "@rollup/plugin-node-resolve": "^15.2.3",
-    "eslint": "^9.4.0",
+    "eslint": "^9.5.0",
+    "eslint-plugin-jsdoc": "^48.2.12",
     "globals": "^15.3.0",
     "rollup": "^4.18.0"
   }
-  
 }

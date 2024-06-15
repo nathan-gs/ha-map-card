@@ -1,18 +1,21 @@
-import EntityConfig from "./EntityConfig.js"
-import TileLayerConfig from "./TileLayerConfig.js"
-import WmsLayerConfig from "./WmsLayerConfig.js"
-import Logger from "../util/Logger.js"
+import EntityConfig from "./EntityConfig.js";
+import TileLayerConfig from "./TileLayerConfig.js";
+import WmsLayerConfig from "./WmsLayerConfig.js";
+import Logger from "../util/Logger.js";
+import Entity from "../models/Entity.js";
 
 
 export default class MapConfig {
-  /** @type {String} */
+  /** @type {string} */
   title;
   focusEntity;
+  /** @type {number} */
   x;
+  /** @type {number} */
   y;
-  /** @type {Int} */
+  /** @type {number} */
   zoom;
-  /** @type {Int} */
+  /** @type {number} */
   cardSize;
   /** @type {[EntityConfig]} */
   entities;
@@ -26,10 +29,10 @@ export default class MapConfig {
   historyStart;
   /** @type {Date|Entity} */
   historyEnd;
-
+  /** @type {boolean} */
   historyDateSelection;
 
-  /** @type {Bool} */
+  /** @type {boolean} */
   debug = false;
 
   constructor(inputConfig) {
@@ -105,11 +108,12 @@ export default class MapConfig {
     }
   }
 
+  /** @returns {boolean} if there is a title */
   get hasTitle() {
     return this.title != null;
   }
 
-  /** @returns {Int} */
+  /** @returns {number} the map height */
   get mapHeight() {
     if (this.hasTitle) {
       return (this.cardSize * 50) + 20 - 76 - 2;

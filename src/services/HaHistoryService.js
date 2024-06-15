@@ -11,7 +11,7 @@ export default class HaHistoryService {
   }  
 
   /** 
-   * @param {String} entityId
+   * @param {string} entityId
    * @param {Date} start  
    * @param {Date} end
    * @param {Function} f
@@ -40,7 +40,6 @@ export default class HaHistoryService {
 
       this.connection[entityId] = this.hass.connection.subscribeMessage(
         (message) => {
-          console.log(message.states);
           // entities providing results
           Object.values(message.states).map((entity) => {
             // Each entity can return own results
