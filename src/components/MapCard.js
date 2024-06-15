@@ -35,11 +35,14 @@ export default class MapCard extends LitElement {
   linkedEntityService;
   /** @type {HaDateRangeService} */
   dateRangeManager;
+  /** @type {string} */
+  themeMode
 
   hasError = false;
   hadError = false;
 
   firstUpdated() {
+    this.themeMode = this.config.themeMode;
     this.map = this._setupMap();
     // redraw the map every time it resizes
     this.resizeObserver = this._setupResizeObserver();
@@ -223,7 +226,7 @@ export default class MapCard extends LitElement {
 
       // Attempt to setup entity. Skip on fail, so one bad entity does not affect others.
       try {
-        const entity = new Entity(configEntity, latitude, longitude, icon, friendly_name, state, picture);      
+        const entity = new Entity(configEntity, latitude, longitude, icon, friendly_name, state, picture, this._isDarkMode());      
         entity.marker.addTo(map);
         return entity; 
       } catch (e){
@@ -260,6 +263,9 @@ export default class MapCard extends LitElement {
 
     const mapEl = this.shadowRoot.querySelector('#map');
     let map = L.map(mapEl).setView(this._getLatLong(), this.config.zoom);
+
+    // Add dark class if darkmode
+    this._isDarkMode() ? mapEl.classList.add('dark') : mapEl.classList.add('light');
 
     map.addLayer(
       L.tileLayer(this.config.tileLayer.url, this.config.tileLayer.options)
@@ -336,6 +342,13 @@ export default class MapCard extends LitElement {
     return [entity.attributes.latitude, entity.attributes.longitude];
   }
 
+  _isDarkMode() {
+    return (
+      this.themeMode === "dark" ||
+      (this.themeMode === "auto" && Boolean(this.hass.themes.darkMode))
+    );
+  }
+
   static getStubConfig(hass) {
     // Find a power entity for default
     const sampleEntities = Object.keys(hass.states).filter(
@@ -379,16 +392,26 @@ export default class MapCard extends LitElement {
         border-radius: 4px;
         box-shadow: none !important;
       }
-      .marker {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        box-sizing: border-box;
-        font-size: var(--ha-marker-font-size, 1.5em);
-        border-radius: 50%;
-        border: 1px solid var(--ha-marker-color, var(--primary-color));
-        color: var(--primary-text-color);
-        background-color: var(--card-background-color);
+      #map.dark {
+         background: #090909;
+        color: #ffffff;
+        --map-filter: invert(0.9) hue-rotate(170deg) brightness(1.5)
+          contrast(1.2) saturate(0.3);
+      }
+      #map.light {
+        background: #ffffff;
+        color: #000000;
+        --map-filter: invert(0);
+      }
+      .dark .leaflet-bar a {
+        background-color: #1c1c1c;
+        color: #ffffff;
+      }
+      .dark .leaflet-bar a:hover {
+        background-color: #313131;
+      }
+      .leaflet-tile-pane {
+        filter: var(--map-filter);
       }
     `;
   }

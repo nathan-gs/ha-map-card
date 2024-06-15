@@ -31,6 +31,8 @@ export default class MapConfig {
   historyEnd;
   /** @type {boolean} */
   historyDateSelection;
+  /** @type {string} */
+  themeMode;
 
   /** @type {boolean} */
   debug = false;
@@ -42,6 +44,9 @@ export default class MapConfig {
     this.y = inputConfig.y;
     this.zoom = this._setConfigWithDefault(inputConfig.zoom, 12);
     this.cardSize = this._setConfigWithDefault(inputConfig.card_size, 5);
+
+    // Get theme mode.
+    this.themeMode = ['dark', 'light', 'auto'].includes(inputConfig.theme_mode) ? inputConfig.theme_mode : 'auto';
 
     // Enable debug messaging. 
     // Card is quite chatty with this enabled.
