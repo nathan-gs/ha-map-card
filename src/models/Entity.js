@@ -131,7 +131,7 @@ export default class Entity {
             color="${this.config.color}"
             style="${this.config.css}"
             size="${this.config.size}"
-            dark-mode="{$darkMode}"
+            dark-mode="${darkMode}"
           ></map-card-entity-marker>
         `,
         iconSize: [this.config.size, this.config.size],
