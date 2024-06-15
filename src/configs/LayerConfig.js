@@ -1,7 +1,7 @@
 export default class LayerConfig {
-  /** @type {String} */
+  /** @type {string} */
   url;
-  /** @type {Object} */
+  /** @type {object} */
   options;
 
   historyProperty;

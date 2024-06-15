@@ -9,6 +9,9 @@ import HaMapUtilities from "../util/HaMapUtilities.js"
 import Logger from "../util/Logger.js"
 
 import Entity from "../models/Entity.js"
+import Layer from '../models/Layer.js';
+import LayerWithHistory from '../models/LayerWithHistory.js';
+import LayerConfig from '../configs/LayerConfig.js';
 
 export default class MapCard extends LitElement {
   static get properties() {
@@ -28,7 +31,7 @@ export default class MapCard extends LitElement {
   historyLayerGroups = {};
   /** @type {HaHistoryService} */
   historyService;
-  /** @type {HalinkedEntityService} */
+  /** @type {HaLinkedEntityService} */
   linkedEntityService;
   /** @type {HaDateRangeService} */
   dateRangeManager;
@@ -196,8 +199,8 @@ export default class MapCard extends LitElement {
     Logger.debug("First Render with Map object, resetting size.")
 
     // Load layers (need hass to be available)
-    this._addWmsLayers(map);
-    this._addTileLayers(map);
+    this._addLayers(map, this.config.tileLayers, 'tile');
+    this._addLayers(map, this.config.wms, 'wms');
 
     return entities.map((configEntity) => {
       const stateObj = hass.states[configEntity.id];
@@ -251,7 +254,7 @@ export default class MapCard extends LitElement {
     return resizeObserver;
   }
 
-  /** @returns {L.Map} */
+  /** @returns {L.Map} Leaflet Map */
   _setupMap() {    
     L.Icon.Default.imagePath = "/static/images/leaflet/images/";
 
@@ -264,121 +267,19 @@ export default class MapCard extends LitElement {
     return map;
   }
 
-  async _addWmsLayers(map) {
-    this.config.wms.forEach((l) => {
-      // Enable history Features
-      if (l.historyProperty) {
-        Logger.debug("Setting up WMS layer with history.");
-        this.manageLayerHistory('wms', map, l);
-      } else {
-        Logger.debug("Rendering standard WMS.");
-        L.tileLayer.wms(l.url, l.options).addTo(map);
-      }
+  /**
+   * @param {L.Map} map
+   * @param {[LayerConfig]} configs  
+   * @param {string} layerType 
+   */
+  async _addLayers(map, configs, layerType) {
+    configs.forEach((l) => {
+      const layer = l.historyProperty 
+      ? new LayerWithHistory(layerType, l, map, this.linkedEntityService, this.dateRangeManager)
+      : new Layer(layerType, l, map);
+      layer.render();
     });
   }
-
-  async _addTileLayers(map) {
-    this.config.tileLayers.forEach((l) => {
-      // 
-      if (l.historyProperty) {
-        Logger.debug("Setting up tile layer with history.");
-        this.manageLayerHistory('tile_layer', map, l);
-      } else {
-        Logger.debug("Rendering standard Tile Layer.");
-        L.tileLayer(l.url, l.options).addTo(map);
-      }
-    });
-  }
-
-
-  manageLayerHistory(layerType, map, l)
-  {
-    // Make layer
-    let layer;
-    let options = l.options;
-
-    // Layer swapper
-    let updateLayer = function(date) {
-      // Force date to midnight. Some WMS services ignore requests for any other times.
-      // Useful when using "days ago" etc, given that can be a specific time.
-      if (l.historyForceMidnight) {
-        date.setUTCHours(0,0,0,0);
-      }
-
-      // Set date into `historyProperty` in WMS options
-      options[l.historyProperty] = date.toISOString();
-
-      // Draw our new layer
-      let newLayer = layerType == 'wms' ? 
-        L.tileLayer.wms(l.url, options).addTo(map) :
-        L.tileLayer(l.url, options).addTo(map);
-
-      // When its ready, remove the old one.
-      newLayer.on('load', () => {
-        newLayer.off();// remove events
-        if(layer) map.removeLayer(layer);
-        // And make this the new layer
-        layer = newLayer;
-      });
-
-      Logger.debug(`Layer refreshed with ${l.historyProperty}=${date}`);
-    }
-
-    // If source is auto
-    if (l.historySource == 'auto') {
-      // if we have a manager - use it
-      if (this.dateRangeManager) {
-        Logger.debug(`WMS Layer linked to date range.`);
-        this.dateRangeManager.onDateRangeChange((range) => {
-          updateLayer(range.start);
-        });
-
-        return;
-      }
-
-      // if we have a historyStart
-      if (this.config.historyStart) {
-        let historyStart = this.config.historyStart;
-
-        // If start is an entity, setup entity config
-        if (HaMapUtilities.isHistoryEntityConfig(historyStart)) {
-          let entity = historyStart['entity'] ?? historyStart;
-          Logger.debug(`WMS Layer linked entity history_start: ${entity}`);
-
-          // Link history
-          this.linkedEntityService.onStateChange(
-            entity,
-            (newState) => {
-              const date = HaMapUtilities.getEntityHistoryDate(newState, historyStart['suffix']);
-              updateLayer(date);
-            }
-          );  
-        } else {
-           // Fixed date?
-           Logger.debug(`WMS Layer set with fixed history_start ${historyStart}`);
-           updateLayer(HaMapUtilities.convertToAbsoluteDate(historyStart));
-        }
-
-        return;
-      } 
-    }
-
-    // History soruce is set & not auto
-    if (l.historySource) {
-      // if historySource is its own entity. Listen to that instead.
-      Logger.debug(`WMS Layer set to track custom date entity ${l.historySource}`);
-      this.linkedEntityService.onStateChange(
-        l.historySource, // Must provide a date.
-        (newState) => {
-          const date = HaMapUtilities.getEntityHistoryDate(newState, l.historySourceSuffix);
-          updateLayer(date);
-        }
-      );
-    }
-
-  }
-
-
 
   setConfig(inputConfig) {
     this.config = new MapConfig(inputConfig);    
@@ -412,7 +313,7 @@ export default class MapCard extends LitElement {
     this.linkedEntityService?.disconnect();
   }
 
-  /** @returns {[Double, Double]} */
+  /** @returns {[number, number]} latitude & longitude */
   _getLatLong() { 
     if(Number.isFinite(this.config.x) && Number.isFinite(this.config.y)) {
       return [this.config.x, this.config.y];
@@ -421,7 +322,7 @@ export default class MapCard extends LitElement {
     }
   }
 
-  /** @returns {[Double, Double]} */
+  /** @returns {[number, number]} latitude & longitude */
   _getLatLongFromFocusedEntity() {
     const entityId = this.config.focusEntity ? this.config.focusEntity : this.config.entities[0].id;
     const entity = this.hass.states[entityId];

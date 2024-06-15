@@ -8,12 +8,14 @@ export default class Logger {
       Logger.debug("Debug enabled.");
     }
   
-    /**
-     * Log debug message to console (if debug enabled).
-     */
-    static debug(message) {
+    static debug(...args) {
       if (!Logger._debugEnabled) return;
-      console.debug("[HaMapCard] " + message);
+      if(args.length === 1) {
+        console.debug("[HaMapCard] " + args[0]);
+        return;
+      } else {
+        console.debug(...args);
+      }
     }
 
     static error(...args) {

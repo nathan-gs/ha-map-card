@@ -11,11 +11,11 @@ export default class HaHistoryService {
   }  
 
   /** 
-   * @param {String} entityId
+   * @param {string} entityId
    * @param {Date} start  
    * @param {Date} end
    * @param {Function} f
-   **/
+   */
   subscribe(entityId, start, end, f) {  
     let params = {  
       type: 'history/stream',  
