@@ -53,7 +53,7 @@ export default class MapCard extends LitElement {
      this.historyService = new HaHistoryService(this.hass);
 
     // Is history date range enabled?
-    if (this.config.historyDateSelection) {
+    if (this._config.historyDateSelection) {
       this.dateRangeManager = new HaDateRangeService(this.hass);
     }
 
@@ -88,7 +88,7 @@ export default class MapCard extends LitElement {
 
           this.setUpHistory();
 
-          this.entities = this._firstRender(this.map, this.hass, this.config.entities);
+          this.entities = this._firstRender(this.map, this.hass, this._config.entities);
 
           this.entities.forEach((ent) => {
             // Setup layer for entities history
@@ -192,8 +192,8 @@ export default class MapCard extends LitElement {
 
     return html`
             <link rel="stylesheet" href="/static/images/leaflet/leaflet.css">
-            <ha-card header="${this.config.title}" style="height: 100%">
-                <div id="map" style="min-height: ${this.config.mapHeight}px"></div>
+            <ha-card header="${this._config.title}" style="height: 100%">
+                <div id="map" style="min-height: ${this._config.mapHeight}px"></div>
             </ha-card>
         `;
   }
@@ -202,8 +202,8 @@ export default class MapCard extends LitElement {
     Logger.debug("First Render with Map object, resetting size.")
 
     // Load layers (need hass to be available)
-    this._addLayers(map, this.config.tileLayers, 'tile');
-    this._addLayers(map, this.config.wms, 'wms');
+    this._addLayers(map, this._config.tileLayers, 'tile');
+    this._addLayers(map, this._config.wms, 'wms');
 
     return entities.map((configEntity) => {
       const stateObj = hass.states[configEntity.id];
@@ -262,13 +262,13 @@ export default class MapCard extends LitElement {
     L.Icon.Default.imagePath = "/static/images/leaflet/images/";
 
     const mapEl = this.shadowRoot.querySelector('#map');
-    let map = L.map(mapEl).setView(this._getLatLong(), this.config.zoom);
+    let map = L.map(mapEl).setView(this._getLatLong(), this._config.zoom);
 
     // Add dark class if darkmode
     this._isDarkMode() ? mapEl.classList.add('dark') : mapEl.classList.add('light');
 
     map.addLayer(
-      L.tileLayer(this.config.tileLayer.url, this.config.tileLayer.options)
+      L.tileLayer(this._config.tileLayer.url, this._config.tileLayer.options)
     );
     return map;
   }
@@ -287,14 +287,15 @@ export default class MapCard extends LitElement {
     });
   }
 
-  setConfig(inputConfig) {
-    this.config = new MapConfig(inputConfig);    
+  setConfig(config) {
+    this.config = config;
+    this._config = new MapConfig(config);    
   }
 
   // The height of your card. Home Assistant uses this to automatically
   // distribute all cards over the available columns.
   getCardSize() {
-    return this.config.cardSize;
+    return this._config.cardSize;
   }
 
   connectedCallback() {
@@ -321,8 +322,8 @@ export default class MapCard extends LitElement {
 
   /** @returns {[number, number]} latitude & longitude */
   _getLatLong() { 
-    if(Number.isFinite(this.config.x) && Number.isFinite(this.config.y)) {
-      return [this.config.x, this.config.y];
+    if(Number.isFinite(this._config.x) && Number.isFinite(this._config.y)) {
+      return [this._config.x, this._config.y];
     } else {
       return this._getLatLongFromFocusedEntity();
     }
@@ -330,7 +331,7 @@ export default class MapCard extends LitElement {
 
   /** @returns {[number, number]} latitude & longitude */
   _getLatLongFromFocusedEntity() {
-    const entityId = this.config.focusEntity ? this.config.focusEntity : this.config.entities[0].id;
+    const entityId = this._config.focusEntity ? this._config.focusEntity : this._config.entities[0].id;
     const entity = this.hass.states[entityId];
     
     if (!entity) {
