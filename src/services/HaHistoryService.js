@@ -27,7 +27,7 @@ export default class HaHistoryService {
     let params = {  
       type: 'history/stream',  
       entity_ids: trackerEntityIds,
-      significant_changes_only: true,
+      significant_changes_only: false,
       start_time: start.toISOString()
     };
 
@@ -40,6 +40,7 @@ export default class HaHistoryService {
 
       this.connection[entityId] = this.hass.connection.subscribeMessage(
         (message) => {
+          console.log(message.states);
           // entities providing results
           Object.values(message.states).map((entity) => {
             // Each entity can return own results
