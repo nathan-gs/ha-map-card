@@ -84,7 +84,7 @@ Either the name of the `entity` or:
 | `fixed_y`             |                                       | Display a fixed marker, this will ignore the latitude/longitude attributes                    |
 | `fallback_x`          |                                       | If the latitude/longitude is missing, use these fixed attributes                              |
 | `fallback_y`          |                                       | If the latitude/longitude is missing, use these fixed attributes                              |
-
+| `tap_action`          | {"action": "more-info"}               | Allow custom action to be triggered when this entity is clicked. Actions include `more-info`, `call-service`, `navigate`, `url`, `assist`, `none`. Some actions require additional paramaters. `navigate` requires a `navigation_path`. `url` requires a `url_path`. `call-service` requires `service` and an optional `data`|
 
 #### History options.
 
