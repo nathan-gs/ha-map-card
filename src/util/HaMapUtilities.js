@@ -5,7 +5,6 @@ import L from 'leaflet';
  */
 export default class HaMapUtilities {
 
-
   static convertToAbsoluteDate(inputStr) {  
     // Check if the input string is a relative timestamp  
     var relativeTimePattern = /^\d+\s+(second|minute|hour|day|week|month|year)s?\s+ago$/i;  
@@ -52,12 +51,36 @@ export default class HaMapUtilities {
   }
 
   // Show error message
-  static renderWarningOnMap(map, message){
+  static renderWarningOnMap(map, message) {
     L.control.attribution({prefix:'⚠️'}).addAttribution(message).addTo(map);
   }
   // Hide error message
-  static removeWarningOnMap(map, message){
+  static removeWarningOnMap(map, message) {
     L.control.attribution({prefix:'⚠️'}).removeAttribution(message).addTo(map);
+  }
+
+  // Get Lat/Lng of entity. Some entities such as "person" define device_trackers allowing
+  // multiple lat/lng sources to be used. This method will call down through these looking for a
+  // lat/lng value if none is defined on the parent entity.
+  static getEntityLatLng(entityId, states) {
+    let entity = states[entityId];
+
+    // Do we have Lng/Lat directly?
+    if (entity.attributes.latitude && entity.attributes.longitude) {
+        return [entity.attributes.latitude, entity.attributes.longitude];
+    }
+
+    // If any, see if we can get a lng/lat from one instead
+    let subTrackerIds = states[entityId]?.attributes?.device_trackers ?? []
+    for(let t=0; t<subTrackerIds.length; t++) {
+      entity = states[subTrackerIds[t]];
+      if (entity.attributes.latitude && entity.attributes.longitude) {
+          return [entity.attributes.latitude, entity.attributes.longitude];
+      }
+    }
+
+    // :(
+    return null;
   }
 
   // entity path or object with an entity:
@@ -69,8 +92,7 @@ export default class HaMapUtilities {
       );
   }
 
-  static getEntityHistoryDate(state, suffix)
-  {
+  static getEntityHistoryDate(state, suffix) {
       // If state isn't set, defualt to hours ago is value is numeric.
       // If its not numeric, default to no suffix as likely is already be a date.
       suffix = suffix ?? (!isNaN(state) ? 'hours ago' : '');
