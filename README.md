@@ -56,6 +56,7 @@ y: 3.652
 | `tile_layer_attribution` | &amp;copy; &lt;a href&#x3D;&quot;http:&#x2F;&#x2F;www.openstreetmap.org&#x2F;copyright&quot;&gt;OpenStreetMap&lt;&#x2F;a&gt; | Set the correct map attribution              |
 | `tile_layer_options` | {}                                                                                                                               | The `options` for the default [TileLayer](https://leafletjs.com/reference.html#tilelayer) |
 | `history_date_selection` | false                                                                                                                        | Will link with a `energy-date-selection` on the page to provide an interactive  date range picker. |
+| `theme_mode`          | auto                                  | `auto`, `light` or`dark`                                                                      |
 | `debug` | false                                                                                                                        | Enable debug messages in console.
 
 
@@ -83,7 +84,7 @@ Either the name of the `entity` or:
 | `fixed_y`             |                                       | Display a fixed marker, this will ignore the latitude/longitude attributes                    |
 | `fallback_x`          |                                       | If the latitude/longitude is missing, use these fixed attributes                              |
 | `fallback_y`          |                                       | If the latitude/longitude is missing, use these fixed attributes                              |
-| `theme_mode`          | auto                                  | `auto`, `light` or`dark`                                                                      |
+
 
 #### History options.
 
