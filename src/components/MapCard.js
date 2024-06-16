@@ -208,7 +208,8 @@ export default class MapCard extends LitElement {
     this._addLayers(map, this._config.tileLayers, 'tile');
     this._addLayers(map, this._config.wms, 'wms');
 
-    return entities.map((configEntity) => {
+
+    const renderedEntities = entities.map((configEntity) => {
       const stateObj = hass.states[configEntity.id];
       const {
         //passive,
@@ -244,6 +245,16 @@ export default class MapCard extends LitElement {
     // Remove skipped entities.
     .filter(v => v);
 
+    // If we have a focus entity or an X/Y - use those.
+    if (this._config.focusEntity || (this._config.x && this._config.y)){
+      this.map.setView(this._getLatLong(), this._config.zoom);
+    } else {
+      // If not, fit to view all markers.
+      const markerGroup = new L.FeatureGroup(renderedEntities.map((e) => e.marker)).addTo(this.map);
+      this.map.fitBounds(markerGroup.getBounds());
+    }
+
+    return renderedEntities;
   }
 
   _setupResizeObserver() {
@@ -268,7 +279,7 @@ export default class MapCard extends LitElement {
     L.Icon.Default.imagePath = "/static/images/leaflet/images/";
 
     const mapEl = this.shadowRoot.querySelector('#map');
-    let map = L.map(mapEl).setView(this._getLatLong(), this._config.zoom);
+    let map = L.map(mapEl);
 
     // Add dark class if darkmode
     this._isDarkMode() ? mapEl.classList.add('dark') : mapEl.classList.add('light');
