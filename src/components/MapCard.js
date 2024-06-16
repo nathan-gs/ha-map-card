@@ -348,7 +348,7 @@ export default class MapCard extends LitElement {
 
   /** @returns {[number, number]} latitude & longitude */
   _getLatLongFromFocusedEntity() {
-    const entityId = this._config.focusEntity ? this._config.focusEntity : this._config.entities[0].id;
+    const entityId = this._config.focusEntity;
     const entity = this.hass.states[entityId];
     
     if (!entity) {
