@@ -129,7 +129,7 @@ export default class EntityConfig {
 
     if (tap_action.action == 'call-service') {
       // Validate
-      if (!tap_action.url_path) throw new Error("'service' is required when using action 'call-service'");
+      if (!tap_action.service) throw new Error("'service' is required when using action 'call-service'");
       return {
         action:   tap_action.action,
         service:  tap_action.service,
