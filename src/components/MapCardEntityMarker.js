@@ -78,8 +78,8 @@ export default class MapCardEntityMarker extends LitElement {
         width: 100%;
       }
       .marker.dark {
-        color: var(--card-background-color);
-        background-color: var(--primary-text-color);
+        color: #ffffff;
+        background: #1c1c1c;
       }
     `;
   }

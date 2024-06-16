@@ -408,6 +408,13 @@ export default class MapCard extends LitElement {
         --map-filter: invert(0.9) hue-rotate(170deg) brightness(1.5)
           contrast(1.2) saturate(0.3);
       }
+      #map.dark .leaflet-control-attribution {
+        background: #000000cc;
+        color: #ffffff;
+      }
+      #map.dark .leaflet-control-attribution a {
+        color: #ffffff;
+      }
       #map.light {
         background: #ffffff;
         color: #000000;
