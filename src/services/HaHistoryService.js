@@ -15,7 +15,7 @@ export default class HaHistoryService {
    * @param {Date} start  
    * @param {Date} end
    * @param {Function} f
-   **/
+   */
   subscribe(entityId, start, end, f) {
 
     // Does this entity define a collection of `device_trackers`? (such as a person entity)

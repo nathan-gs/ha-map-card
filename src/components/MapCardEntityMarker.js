@@ -10,21 +10,21 @@ export default class MapCardEntityMarker extends LitElement {
       'icon': {type: String, attribute: 'icon'},
       'color': {type: String, attribute: 'color'},
       'size': {type: Number},
-      'darkMode': {type: Boolean, attribute: 'dark-mode'},
+      'extraCssClasses': {type: String, attribute: 'extra-css-classes'},
     };
   }
 
   render() {
-   return html`
-      <div
-        class="marker ${this.picture ? "picture" : ""}  ${this.darkMode ? "dark" : ""}"
-        style="border-color: ${this.color}; height: ${this.size}px; width: ${this.size}px;"
-        @click=${this._badgeTap}
-        title="${this.tooltip}"
-        >
-        ${this._inner()}
-      </div>
-    `;
+    return html`
+        <div
+          class="marker ${this.picture ? "picture" : ""}  ${this.extraCssClasses ? this.extraCssClasses : ""}"
+          style="border-color: ${this.color}; height: ${this.size}px; width: ${this.size}px;"
+          @click=${this._badgeTap}
+          title="${this.tooltip}"
+          >
+          ${this._inner()}
+        </div>
+      `;
   };
 
   _badgeTap(ev) {

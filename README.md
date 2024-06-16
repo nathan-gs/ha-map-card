@@ -83,6 +83,7 @@ Either the name of the `entity` or:
 | `fixed_y`             |                                       | Display a fixed marker, this will ignore the latitude/longitude attributes                    |
 | `fallback_x`          |                                       | If the latitude/longitude is missing, use these fixed attributes                              |
 | `fallback_y`          |                                       | If the latitude/longitude is missing, use these fixed attributes                              |
+| `theme_mode`          | auto                                  | `auto`, `light` or`dark`                                                                      |
 
 #### History options.
 

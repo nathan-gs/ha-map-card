@@ -36,13 +36,15 @@ export default class MapCard extends LitElement {
   /** @type {HaDateRangeService} */
   dateRangeManager;
   /** @type {string} */
-  themeMode
+  themeMode;
+  /** @type {MapConfig} */
+  _config;
 
   hasError = false;
   hadError = false;
 
   firstUpdated() {
-    this.themeMode = this.config.themeMode;
+    this.themeMode = this._config.themeMode;
     this.map = this._setupMap();
     // redraw the map every time it resizes
     this.resizeObserver = this._setupResizeObserver();

@@ -21,6 +21,9 @@ export default class Entity {
   currentHistoryStart;
   currentHistoryEnd;
 
+  /** @type {[boolean]} */
+  darkMode;
+
   setHistoryDates(start, end){
     this.currentHistoryStart = start;
     this.currentHistoryEnd = end;
@@ -36,12 +39,13 @@ export default class Entity {
 
   constructor(config, latitude, longitude, icon, title, state, picture, darkMode) {
     this.config = config;
+    this.darkMode = darkMode;
     if(this.display == "state") {
       title = state;
       this._currentState = state;
     }
     this.title = title;
-    this.marker = this._createMapMarker(latitude, longitude, icon, title, picture, darkMode);
+    this.marker = this._createMapMarker(latitude, longitude, icon, title, picture);
   }
 
   _markerCss(size) {
@@ -107,7 +111,7 @@ export default class Entity {
     return this.histories.map((entHist) => entHist.render()).flat();  
   }
 
-  _createMapMarker(latitude, longitude, icon, title, picture, darkMode) {
+  _createMapMarker(latitude, longitude, icon, title, picture) {
     Logger.debug("[MarkerEntity] Creating marker for " + this.id + " with display mode " + this.display);
     if(this.display == "icon") {
       picture = null;
@@ -116,6 +120,8 @@ export default class Entity {
       picture = null;
       icon = null;
     }
+
+    const extraCssClasses = this.darkMode ? "dark" : "";
 
     const marker = L.marker(this._latlong(latitude, longitude), {
       icon: L.divIcon({
@@ -131,7 +137,7 @@ export default class Entity {
             color="${this.config.color}"
             style="${this.config.css}"
             size="${this.config.size}"
-            dark-mode="${darkMode}"
+            extra-css-classes="${extraCssClasses}"
           ></map-card-entity-marker>
         `,
         iconSize: [this.config.size, this.config.size],
