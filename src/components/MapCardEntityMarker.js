@@ -10,6 +10,7 @@ export default class MapCardEntityMarker extends LitElement {
       'icon': {type: String, attribute: 'icon'},
       'color': {type: String, attribute: 'color'},
       'size': {type: Number},
+      'tapAction': {type: Object, attribute: 'tap-action'},
       'extraCssClasses': {type: String, attribute: 'extra-css-classes'},
     };
   }
@@ -33,9 +34,8 @@ export default class MapCardEntityMarker extends LitElement {
       // https://developers.home-assistant.io/blog/2023/07/07/action-event-custom-cards/
       const actions = {
         entity: this.entityId,
-        tap_action: {
-          action: "more-info",
-        }
+        // Passed from entity
+        tap_action: this.tapAction
       };
 
       const event = new Event('hass-action', {bubbles: true, composed: true});
