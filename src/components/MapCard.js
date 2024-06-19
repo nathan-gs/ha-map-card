@@ -7,11 +7,12 @@ import HaDateRangeService from "../services/HaDateRangeService.js"
 import HaLinkedEntityService from "../services/HaLinkedEntityService.js"
 import HaMapUtilities from "../util/HaMapUtilities.js"
 import Logger from "../util/Logger.js"
-
 import Entity from "../models/Entity.js"
 import Layer from '../models/Layer.js';
 import LayerWithHistory from '../models/LayerWithHistory.js';
 import LayerConfig from '../configs/LayerConfig.js';
+// Methods
+import setInitialView from "../util/setInitialView.js"
 
 export default class MapCard extends LitElement {
   static get properties() {
@@ -245,15 +246,10 @@ export default class MapCard extends LitElement {
     // Remove skipped entities.
     .filter(v => v);
 
-    // If we have a focus entity or an X/Y - use those.
-    if (this._config.focusEntity || (this._config.x && this._config.y)){
-      this.map.setView(this._getLatLong(), this._config.zoom);
-    } else {
-      // If not, fit to view all markers.
-      const markerGroup = new L.FeatureGroup(renderedEntities.map((e) => e.marker)).addTo(this.map);
-      this.map.fitBounds(markerGroup.getBounds());
-    }
-
+    console.log(hass);
+    // Setup initial view based on config - or show all
+    setInitialView(map, renderedEntities, this._config, hass);
+    
     return renderedEntities;
   }
 
@@ -335,32 +331,6 @@ export default class MapCard extends LitElement {
     this.historyService?.unsubscribe();
     this.dateRangeManager?.disconnect();
     this.linkedEntityService?.disconnect();
-  }
-
-  /** @returns {[number, number]} latitude & longitude */
-  _getLatLong() { 
-    if(Number.isFinite(this._config.x) && Number.isFinite(this._config.y)) {
-      return [this._config.x, this._config.y];
-    } else {
-      return this._getLatLongFromFocusedEntity();
-    }
-  }
-
-  /** @returns {[number, number]} latitude & longitude */
-  _getLatLongFromFocusedEntity() {
-    const entityId = this._config.focusEntity;
-    const entity = this.hass.states[entityId];
-    
-    if (!entity) {
-      throw new Error(`Entity ${entityId} not found`);
-    }
-
-    // Get lat/lng (inc sub trackers)
-    let latLng = HaMapUtilities.getEntityLatLng(entityId, this.hass.states);
-    if (latLng) return latLng;
-
-    // Unable to find
-    throw new Error(`Entity ${entityId} has no longitude & latitude.`);
   }
 
   _isDarkMode() {
