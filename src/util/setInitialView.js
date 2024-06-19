@@ -1,3 +1,4 @@
+import L from 'leaflet';
 import HaMapUtilities from "./HaMapUtilities.js";
 
 /** 
@@ -5,9 +6,9 @@ import HaMapUtilities from "./HaMapUtilities.js";
  * - Return specific x/y if set
  * - Return x/y of focused entity if provided
  * - Return null (default behavior)
- * 
- * @param  {[type]} config [description]
- * @return {[type]}        [description]
+ * @param {object} config
+ * @param {object} hass
+ * @returns {[number, number]|null} 
  */
 function getConfiguredLatLong(config, hass) {
 
@@ -25,9 +26,9 @@ function getConfiguredLatLong(config, hass) {
 
 /** 
  * 
- * @param  string entityId
- * @param  {} hass 
- * @returns [number, number] latitude & longitude
+ * @param {string} entityId
+ * @param {object} hass 
+ * @returns {[number, number]}
  */
 function getFocusedEntityLatLng(entityId, hass) {
 	const entity = hass.states[entityId];
@@ -47,11 +48,11 @@ function getFocusedEntityLatLng(entityId, hass) {
 
 /**
  * setInitialView exported for use by Map component.
- * 
- * @param L.Map map
- * @param array entities
- * @param MapConfig config
- * @param {} hass
+ * @param {L.map} map
+ * @param {object} entities
+ * @param {object} config
+ * @param {object} hass
+ * @returns {void} void
  */
 export default function setInitialView(map, entities, config, hass)
 {
