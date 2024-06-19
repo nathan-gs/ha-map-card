@@ -246,7 +246,6 @@ export default class MapCard extends LitElement {
     // Remove skipped entities.
     .filter(v => v);
 
-    console.log(hass);
     // Setup initial view based on config - or show all
     setInitialView(map, renderedEntities, this._config, hass);
     
