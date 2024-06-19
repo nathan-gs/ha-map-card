@@ -138,6 +138,7 @@ export default class Entity {
             style="${this.config.css}"
             size="${this.config.size}"
             extra-css-classes="${extraCssClasses}"
+            tap-action='${JSON.stringify(this.config.tapAction)}'
           ></map-card-entity-marker>
         `,
         iconSize: [this.config.size, this.config.size],

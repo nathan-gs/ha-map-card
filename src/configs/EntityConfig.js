@@ -42,6 +42,8 @@ export default class EntityConfig {
   picture;
   /** @type {string} */
   color;
+  /** @type {object} */
+  tapAction;
 
   // Is valye of this config item a HistoryEntity vs a date
   isHistoryEntityConfig(value) {
@@ -91,6 +93,52 @@ export default class EntityConfig {
 
     // If no start/end date values are given, fallback to using date range manager
     this.usingDateRangeManager = (!historyStart && !historyEnd) && defaults.dateRangeManagerEnabled;
+
+    // Tap action defaults to standard more-info.
+    this.tapAction = (typeof config.tap_action == 'object') ? this.parseAction(config.tap_action) : {action: 'more-info'};
+  }
+
+  // Get tap action_data
+  parseAction(tap_action)
+  {
+    // No additional props
+    if (['more-info', 'none'].includes(tap_action.action)) {
+      return {
+        action: tap_action.action,
+      };
+    }
+
+    if (tap_action.action == 'navigate') {
+      // Validate
+      if(!tap_action.navigation_path) throw new Error("'navigation_path' is required when using action 'navigate'");
+
+      return {
+        action: tap_action.action,
+        navigation_path: tap_action.navigation_path
+      };
+    }
+    if (tap_action.action == 'url') {
+      // Validate
+      if(!tap_action.url_path) throw new Error("'url_path' is required when using action 'url'");
+
+      return {
+        action: tap_action.action,
+        url_path: tap_action.url_path 
+      };
+    }
+
+    if (tap_action.action == 'call-service') {
+      // Validate
+      if (!tap_action.service) throw new Error("'service' is required when using action 'call-service'");
+      return {
+        action:   tap_action.action,
+        service:  tap_action.service,
+        // I belive this is truely optional.
+        data:     tap_action.data   
+      };
+    }
+
+    throw Error(`Unknown tap action "${tap_action.action}". Ensure action on tap_action is set.`);
   }
 
   get hasHistory() {
