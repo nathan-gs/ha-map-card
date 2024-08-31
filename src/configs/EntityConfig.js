@@ -42,6 +42,8 @@ export default class EntityConfig {
   picture;
   /** @type {string} */
   color;
+  /** @type {number} */
+  gradualOpacity;
   /** @type {object} */
   tapAction;
 
@@ -60,6 +62,7 @@ export default class EntityConfig {
     this.size = config.size ? config.size : 48;
     // If historyLineColor not set, inherit icon color
     this.color = config.color ?? this._generateRandomColor();
+    this.gradualOpacity = config.gradualOpacity ? config.gradualOpacity : undefined;
     
     // Get history value to use (normal of default)
     const historyStart = config.history_start ?? defaults.historyStart;

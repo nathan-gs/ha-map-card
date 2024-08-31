@@ -12,16 +12,19 @@ export default class EntityHistory {
   entries = [];
   /** @type {string} */
   color;
+  /** @type {number} */
+  gradualOpacity;
   /** @type {[Polyline|CircleMarker]} */
   mapPaths = [];
   showDots = true;
   showLines = true;
   needRerender = false;
 
-  constructor(entityId, entityTitle, color, showDots, showLines) {
+  constructor(entityId, entityTitle, color, gradualOpacity, showDots, showLines) {
     this.entityId = entityId;
     this.entityTitle = entityTitle;
     this.color = color;
+    this.gradualOpacity = gradualOpacity;
     this.showDots = showDots;
     this.showLines = showLines;
   }
@@ -41,15 +44,27 @@ export default class EntityHistory {
     this.mapPaths.forEach((marker) => marker.remove());
     this.mapPaths = [];
 
+    let opacityStep;
+    let baseOpacity;
+
+    if (this.gradualOpacity) {
+      opacityStep = this.gradualOpacity / (this.entries.length - 2);
+      baseOpacity = 1 - this.gradualOpacity;
+    }
+
     for (let i = 0; i < this.entries.length - 1; i++) {
       const entry = this.entries[i];
+      const opacity = this.gradualOpacity
+          ? baseOpacity + i * opacityStep : undefined;
 
       if(this.showDots) {
         this.mapPaths.push(
           L.circleMarker([entry.latitude, entry.longitude], 
             {
-              color: this.color,
               radius: 3,
+              color: this.color,
+              opacity,
+              fillOpacity: opacity,
               interactive: true,
             }
           ).bindTooltip(`${this.entityTitle} ${entry.timestamp.toLocaleString()}`, {direction: 'top'})
@@ -63,6 +78,7 @@ export default class EntityHistory {
         this.mapPaths.push(
           L.polyline(latlngs, {
             color: this.color,
+            opacity,
             interactive: false,
           })
         );
