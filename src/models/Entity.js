@@ -100,7 +100,7 @@ export default class Entity {
 
   setupHistory(historyService, start, end) {
     if(this.hasHistory) {
-      const entHist = new EntityHistory(this.id, this.title, this.config.historyLineColor, this.config.historyShowDots, this.config.historyShowLines);
+      const entHist = new EntityHistory(this.id, this.title, this.config.historyLineColor, this.config.gradualOpacity, this.config.historyShowDots, this.config.historyShowLines);
       historyService.subscribe(entHist.entityId, start, end, entHist.retrieve);      
       this.histories.push(entHist);
     }  
