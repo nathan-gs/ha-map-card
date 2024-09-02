@@ -23,6 +23,7 @@ export default class HaHistoryService {
     let trackerEntityIds = this.hass.states[entityId]?.attributes?.device_trackers ?? [];
     // Always include self, as may have data points directly.
     trackerEntityIds.push(entityId);
+    Logger.debug("[HaHistoryService]: tracking following entities " + trackerEntityIds + " for entity: " + entityId);
 
     let params = {  
       type: 'history/stream',  
@@ -48,6 +49,8 @@ export default class HaHistoryService {
               if(state.a.latitude && state.a.longitude) {
                 Logger.debug("[HaHistoryService]: received new msg for entity id: " + entityId);
                 f(new TimelineEntry(new Date(state.lu * 1000), state.a.latitude, state.a.longitude));
+              } else {
+                Logger.warn("[HaHistoryService]: received new msg without latitude/longitude for entity id: " + entityId);
               }
             });
           });
