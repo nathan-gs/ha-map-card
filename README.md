@@ -118,7 +118,7 @@ Any entity without its own settings will inherit the map level config.
 
 ###### Zooming & `tile_layer_options.maxZoom`
 
-By default the map-card will not zoom beyond [default property of the `maxZoom`](https://leafletjs.com/reference.html#tilelayer-maxzoom) property of the tilelayer, the default is `18`, but it can be overriden as follows:
+By default the map-card will not zoom beyond [default property of the `maxZoom`](https://leafletjs.com/reference.html#tilelayer-maxzoom) of the tilelayer, the default is `18`, but it can be overriden as follows:
 
 ```
 type: custom:map-card
