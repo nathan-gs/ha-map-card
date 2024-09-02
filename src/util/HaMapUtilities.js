@@ -88,7 +88,7 @@ export default class HaMapUtilities {
     return (
         value &&
         (typeof value == 'object' && value['entity']) ||
-        (typeof value == 'string' && value.includes('.'))
+        (typeof value == 'string' && (value.includes('.') && !value.includes("000Z")))
       );
   }
 

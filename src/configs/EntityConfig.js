@@ -47,15 +47,6 @@ export default class EntityConfig {
   /** @type {object} */
   tapAction;
 
-  // Is valye of this config item a HistoryEntity vs a date
-  isHistoryEntityConfig(value) {
-    return (
-        value &&
-        (typeof value == 'object' && value['entity']) ||
-        (typeof value == 'string' && value.includes('.'))
-      );
-  }
-
   constructor(config, defaults) {
     this.id = (typeof config === 'string' || config instanceof String)? config : config.entity;
     this.display = config.display ? config.display : "marker";
