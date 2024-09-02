@@ -116,6 +116,18 @@ Any entity without its own settings will inherit the map level config.
 | `options` | The leaflet layer [WMS options](https://leafletjs.com/reference.html#tilelayer-wms) or [Tile Layer options](https://leafletjs.com/reference.html#tilelayer) |
 | `history` | The name of the layer option which controls the dat, if it supports a date or time option. Set history to the name of this property. The `history_start` value, state or date range picker will then set this property on the layer and update it as necessary. |
 
+###### Zooming & `tile_layer_options.maxZoom`
+
+By default the map-card will not zoom beyond [default property of the `maxZoom`](https://leafletjs.com/reference.html#tilelayer-maxzoom) property of the tilelayer, the default is `18`, but it can be overriden as follows:
+
+```
+type: custom:map-card
+tile_layer_options:
+  maxZoom: 20
+```
+
+Keep in mind that the tile layer source also has a maximum zoom level, which is `20` for most OSM maps.
+
 ###### Advanced WMS/Tile layer options.
 
 More complex use of the WMS/Tile history property can be configured within the history property of the layer.
