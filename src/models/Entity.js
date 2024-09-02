@@ -128,8 +128,8 @@ export default class Entity {
         html: `
           <map-card-entity-marker
             entity-id="${this.id}"
-            title="${this._abbr(title)}"
-            tooltip="${title}"
+            title="${this._abbr(title ?? "")}"
+            tooltip="${title ?? ""}"
             icon="${icon ?? ""}"
             picture="${
               picture ?? ""
