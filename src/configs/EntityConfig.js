@@ -46,6 +46,8 @@ export default class EntityConfig {
   gradualOpacity;
   /** @type {object} */
   tapAction;
+  /** @type {boolean} */
+  focusOnFit;
 
   constructor(config, defaults) {
     this.id = (typeof config === 'string' || config instanceof String)? config : config.entity;
@@ -90,6 +92,8 @@ export default class EntityConfig {
 
     // Tap action defaults to standard more-info.
     this.tapAction = (typeof config.tap_action == 'object') ? this.parseAction(config.tap_action) : {action: 'more-info'};
+
+    this.focusOnFit = config.focus_on_fit ?? true;
   }
 
   // Get tap action_data

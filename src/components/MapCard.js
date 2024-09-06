@@ -247,8 +247,8 @@ export default class MapCard extends LitElement {
     .filter(v => v);
 
     // Setup initial view based on config - or show all
-    setInitialView(map, renderedEntities, this._config, hass);
-    
+    setInitialView(map, renderedEntities.filter(v => v.config.focusOnFit), this._config, hass); 
+
     return renderedEntities;
   }
 
