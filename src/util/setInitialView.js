@@ -63,6 +63,6 @@ export default function setInitialView(map, entities, config, hass)
 	}
 
   	// If not, get bounds of all markers rendered
-  	const markerGroup = new L.FeatureGroup(entities.map((e) => e.marker)).addTo(map);
-  	map.fitBounds(markerGroup.getBounds());
+  	const markerGroup = new L.FeatureGroup(entities.filter(e => e.config.focusOnFit).map((e) => e.marker)).addTo(map);
+  	map.fitBounds(markerGroup.getBounds().pad(0.1));
 }

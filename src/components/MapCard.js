@@ -213,7 +213,7 @@ export default class MapCard extends LitElement {
   }
 
   _fitMap() {
-    this._firstRender(this.map, this.hass, this._config.entities);
+    setInitialView(this.map, this.entities, this._config, this.hass); 
   }
 
   _firstRender(map, hass, entities) {
@@ -261,7 +261,7 @@ export default class MapCard extends LitElement {
     .filter(v => v);
 
     // Setup initial view based on config - or show all
-    setInitialView(map, renderedEntities.filter(v => v.config.focusOnFit), this._config, hass); 
+    setInitialView(map, renderedEntities, this._config, hass); 
 
     return renderedEntities;
   }
