@@ -13,7 +13,6 @@ import LayerWithHistory from '../models/LayerWithHistory.js';
 import LayerConfig from '../configs/LayerConfig.js';
 // Methods
 import setInitialView from "../util/setInitialView.js"
-import { mdiImageFilterCenterFocus } from "@mdi/js";
 
 export default class MapCard extends LitElement {
   static get properties() {
@@ -201,11 +200,11 @@ export default class MapCard extends LitElement {
                 <div id="map" style="min-height: ${this._config.mapHeight}px">
                   <ha-icon-button
                     label='Reset focus'
-                    .path=${mdiImageFilterCenterFocus}
                     style='${this._isDarkMode() ? "color:#ffffff;" : "color:#000000;"} position: absolute; top: 75px; left: 3px; z-index: 99;'
                     @click=${this._fitMap}
                     tabindex="0"
                   >
+                    <ha-icon icon="mdi:image-filter-center-focus"></ha-icon>
                   </ha-icon-button>
                 </div>
             </ha-card>
