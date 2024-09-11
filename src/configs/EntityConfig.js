@@ -48,6 +48,8 @@ export default class EntityConfig {
   tapAction;
   /** @type {boolean} */
   focusOnFit;
+  /** @type {number} */
+  zIndexOffset;
 
   constructor(config, defaults) {
     this.id = (typeof config === 'string' || config instanceof String)? config : config.entity;
@@ -94,6 +96,7 @@ export default class EntityConfig {
     this.tapAction = (typeof config.tap_action == 'object') ? this.parseAction(config.tap_action) : {action: 'more-info'};
 
     this.focusOnFit = config.focus_on_fit ?? true;
+    this.zIndexOffset = config.z_index_offset ? config.z_index_offset : 1;
   }
 
   // Get tap action_data
