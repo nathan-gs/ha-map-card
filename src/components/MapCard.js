@@ -197,9 +197,22 @@ export default class MapCard extends LitElement {
     return html`
             <link rel="stylesheet" href="/static/images/leaflet/leaflet.css">
             <ha-card header="${this._config.title}" style="height: 100%">
-                <div id="map" style="min-height: ${this._config.mapHeight}px"></div>
+                <div id="map" style="min-height: ${this._config.mapHeight}px">
+                  <ha-icon-button
+                    label='Reset focus'
+                    style='${this._isDarkMode() ? "color:#ffffff;" : "color:#000000;"} position: absolute; top: 75px; left: 3px; z-index: 1;'
+                    @click=${this._fitMap}
+                    tabindex="0"
+                  >
+                    <ha-icon icon="mdi:image-filter-center-focus"></ha-icon>
+                  </ha-icon-button>
+                </div>
             </ha-card>
         `;
+  }
+
+  _fitMap() {
+    setInitialView(this.map, this.entities, this._config, this.hass); 
   }
 
   _firstRender(map, hass, entities) {
@@ -247,8 +260,8 @@ export default class MapCard extends LitElement {
     .filter(v => v);
 
     // Setup initial view based on config - or show all
-    setInitialView(map, renderedEntities, this._config, hass);
-    
+    setInitialView(map, renderedEntities, this._config, hass); 
+
     return renderedEntities;
   }
 

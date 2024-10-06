@@ -142,9 +142,10 @@ export default class Entity {
           ></map-card-entity-marker>
         `,
         iconSize: [this.config.size, this.config.size],
-        className: '',
+        className: ''
       }),
       title: this.id,
+      zIndexOffset: this.config.zIndexOffset
     });
     return marker;
   }
