@@ -4,6 +4,8 @@ on:
   push:
     tags:
     - 'v*'
+  schedule:
+    - cron: "0 0 * * 1"
 
 jobs:
   validate-hacs:
