@@ -15,15 +15,23 @@ export default class HaHistoryService {
    * @param {Date} start  
    * @param {Date} end
    * @param {Function} f
+   * @param {boolean} useBaseEntityOnly
    */
-  subscribe(entityId, start, end, f) {
+  subscribe(entityId, start, end, f, useBaseEntityOnly) {
+    Logger.debug("[HaHistoryService]: Params entityId: " + entityId);
+    Logger.debug("[HaHistoryService]: Params useBaseEntityOnly: " + useBaseEntityOnly);
+    let trackerEntityIds;
 
-    // Does this entity define a collection of `device_trackers`? (such as a person entity)
-    // or should it just use the base entity itself
-    let trackerEntityIds = this.hass.states[entityId]?.attributes?.device_trackers ?? [];
-    // Always include self, as may have data points directly.
-    trackerEntityIds.push(entityId);
-    Logger.debug("[HaHistoryService]: tracking following entities " + trackerEntityIds + " for entity: " + entityId);
+    if (useBaseEntityOnly) {
+      // Use only the base entity itself for tracking
+      trackerEntityIds = [entityId];
+      Logger.debug("[HaHistoryService]: tracking entity: " + entityId);
+    } else {
+      // Use the entity's device trackers if available
+      trackerEntityIds = this.hass.states[entityId]?.attributes?.device_trackers ?? [];
+      trackerEntityIds.push(entityId);
+      Logger.debug("[HaHistoryService]: tracking following entities " + trackerEntityIds + " for entity: " + entityId);
+    }
 
     let params = {  
       type: 'history/stream',  
