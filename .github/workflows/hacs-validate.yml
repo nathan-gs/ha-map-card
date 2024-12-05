@@ -5,7 +5,7 @@ on:
     tags:
     - 'v*'
   schedule:
-    - cron: "0 0 * * 1"
+    - cron: "0 0 * * *"
 
 jobs:
   validate-hacs:
