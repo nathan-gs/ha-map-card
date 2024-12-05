@@ -50,6 +50,8 @@ export default class EntityConfig {
   focusOnFit;
   /** @type {number} */
   zIndexOffset;
+  /** @type {boolean} */
+  useBaseEntityOnly;
 
   constructor(config, defaults) {
     this.id = (typeof config === 'string' || config instanceof String)? config : config.entity;
@@ -97,6 +99,8 @@ export default class EntityConfig {
 
     this.focusOnFit = config.focus_on_fit ?? true;
     this.zIndexOffset = config.z_index_offset ? config.z_index_offset : 1;
+
+    this.useBaseEntityOnly = config.use_base_entity_only ?? false;
   }
 
   // Get tap action_data
