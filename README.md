@@ -6,16 +6,13 @@ Take a look at the blog post [introducing the custom:map-card for Home Assistant
 
 ### Installation
 
+#### HACS
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=nathan-gs&repository=ha-map-card&category=plugin)
+
 #### Manual
 1. Copy `map-card.js` to your `/var/lib/hass/www` folder.
 2. Click on `Edit Dashboard`,  `Manage resources` add `/local/map-card.js` as `JavaScript Module`.
-
-#### HACS
-
-> ##### TIP
-> The PR to add this to the default HACS repo is still open: https://github.com/hacs/default/pull/2377 
-
-Follow the instructions to add a [HACS Custom Repository](https://hacs.xyz/docs/faq/custom_repositories/).
 
 ### Usage
 
