@@ -227,7 +227,7 @@ export default class MapCard extends LitElement {
       const stateObj = hass.states[configEntity.id];
       const {
         //passive,
-        entity_icon,
+        icon: entity_icon,
         //radius,
         entity_picture,
         //gps_accuracy: gpsAccuracy,
