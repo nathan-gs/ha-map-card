@@ -40,6 +40,8 @@ export default class EntityConfig {
   
   /** @type {string} */
   picture;
+  /** @type {icon} */
+  picture;
   /** @type {string} */
   color;
   /** @type {number} */
@@ -90,6 +92,7 @@ export default class EntityConfig {
     this.fallbackY = config.fallback_y;
     this.css = config.css ?? "text-align: center; font-size: 60%;";
     this.picture = config.picture ?? null;
+    this.icon = config.icon ?? null;
 
     // If no start/end date values are given, fallback to using date range manager
     this.usingDateRangeManager = (!historyStart && !historyEnd) && defaults.dateRangeManagerEnabled;

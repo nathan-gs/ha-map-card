@@ -227,12 +227,13 @@ export default class MapCard extends LitElement {
       const stateObj = hass.states[configEntity.id];
       const {
         //passive,
-        icon,
+        entity_icon,
         //radius,
         entity_picture,
         //gps_accuracy: gpsAccuracy,
         friendly_name
       } = stateObj.attributes;
+
       const state = hass.formatEntityState(stateObj);
 
       // Get lat lng
@@ -244,6 +245,9 @@ export default class MapCard extends LitElement {
       let picture = configEntity.picture ?? entity_picture;
       // Skip if neither found and return null
       picture = picture ? hass.hassUrl(picture) : null;
+
+      // Overvide icon?
+      let icon = configEntity.icon ?? entity_icon;
 
       // Attempt to setup entity. Skip on fail, so one bad entity does not affect others.
       try {

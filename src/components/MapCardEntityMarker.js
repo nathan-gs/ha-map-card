@@ -49,7 +49,7 @@ export default class MapCardEntityMarker extends LitElement {
       return html`<div class="entity-picture" style="background-image: url(${this.picture})"></div>`
     }
     if(this.icon) {
-      return html`<ha-icon icon="${this.icon}" style="--icon-primary-color: ${this.color}; --mdc-icon-size: ${this.size - 5}px;">icon</ha-icon>`
+      return html`<ha-icon icon="${this.icon}" style="--icon-primary-color: ${this.color}; --mdc-icon-size: ${this.size - 10}px;">icon</ha-icon>`
     }
     return this.title;
   }
