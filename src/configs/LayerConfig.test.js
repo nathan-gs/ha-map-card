@@ -1,5 +1,5 @@
 import LayerConfig from "./LayerConfig";
-import { describe, expect, it, beforeEach } from "@jest/globals";
+import { describe, expect, it } from "@jest/globals";
 
 describe("LayerConfig", () => {
         
