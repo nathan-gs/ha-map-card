@@ -1,11 +1,10 @@
 module.exports = {
     transform: {
       '^.+\\.js$': 'babel-jest',
-      '^.+\\.mjs$': 'babel-jest', // If you're using .mjs files
     },
     transformIgnorePatterns: [
-      'node_modules/(?!(your-specific-module)/)'
+      "/node_modules/(?!(@open-wc|lit|@esm-bundle)).+\\.js$"
     ],
-    moduleFileExtensions: ['js', 'json', 'node', 'mjs'],
+    moduleFileExtensions: ['js', 'json'],
     testEnvironment: 'jsdom',
   };
