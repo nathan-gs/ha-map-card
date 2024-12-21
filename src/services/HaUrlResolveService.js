@@ -9,6 +9,9 @@ export default class HaUrlResolveService {
   /** @type {object} */
   entityLayers = {};
 
+  /** @type {object} */
+  states = {};
+
   constructor(hass, linkedEntityService) {
     this.hass = hass;
     this.linkedEntityService = linkedEntityService;
@@ -23,6 +26,11 @@ export default class HaUrlResolveService {
    */
   resolveUrl(url) {
     return url.replace(/{{\s*states\(['"]([^'"]+)['"]\)\s*}}/g, (match, entityId) => {
+      if(this.states[entityId]) {
+        Logger.debug(`[HaUrlResolveService]: ${entityId} resolving to ${this.states[entityId]} from HaLinkedEntityService`);
+        return this.states[entityId];
+      }
+
       const state = this.hass.states[entityId];
       if(!state) {
         Logger.warn(`[HaUrlResolveService]: ${entityId} not found`);
@@ -49,15 +57,14 @@ export default class HaUrlResolveService {
   registerLayer(layer, urlTemplate) {
     const entities = this.resolveEntities(urlTemplate);
 
-
     entities.forEach(entity => {
       this.entityLayers[entity] = this.entityLayers[entity] || new EntityLayers(entity, this);
 
       this.entityLayers[entity].layers.add(new LayerUrl(layer, urlTemplate));
 
       if(!this.entityLayers[entity].registered) {
-        this.linkedEntityService.onStateChange(entity, () => {
-          Logger.debug(`[HaUrlResolveService]: Updating layer ${layer.layer}`);
+        this.linkedEntityService.onStateChange(entity, (state) => {          
+          this.states[entity] = state;
           this.entityLayers[entity].update();
         });
         this.entityLayers[entity].registered = true;
@@ -85,7 +92,9 @@ class EntityLayers {
 
   update() {
     this.layers.forEach(layer => {
+      Logger.debug(`[HaUrlResolveService]: Updating layer ${layer.layer}`);
       layer.layer.setUrl(this.urlResolver.resolveUrl(layer.urlTemplate));
+      layer.layer.redraw();
     });
   }
 }
