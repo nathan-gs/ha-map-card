@@ -69,6 +69,7 @@ Either the name of the `entity` or:
 | `entity`               |                                       | The entity id                                                                                 |
 | `display`              | `marker`                              | `icon`, `state` or `marker`. `marker` will display the picture if available                   |
 | `picture`              |                                       | Set a custom picture to use on the marker.                                                    |
+| `icon`                 |                                       | Set a custom icon to use if display is set to `icon`. e.g. mdi:cake                           |
 | `size`                 | 48                                    | Size of the icon                                                                              |
 | `color`                | Random Color                          | Can defined as `red`, `rgb(255,0,0)`, `rgba(255,0,0,0.1)`, `#ff0000`, `var(--red-color)`      |
 | `css`                  | `text-align: center; font-size: 60%;` | CSS for the marker (only for `state` and `marker`)                                            |
