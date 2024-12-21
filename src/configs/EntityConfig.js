@@ -40,8 +40,8 @@ export default class EntityConfig {
   
   /** @type {string} */
   picture;
-  /** @type {icon} */
-  picture;
+  /** @type {string} */
+  icon;
   /** @type {string} */
   color;
   /** @type {number} */
