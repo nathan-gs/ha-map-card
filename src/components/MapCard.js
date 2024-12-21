@@ -61,10 +61,7 @@ export default class MapCard extends LitElement {
     // Is history date range enabled?
     if (this._config.historyDateSelection) {
       this.dateRangeManager = new HaDateRangeService(this.hass);
-    }
-
-    // Manages watching external entities.
-    this.linkedEntityService = new HaLinkedEntityService(this.hass);     
+    }    
   }
 
   refreshEntityHistory(ent) {
@@ -195,6 +192,7 @@ export default class MapCard extends LitElement {
         }
       });
   
+  
     }
 
     return html`
@@ -291,7 +289,9 @@ export default class MapCard extends LitElement {
 
   /** @returns {L.Map} Leaflet Map */
   _setupMap() {
-    this.urlResolver = new HaUrlResolveService(this.hass);
+    // Manages watching external entities.
+    this.linkedEntityService = new HaLinkedEntityService(this.hass);     
+    this.urlResolver = new HaUrlResolveService(this.hass, this.linkedEntityService);
     
     L.Icon.Default.imagePath = "/static/images/leaflet/images/";
 
@@ -302,9 +302,9 @@ export default class MapCard extends LitElement {
     this._isDarkMode() ? mapEl.classList.add('dark') : mapEl.classList.add('light');
 
     let tileUrl = this.urlResolver.resolveUrl(this._config.tileLayer.url);
-    map.addLayer(
-      L.tileLayer(tileUrl, this._config.tileLayer.options)
-    );
+    let layer = L.tileLayer(tileUrl, this._config.tileLayer.options);
+    map.addLayer(layer);
+    this.urlResolver.registerLayer(layer, this._config.tileLayer.url);    
     return map;
   }
 

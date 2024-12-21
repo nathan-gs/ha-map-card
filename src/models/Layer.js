@@ -39,11 +39,10 @@ export default class Layer {
 
   render() {
     Logger.debug(`Setting up layer of type ${this.layerType}`);
-    if(this.isWms) {
-      L.tileLayer.wms(this.url, this.config.options).addTo(this.map);
-    }
-    if(this.isTileLayer) {
+    const layer = this.isWms ? 
+      L.tileLayer.wms(this.url, this.config.options) :
       L.tileLayer(this.url, this.config.options).addTo(this.map);
-    }
+    this.urlResolver.registerLayer(layer, this.config.url);
+    layer.addTo(this.map);
   }
 }

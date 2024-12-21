@@ -38,7 +38,12 @@ export default class LayerWithHistory extends Layer {
     // When its ready, remove the old one.
     newLayer.on('load', () => {
       newLayer.off();// remove events
-      if(this.layer) this.map.removeLayer(this.layer);
+      
+      if(this.layer) {
+        this.map.removeLayer(this.layer);
+        this.urlResolver.deregisterLayer(this.layer);
+      }
+      this.urlResolver.registerLayer(newLayer, this.config.url);
       // And make this the new layer
       this.layer = newLayer;
     });
