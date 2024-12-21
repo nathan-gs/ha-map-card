@@ -53,7 +53,7 @@ export default class HaUrlResolveService {
     entities.forEach(entity => {
       this.entityLayers[entity] = this.entityLayers[entity] || new EntityLayers(entity, this);
 
-      this.entityLayers[entity].layers.add(layer);
+      this.entityLayers[entity].layers.add(new LayerUrl(layer, urlTemplate));
 
       if(!this.entityLayers[entity].registered) {
         this.linkedEntityService.onStateChange(entity, () => {
@@ -68,7 +68,7 @@ export default class HaUrlResolveService {
 
   deregisterLayer(layer) {
     Object.keys(this.entityLayers).forEach(entity => {
-      this.entityLayers[entity].layers.delete(layer);      
+      this.entityLayers[entity].layers = this.entityLayers[entity].layers.filter(layerUrl => layerUrl.layer !== layer);
     });
 
   }
@@ -85,7 +85,14 @@ class EntityLayers {
 
   update() {
     this.layers.forEach(layer => {
-      layer.setUrl(this.urlResolver.resolveUrl(layer.urlTemplate));
+      layer.layer.setUrl(this.urlResolver.resolveUrl(layer.urlTemplate));
     });
+  }
+}
+
+class LayerUrl {
+  constructor(layer, urlTemplate) {
+    this.layer = layer;
+    this.urlTemplate = urlTemplate;
   }
 }
