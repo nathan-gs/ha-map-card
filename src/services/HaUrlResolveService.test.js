@@ -1,5 +1,5 @@
-import HaUrlResolveService from "./HaUrlResolveService";
-import {describe, expect, it} from "@jest/globals";
+import HaUrlResolveService from "./HaUrlResolveService.js";
+import {describe, expect, it, jest} from "@jest/globals";
 
 describe("HaUrlResolveService", () => {
  

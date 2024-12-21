@@ -6,7 +6,7 @@ export default class HaUrlResolveService {
   /** @type {HaLinkedEntityService} */
   linkedEntityService;
   
-  /** @type {EntityLayers{}} */
+  /** @type {object} */
   entityLayers = {};
 
   constructor(hass, linkedEntityService) {
@@ -51,7 +51,7 @@ export default class HaUrlResolveService {
 
 
     entities.forEach(entity => {
-      this.entityLayers[entity] = this.entityLayers[entity] || new EntityLayers(entity);
+      this.entityLayers[entity] = this.entityLayers[entity] || new EntityLayers(entity, this);
 
       this.entityLayers[entity].layers.add(layer);
 

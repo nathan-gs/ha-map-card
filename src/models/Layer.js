@@ -41,7 +41,7 @@ export default class Layer {
     Logger.debug(`Setting up layer of type ${this.layerType}`);
     const layer = this.isWms ? 
       L.tileLayer.wms(this.url, this.config.options) :
-      L.tileLayer(this.url, this.config.options).addTo(this.map);
+      L.tileLayer(this.url, this.config.options);
     this.urlResolver.registerLayer(layer, this.config.url);
     layer.addTo(this.map);
   }
