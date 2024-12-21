@@ -1,4 +1,5 @@
 import LayerConfig from "../configs/LayerConfig.js";
+import HaUrlResolveService from "../services/HaUrlResolveService.js";
 import Logger from "../util/Logger.js";
 import L from 'leaflet';
 
@@ -10,11 +11,14 @@ export default class Layer {
   config;
   /** @type {L.map} */
   map;
+  /** @type {HaUrlResolveService} */
+  urlResolver;
 
-  constructor(layerType, config, map) {
+  constructor(layerType, config, map, urlResolver) {
     this.layerType = layerType;
     this.config = config;
     this.map = map;
+    this.urlResolver = urlResolver;
   }
 
   get isWms() {
@@ -30,16 +34,16 @@ export default class Layer {
   }
 
   get url() { 
-    return this.config.url;
+    return this.urlResolver.resolveUrl(this.config.url);
   }
 
   render() {
     Logger.debug(`Setting up layer of type ${this.layerType}`);
     if(this.isWms) {
-      L.tileLayer.wms(this.config.url, this.config.options).addTo(this.map);
+      L.tileLayer.wms(this.url, this.config.options).addTo(this.map);
     }
     if(this.isTileLayer) {
-      L.tileLayer(this.config.url, this.config.options).addTo(this.map);
+      L.tileLayer(this.url, this.config.options).addTo(this.map);
     }
   }
 }
