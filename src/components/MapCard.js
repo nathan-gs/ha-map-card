@@ -246,7 +246,7 @@ export default class MapCard extends LitElement {
       // Skip if neither found and return null
       picture = picture ? hass.hassUrl(picture) : null;
 
-      // Overvide icon?
+      // Override icon?
       let icon = configEntity.icon ?? entity_icon;
 
       // Attempt to setup entity. Skip on fail, so one bad entity does not affect others.
