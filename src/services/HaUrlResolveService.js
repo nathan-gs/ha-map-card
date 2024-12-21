@@ -10,6 +10,7 @@ export default class HaUrlResolveService {
   /**
    * Resolve URL with states
    * @param {string} url
+   * @returns {string}
    */
   resolveUrl(url) {
     return url.replace(/{{\s*states\(['"]([^'"]+)['"]\)\s*}}/g, (match, entityId) => {
