@@ -296,7 +296,7 @@ export default class MapCard extends LitElement {
     L.Icon.Default.imagePath = "/static/images/leaflet/images/";
 
     const mapEl = this.shadowRoot.querySelector('#map');
-    let map = L.map(mapEl);
+    let map = L.map(mapEl, this._config.mapOptions);
 
     // Add dark class if darkmode
     this._isDarkMode() ? mapEl.classList.add('dark') : mapEl.classList.add('light');

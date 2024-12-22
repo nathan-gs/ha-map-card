@@ -44,9 +44,15 @@ describe("HaUrlResolveService", () => {
           "sensor.mySensor": { state: "on" },
         },
       };
+
+      jest.spyOn(console, 'warn').mockImplementation();
+
       const haUrlResolveService = new HaUrlResolveService(hass);
       const url = "http://localhost:8123/{{ states('sensor.mySensor') }}/test/{{ states('sensor.myOtherSensor') }}/bla";
       expect(haUrlResolveService.resolveUrl(url)).toBe("http://localhost:8123/on/test//bla");
+      expect(console.warn).toHaveBeenCalledWith(
+        expect.stringContaining('[HaUrlResolveService]: sensor.myOtherSensor not found'),
+      )
     });
 
     it("should resolve URLs coming from linkedentityservice", () => {

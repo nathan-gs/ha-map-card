@@ -33,6 +33,8 @@ export default class MapConfig {
   historyDateSelection;
   /** @type {string} */
   themeMode;
+  /** @type {object} */
+  mapOptions;
 
   /** @type {boolean} */
   debug = false;
@@ -44,6 +46,7 @@ export default class MapConfig {
     this.y = inputConfig.y;
     this.zoom = this._setConfigWithDefault(inputConfig.zoom, 12);
     this.cardSize = this._setConfigWithDefault(inputConfig.card_size, 5);
+    this.mapOptions = this._setConfigWithDefault(inputConfig.map_options, {});
 
     // Get theme mode.
     this.themeMode = ['dark', 'light', 'auto'].includes(inputConfig.theme_mode) ? inputConfig.theme_mode : 'auto';
