@@ -11,6 +11,7 @@ import Entity from "../models/Entity.js"
 import Layer from '../models/Layer.js';
 import LayerWithHistory from '../models/LayerWithHistory.js';
 import LayerConfig from '../configs/LayerConfig.js';
+import HaUrlResolveService from '../services/HaUrlResolveService.js';
 // Methods
 import setInitialView from "../util/setInitialView.js"
 
@@ -36,6 +37,8 @@ export default class MapCard extends LitElement {
   linkedEntityService;
   /** @type {HaDateRangeService} */
   dateRangeManager;
+  /** @type {HaUrlResolveService} */
+  urlResolver;
   /** @type {string} */
   themeMode;
   /** @type {MapConfig} */
@@ -58,10 +61,7 @@ export default class MapCard extends LitElement {
     // Is history date range enabled?
     if (this._config.historyDateSelection) {
       this.dateRangeManager = new HaDateRangeService(this.hass);
-    }
-
-    // Manages watching external entities.
-    this.linkedEntityService = new HaLinkedEntityService(this.hass);     
+    }    
   }
 
   refreshEntityHistory(ent) {
@@ -192,6 +192,7 @@ export default class MapCard extends LitElement {
         }
       });
   
+  
     }
 
     return html`
@@ -287,7 +288,11 @@ export default class MapCard extends LitElement {
   }
 
   /** @returns {L.Map} Leaflet Map */
-  _setupMap() {    
+  _setupMap() {
+    // Manages watching external entities.
+    this.linkedEntityService = new HaLinkedEntityService(this.hass);     
+    this.urlResolver = new HaUrlResolveService(this.hass, this.linkedEntityService);
+    
     L.Icon.Default.imagePath = "/static/images/leaflet/images/";
 
     const mapEl = this.shadowRoot.querySelector('#map');
@@ -296,9 +301,10 @@ export default class MapCard extends LitElement {
     // Add dark class if darkmode
     this._isDarkMode() ? mapEl.classList.add('dark') : mapEl.classList.add('light');
 
-    map.addLayer(
-      L.tileLayer(this._config.tileLayer.url, this._config.tileLayer.options)
-    );
+    let tileUrl = this.urlResolver.resolveUrl(this._config.tileLayer.url);
+    let layer = L.tileLayer(tileUrl, this._config.tileLayer.options);
+    map.addLayer(layer);
+    this.urlResolver.registerLayer(layer, this._config.tileLayer.url);    
     return map;
   }
 
@@ -310,8 +316,8 @@ export default class MapCard extends LitElement {
   async _addLayers(map, configs, layerType) {
     configs.forEach((l) => {
       const layer = l.historyProperty 
-      ? new LayerWithHistory(layerType, l, map, this.linkedEntityService, this.dateRangeManager)
-      : new Layer(layerType, l, map);
+      ? new LayerWithHistory(layerType, l, map, this.urlResolver, this.linkedEntityService, this.dateRangeManager)
+      : new Layer(layerType, l, map, this.urlResolver);
       layer.render();
     });
   }
