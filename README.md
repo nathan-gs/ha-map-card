@@ -49,7 +49,7 @@ y: 3.652
 | `entities`               | []                                                                                                                           | Array of entities, will be listed as markers |
 | `wms`                    | []                                                                                                                           | WMS Layers, an array of `WMS` see below      |
 | `tile_layers`            | []                                                                                                                           | Tile Layers, an array of `Tile Layers` see below      |
-| `tile_layer_url`         | https://tile.openstreetmap.org/{z}/{x}/{y}.png or `https://tile.example.com/{{states('sensor.test') }}/{z}/{x}/{y}.png`      | Override the default map source, the url supports very entity lookups. See [URL Entity lookup](#url-entity-lookup).            |
+| `tile_layer_url`         | https://tile.openstreetmap.org/{z}/{x}/{y}.png or `https://tile.example.com/{{states('sensor.test') }}/{z}/{x}/{y}.png`      | Override the default map source, the url supports entity lookups. See [URL Entity lookup](#url-entity-lookup).            |
 | `tile_layer_attribution` | &amp;copy; &lt;a href&#x3D;&quot;http:&#x2F;&#x2F;www.openstreetmap.org&#x2F;copyright&quot;&gt;OpenStreetMap&lt;&#x2F;a&gt; | Set the correct map attribution              |
 | `tile_layer_options` | {}                                                                                                                               | The `options` for the default [TileLayer](https://leafletjs.com/reference.html#tilelayer) |
 | `history_date_selection` | false                                                                                                                        | Will link with a `energy-date-selection` on the page to provide an interactive  date range picker. |
@@ -61,14 +61,14 @@ If `x` & `y` or `focus_entity` is not set it will take the lat/long from the __f
 
 #### URL Entity lookup
 
-You can add dynamic url's, for example to use a sensor value in the url. 
+You can add dynamic url's, for example to use a sensor value in the url. When the parameter changes, the map will redraw with the new tile layer.
 ```
 tile_layer_url: https://tile.example.com/{{states('sensor.test') }}/{z}/{x}/{y}.png
 ```
 
 > ##### TIP
 >
-> The map/layer is not automatically reloaded when the entity changes, you will need to refresh the page or change the zoom level to force a reload.
+> It only supports `states` without any filters, this is a crude javascript regex based implementation, not the Jinja2 templating engine from Home Assistant.
 
 
 #### Entity options
