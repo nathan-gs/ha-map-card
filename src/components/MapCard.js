@@ -52,6 +52,9 @@ export default class MapCard extends LitElement {
     this.map = this._setupMap();
     // redraw the map every time it resizes
     this.resizeObserver = this._setupResizeObserver();
+
+    // Try to render immediately after map is ready
+    this.render()
   };
 
   setUpHistory() {
