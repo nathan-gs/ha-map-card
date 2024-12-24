@@ -78,7 +78,9 @@ Either the name of the `entity` or:
 | name                   | Default                               | note                                                                                          |
 |------------------------|---------------------------------------|-----------------------------------------------------------------------------------------------|
 | `entity`               |                                       | The entity id                                                                                 |
-| `display`              | `marker`                              | `icon`, `state` or `marker`. `marker` will display the picture if available                   |
+| `display`              | `marker`                              | `icon`, `state` or `marker`.                                                                  |
+|                        |                                       | `marker` will display the picture if available.                                               |
+|                        |                                       | `icon` will display the icon if available, otherwise the 1st letter of the entity's name.     |
 | `picture`              |                                       | Set a custom picture to use on the marker.                                                    |
 | `icon`                 |                                       | Set a custom icon to use if display is set to `icon`. e.g. mdi:cake                           |
 | `size`                 | 48                                    | Size of the icon                                                                              |
