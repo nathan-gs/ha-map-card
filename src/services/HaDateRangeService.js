@@ -64,7 +64,7 @@ export default class HaDateRangeService {
   disconnect(){
      this.listeners = [];
      // Unsub
-     this.connection();
+     if(this.connection) this.connection();
      Logger.debug("[HaDateRangeService] Disconnecting");
   }
 }
