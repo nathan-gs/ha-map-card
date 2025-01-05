@@ -14,6 +14,12 @@ export default class Layer {
   /** @type {HaUrlResolveService} */
   urlResolver;
 
+  /**
+   * @param {string} layerType 
+   * @param {object} config 
+   * @param {L.map} map 
+   * @param {HaUrlResolveService} urlResolver 
+   */
   constructor(layerType, config, map, urlResolver) {
     this.layerType = layerType;
     this.config = config;
@@ -38,7 +44,7 @@ export default class Layer {
   }
 
   render() {
-    Logger.debug(`Setting up layer of type ${this.layerType}`);
+    Logger.debug(`[Layer]: Setting up layer of type ${this.layerType}`);
     const layer = this.isWms ? 
       L.tileLayer.wms(this.url, this.config.options) :
       L.tileLayer(this.url, this.config.options);
