@@ -52,13 +52,14 @@ export default class MapCard extends LitElement {
     // redraw the map every time it resizes
     this.resizeObserver = this._setupResizeObserver();
     
-    this.tileLayersService = new TileLayersService(this.map, this._config.tileLayers, this._config.wms, this.urlResolver, this.linkedEntityService, this.dateRangeManager);
     // Setup core history service
     this.historyService = new HaHistoryService(this.hass);
     // Is history date range enabled?
     if (this._config.historyDateSelection) {
       this.dateRangeManager = new HaDateRangeService(this.hass);
     }    
+    
+    this.tileLayersService = new TileLayersService(this.map, this._config.tileLayers, this._config.wms, this.urlResolver, this.linkedEntityService, this.dateRangeManager);
     this.entitiesRenderService = new EntitiesRenderService(this.map, this.hass, this._config.entities, this.linkedEntityService, this.dateRangeManager, this.historyService, this._isDarkMode());
     this.initialViewRenderService = new InitialViewRenderService(this.map, this._config, this.hass, this.entitiesRenderService);
   

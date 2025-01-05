@@ -4,6 +4,7 @@ import Layer from "./Layer.js";
 import HaLinkedEntityService from "../services/HaLinkedEntityService.js";
 import HaDateRangeService from "../services/HaDateRangeService.js";
 import L from 'leaflet';
+import HaUrlResolveService from "../services/HaUrlResolveService.js";
 
 export default class LayerWithHistory extends Layer {
 
@@ -14,6 +15,15 @@ export default class LayerWithHistory extends Layer {
   /** @type {L.TileLayer} */
   layer;
 
+  /**
+   * 
+   * @param {string} layerType 
+   * @param {object} config 
+   * @param {L.map} map 
+   * @param {HaUrlResolveService} urlResolver 
+   * @param {HaLinkedEntityService} linkedEntityService 
+   * @param {HaDateRangeService} dateRangeManager 
+   */
   constructor(layerType, config, map, urlResolver, linkedEntityService, dateRangeManager) {
     super(layerType, config, map, urlResolver);
     this.linkedEntityService = linkedEntityService;
@@ -43,12 +53,13 @@ export default class LayerWithHistory extends Layer {
         this.map.removeLayer(this.layer);
         this.urlResolver.deregisterLayer(this.layer);
       }
+      Logger.debug(`[LayerWithHistory]: Layer ${this.config.url} removed`);
       this.urlResolver.registerLayer(newLayer, this.config.url);
       // And make this the new layer
       this.layer = newLayer;
     });
 
-    Logger.debug(`Layer refreshed with ${this.config.historyProperty}=${date}`);
+    Logger.debug(`[LayerWithHistory]: Layer refreshed with ${this.config.historyProperty}=${date}`);
   }
   
   render() {
@@ -57,7 +68,7 @@ export default class LayerWithHistory extends Layer {
     if (this.config.historySource == 'auto') {
       // if we have a manager - use it
       if (this.dateRangeManager) {
-        Logger.debug(`WMS Layer linked to date range.`);
+        Logger.debug(`[LayerWithHistory]: WMS Layer linked to date range.`);
         this.dateRangeManager.onDateRangeChange((range) => {
           this.updateLayer(range.start);
         });
@@ -72,7 +83,7 @@ export default class LayerWithHistory extends Layer {
         // If start is an entity, setup entity config
         if (HaMapUtilities.isHistoryEntityConfig(historyStart)) {
           let entity = historyStart['entity'] ?? historyStart;
-          Logger.debug(`WMS Layer linked entity history_start: ${entity}`);
+          Logger.debug(`[LayerWithHistory]: WMS Layer linked entity history_start: ${entity}`);
 
           // Link history
           this.linkedEntityService.onStateChange(
@@ -84,18 +95,20 @@ export default class LayerWithHistory extends Layer {
           );  
         } else {
            // Fixed date?
-           Logger.debug(`WMS Layer set with fixed history_start ${historyStart}`);
+           Logger.debug(`[LayerWithHistory]: WMS Layer set with fixed history_start ${historyStart}`);
            this.updateLayer(HaMapUtilities.convertToAbsoluteDate(historyStart));
         }
 
         return;
-      } 
+      }
+      Logger.warn(`[LayerWithHistory]: no date range manager: ${this.dateRangeManager} or history start ${this.config.historyStart} set for layer ${this.config.url}`);
+      return;
     }
 
     // History source is set & not auto
     if (this.config.historySource) {
       // if historySource is its own entity. Listen to that instead.
-      Logger.debug(`WMS Layer set to track custom date entity ${this.config.historySource}`);
+      Logger.debug(`[LayerWithHistory]: WMS Layer set to track custom date entity ${this.config.historySource}`);
       this.linkedEntityService.onStateChange(
         this.config.historySource, // Must provide a date.
         (newState) => {
