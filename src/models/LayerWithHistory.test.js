@@ -9,7 +9,7 @@ describe("LayerWithHistory", () => {
   });
 
   it("should have a render method", () => {
-    expect(new LayerWithHistory().render).toBeDefined();
+    expect(new LayerWithHistory('tile', new LayerConfig(), {}, {}, {}, {} ).render).toBeDefined();
   });
 
   it("should update the layer if there is a new date from the DateRangeManager", () => {
