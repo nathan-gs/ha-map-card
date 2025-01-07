@@ -13,12 +13,14 @@ describe('TileLayer', () => {
 
   });
 
-  it('should have a render method', () => {
-    expect(new TileLayer('url', { key: 'value' }).refresh).toBeDefined();
+  it('should have a redraw method', () => {
+    expect(new TileLayer('url', { key: 'value' }).redraw).toBeDefined();
   });
 
 
   it('should have a addTo method', () => {
     expect(new TileLayer('url', { key: 'value' }).addTo).toBeDefined();
   });
+
+
 });

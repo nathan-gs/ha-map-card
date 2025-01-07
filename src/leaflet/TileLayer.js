@@ -16,7 +16,7 @@ export default class TileLayer extends L.TileLayer {
     img.src = url;
   }
 
-  refresh() {
+  redraw() {
     Logger.debug(`[TileLayer]: Refreshing tiles`);
     if(!this._map) {
       Logger.debug(`[TileLayer]: Map not (yet) loaded, skipping refresh`)

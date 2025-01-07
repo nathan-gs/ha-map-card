@@ -17,7 +17,7 @@ export default class WMS extends L.TileLayer.WMS {
     img.src = url;
   }
 
-  refresh() {
+  redraw() {
     Logger.debug(`[WMS]: Refreshing tiles`);
     if(!this._map) {
       Logger.debug(`[WMS]: Map not (yet) loaded, skipping refresh`)
