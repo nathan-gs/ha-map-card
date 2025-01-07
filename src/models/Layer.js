@@ -2,6 +2,7 @@ import LayerConfig from "../configs/LayerConfig.js";
 import HaUrlResolveService from "../services/HaUrlResolveService.js";
 import Logger from "../util/Logger.js";
 import L from 'leaflet';
+import { TileLayer2, tileLayer2 } from "../util/TileLayer2.js";
 
 export default class Layer {
   
@@ -46,8 +47,8 @@ export default class Layer {
   render() {
     Logger.debug(`[Layer]: Setting up layer of type ${this.layerType}`);
     const layer = this.isWms ? 
-      L.tileLayer.wms(this.url, this.config.options) :
-      L.tileLayer(this.url, this.config.options);
+      tileLayer2.wms(this.url, this.config.options) :
+      tileLayer2(this.url, this.config.options);
     this.urlResolver.registerLayer(layer, this.config.url);
     layer.addTo(this.map);
   }

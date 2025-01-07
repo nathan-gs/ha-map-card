@@ -93,8 +93,11 @@ class EntityLayers {
   update() {
     this.layers.forEach(layer => {
       Logger.debug(`[HaUrlResolveService]: Updating layer ${layer.layer}`);
-      layer.layer.setUrl(this.urlResolver.resolveUrl(layer.urlTemplate));
-      layer.layer.redraw();
+
+      // setting the second argument stops the built-in redraw() of TileLayer,
+      // since we wish to use our own refresh() function instead
+      layer.layer.setUrl(this.urlResolver.resolveUrl(layer.urlTemplate), true);
+      layer.layer.refresh();
     });
   }
 }
