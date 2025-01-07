@@ -1,10 +1,11 @@
+import L from 'leaflet';
+
+
 // adapted from @barryhunter's implementation:
 // https://github.com/Leaflet/Leaflet/issues/6659#issuecomment-491545545
 
-import L from 'leaflet';
+export default class WMS extends L.TileLayer.WMS {
 
-class WMS extends L.TileLayer.WMS {
-  
   _refreshTileUrl(tile, url) {
     //use a image in background, so that only replace the actual tile, once image is loaded in cache!
     var img = new Image();
@@ -22,7 +23,7 @@ class WMS extends L.TileLayer.WMS {
     this._map._fadeAnimated = false;
 
     for (var key in this._tiles) {
-      tile = this._tiles[key];
+      var tile = this._tiles[key];
       if (tile.current && tile.active) {
         var oldsrc = tile.el.src;
         var newsrc = this.getTileUrl(tile.coords);
@@ -33,9 +34,6 @@ class WMS extends L.TileLayer.WMS {
     }
 
     if (wasAnimated)
-      setTimeout(function() { map._fadeAnimated = wasAnimated; }, 5000);
+      setTimeout(function() { this._map._fadeAnimated = wasAnimated; }, 5000);
   }
 }
-
-
-export { WMS };

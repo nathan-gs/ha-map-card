@@ -6,32 +6,17 @@ import HaUrlResolveService from "../services/HaUrlResolveService.js";
 import Logger from "../util/Logger.js";
 import L from 'leaflet';
 
-
 jest.mock('../services/HaUrlResolveService.js');
 jest.mock('../util/Logger.js');
-jest.mock('leaflet', () => ({
-  map: jest.fn(),
-  tileLayer: jest.fn(() => ({
-    addTo: jest.fn(),
-    wms: jest.fn(() => ({
-      addTo: jest.fn(),
-    })),
-  })),
-  default: {    
-    tileLayer: jest.fn(() => ({
-      addTo: jest.fn(),
-      wms: jest.fn(() => ({
-        addTo: jest.fn(),
-      })),
-    })),
-  },
-}));
+
 
 describe('Layer', () => {
   let mockMap, mockUrlResolver, mockConfig;
 
   beforeEach(() => {
-    mockMap = L.map();
+    mockMap = {
+      addLayer: jest.fn(),
+    };    
     mockUrlResolver = new HaUrlResolveService();
     mockConfig = new LayerConfig({
       url: 'test-url',
@@ -75,16 +60,22 @@ describe('Layer', () => {
     expect(mockUrlResolver.resolveUrl).toHaveBeenCalledWith(mockConfig.url);
   });
 
-  it('should setup a WMS layer correctly', () => {
-
-  });
-
   it('should setup a Tile layer correctly', () => {
     const layer = new Layer('tile', mockConfig, mockMap, mockUrlResolver);
     layer.render();
 
     expect(Logger.debug).toHaveBeenCalledWith('[Layer]: Setting up layer of type tile');
     expect(mockUrlResolver.registerLayer).toHaveBeenCalledWith(expect.any(Object), mockConfig.url);
+    expect(mockMap.addLayer).toHaveBeenCalledWith(expect.any(L.TileLayer));
+  });
+
+  it('should setup a WMS layer correctly', () => {
+    const layer = new Layer('wms', mockConfig, mockMap, mockUrlResolver);
+    layer.render();
+
+    expect(Logger.debug).toHaveBeenCalledWith('[Layer]: Setting up layer of type wms');
+    expect(mockUrlResolver.registerLayer).toHaveBeenCalledWith(expect.any(Object), mockConfig.url);
+    expect(mockMap.addLayer).toHaveBeenCalledWith(expect.any(L.TileLayer));
 
   });
 });

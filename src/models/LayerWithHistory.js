@@ -3,9 +3,9 @@ import HaMapUtilities from "../util/HaMapUtilities.js";
 import Layer from "./Layer.js";
 import HaLinkedEntityService from "../services/HaLinkedEntityService.js";
 import HaDateRangeService from "../services/HaDateRangeService.js";
-import L from 'leaflet';
-import { TileLayer } from "../leaflet/TileLayer.js";
-import { WMS } from "../leaflet/WMS.js";
+import Map from 'leaflet';
+import TileLayer from "../leaflet/TileLayer.js";
+import WMS from "../leaflet/WMS.js";
 import HaUrlResolveService from "../services/HaUrlResolveService.js";
 
 export default class LayerWithHistory extends Layer {
@@ -14,14 +14,14 @@ export default class LayerWithHistory extends Layer {
   linkedEntityService;
   /** @type {HaDateRangeService} */
   dateRangeManager;
-  /** @type {L.TileLayer} */
+  /** @type {TileLayer} */
   layer;
 
   /**
    * 
    * @param {string} layerType 
    * @param {object} config 
-   * @param {L.map} map 
+   * @param {Map} map 
    * @param {HaUrlResolveService} urlResolver 
    * @param {HaLinkedEntityService} linkedEntityService 
    * @param {HaDateRangeService} dateRangeManager 

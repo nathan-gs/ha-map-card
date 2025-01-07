@@ -5,29 +5,19 @@ import HaUrlResolveService from "../services/HaUrlResolveService.js";
 import HaLinkedEntityService from "../services/HaLinkedEntityService.js";
 import HaDateRangeService from "../services/HaDateRangeService.js";
 
-import L from 'leaflet';
-
-
-// Mock dependencies
-
 jest.mock('../services/HaUrlResolveService.js');
 jest.mock('../services/HaLinkedEntityService.js');
 jest.mock('../services/HaDateRangeService.js');
 
 
-jest.mock('leaflet', () => ({
-  map: jest.fn(),
-  tileLayer: jest.fn(() => ({ 
-    addTo: jest.fn(() => ({ on: jest.fn() })), 
-    wms: jest.fn(() => ({ addTo: jest.fn(() => ({ on: jest.fn() })) }))
-  })),
-}));
 
 describe("LayerWithHistory", () => {
   let mockMap, mockUrlResolver, mockLinkedEntityService, mockDateRangeManager, mockConfig;
 
   beforeEach(() => {
-    mockMap = L.map();
+    mockMap = {
+      addLayer: jest.fn(),
+    }; 
     mockUrlResolver = new HaUrlResolveService();
     mockLinkedEntityService = new HaLinkedEntityService();
     mockDateRangeManager = new HaDateRangeService();
