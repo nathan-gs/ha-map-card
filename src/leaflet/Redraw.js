@@ -31,8 +31,8 @@ export function redraw(layerInstance) {
   const wasAnimated = layerInstance._map._fadeAnimated;
   layerInstance._map._fadeAnimated = false;
 
-  for (var key in layerInstance._tiles) {
-    var tile = layerInstance._tiles[key];
+  for (const key in layerInstance._tiles) {
+    const tile = layerInstance._tiles[key];
     if (tile.current && tile.active) {
       const oldsrc = tile.el.src;
       const newsrc = layerInstance.getTileUrl(tile.coords);
