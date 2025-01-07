@@ -3,7 +3,7 @@
 
 import L from 'leaflet';
 
-class TileLayer2 extends L.TileLayer {
+class TileLayer extends L.TileLayer {
   _refreshTileUrl(tile, url) {
     //use a image in background, so that only replace the actual tile, once image is loaded in cache!
     var img = new Image();
@@ -36,8 +36,5 @@ class TileLayer2 extends L.TileLayer {
   }
 }
 
-function tileLayer2(url, options) {
-  return new TileLayer2(url, options);
-}
 
-export { TileLayer2, tileLayer2 };
+export { TileLayer };
