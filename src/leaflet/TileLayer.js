@@ -1,23 +1,27 @@
-import L from 'leaflet';
-
+import L from "leaflet";
+import Logger from "../util/Logger";
 // adapted from @barryhunter's implementation:
 // https://github.com/Leaflet/Leaflet/issues/6659#issuecomment-491545545
 // https://gist.github.com/barryhunter/e42f0c4756e34d5d07db4a170c7ec680
 
 export default class TileLayer extends L.TileLayer {
-
   _refreshTileUrl(tile, url) {
     //use a image in background, so that only replace the actual tile, once image is loaded in cache!
     var img = new Image();
-    img.onload = function() {
-      L.Util.requestAnimFrame(function() {
+    img.onload = function () {
+      L.Util.requestAnimFrame(function () {
         tile.el.src = url;
       });
-    }
+    };
     img.src = url;
   }
 
   refresh() {
+    Logger.debug(`[TileLayer]: Refreshing tiles`);
+    if(!this._map) {
+      Logger.debug(`[TileLayer]: Map not (yet) loaded, skipping refresh`)
+      return;
+    }
     //prevent _tileOnLoad/_tileReady re-triggering a opacity animation
     var wasAnimated = this._map._fadeAnimated;
     this._map._fadeAnimated = false;
@@ -28,12 +32,17 @@ export default class TileLayer extends L.TileLayer {
         var oldsrc = tile.el.src;
         var newsrc = this.getTileUrl(tile.coords);
         if (oldsrc != newsrc) {
-          this._refreshTileUrl(tile,newsrc);
+          this._refreshTileUrl(tile, newsrc);
         }
       }
     }
 
-    if (wasAnimated)
-      setTimeout(function() { this._map._fadeAnimated = wasAnimated; }, 5000);
+    if (wasAnimated) {
+      setTimeout(function () {
+        if(this._map) {
+          this._map._fadeAnimated = wasAnimated;
+        }
+      }, 5000);
+    }
   }
 }

@@ -1,5 +1,5 @@
 import L from 'leaflet';
-
+import Logger from "../util/Logger";
 
 // adapted from @barryhunter's implementation:
 // https://github.com/Leaflet/Leaflet/issues/6659#issuecomment-491545545
@@ -18,8 +18,13 @@ export default class WMS extends L.TileLayer.WMS {
   }
 
   refresh() {
+    Logger.debug(`[WMS]: Refreshing tiles`);
+    if(!this._map) {
+      Logger.debug(`[WMS]: Map not (yet) loaded, skipping refresh`)
+      return;
+    }
     //prevent _tileOnLoad/_tileReady re-triggering a opacity animation
-    var wasAnimated = this._map._fadeAnimated;
+    var wasAnimated = this._map?._fadeAnimated;
     this._map._fadeAnimated = false;
 
     for (var key in this._tiles) {
@@ -33,7 +38,12 @@ export default class WMS extends L.TileLayer.WMS {
       }
     }
 
-    if (wasAnimated)
-      setTimeout(function() { this._map._fadeAnimated = wasAnimated; }, 5000);
+    if (wasAnimated) {
+      setTimeout(function () {
+        if(this._map) {
+          this._map._fadeAnimated = wasAnimated;
+        }
+      }, 5000);
+    }
   }
 }
