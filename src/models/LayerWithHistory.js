@@ -3,7 +3,9 @@ import HaMapUtilities from "../util/HaMapUtilities.js";
 import Layer from "./Layer.js";
 import HaLinkedEntityService from "../services/HaLinkedEntityService.js";
 import HaDateRangeService from "../services/HaDateRangeService.js";
-import L from 'leaflet';
+import Map from 'leaflet';
+import TileLayer from "../leaflet/TileLayer.js";
+import WMS from "../leaflet/WMS.js";
 import HaUrlResolveService from "../services/HaUrlResolveService.js";
 
 export default class LayerWithHistory extends Layer {
@@ -12,14 +14,14 @@ export default class LayerWithHistory extends Layer {
   linkedEntityService;
   /** @type {HaDateRangeService} */
   dateRangeManager;
-  /** @type {L.TileLayer} */
+  /** @type {TileLayer} */
   layer;
 
   /**
    * 
    * @param {string} layerType 
    * @param {object} config 
-   * @param {L.map} map 
+   * @param {Map} map 
    * @param {HaUrlResolveService} urlResolver 
    * @param {HaLinkedEntityService} linkedEntityService 
    * @param {HaDateRangeService} dateRangeManager 
@@ -42,8 +44,8 @@ export default class LayerWithHistory extends Layer {
 
     // Draw our new layer
     let newLayer = this.isWms ? 
-      L.tileLayer.wms(this.url, this.options).addTo(this.map) :
-      L.tileLayer(this.url, this.options).addTo(this.map);
+      new WMS(this.url, this.options).addTo(this.map) :
+      new TileLayer(this.url, this.options).addTo(this.map);
 
     // When its ready, remove the old one.
     newLayer.on('load', () => {

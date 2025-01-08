@@ -11,6 +11,7 @@ import HaUrlResolveService from '../services/HaUrlResolveService.js';
 import TileLayersService from '../services/render/TileLayersRenderService.js';
 import EntitiesRenderService from '../services/render/EntitiesRenderService.js';
 import InitialViewRenderService from '../services/render/InitialViewRenderService.js';
+import TileLayer from '../leaflet/TileLayer.js';
 
 export default class MapCard extends LitElement {
   static get properties() {
@@ -156,7 +157,7 @@ export default class MapCard extends LitElement {
     this._isDarkMode() ? mapEl.classList.add('dark') : mapEl.classList.add('light');
 
     let tileUrl = this.urlResolver.resolveUrl(this._config.tileLayer.url);
-    let layer = L.tileLayer(tileUrl, this._config.tileLayer.options);
+    let layer = new TileLayer(tileUrl, this._config.tileLayer.options);
     map.addLayer(layer);
     this.urlResolver.registerLayer(layer, this._config.tileLayer.url);    
     return map;

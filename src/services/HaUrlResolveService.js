@@ -92,9 +92,10 @@ class EntityLayers {
 
   update() {
     this.layers.forEach(layer => {
-      Logger.debug(`[HaUrlResolveService]: Updating layer ${layer.layer}`);
-      layer.layer.setUrl(this.urlResolver.resolveUrl(layer.urlTemplate));
-      layer.layer.redraw();
+      const url = this.urlResolver.resolveUrl(layer.urlTemplate);
+      Logger.debug(`[HaUrlResolveService]: Updating layer ${layer.urlTemplate} to ${url}`);
+      
+      layer.layer.setUrl(url);
     });
   }
 }

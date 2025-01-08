@@ -1,7 +1,9 @@
 import LayerConfig from "../configs/LayerConfig.js";
 import HaUrlResolveService from "../services/HaUrlResolveService.js";
 import Logger from "../util/Logger.js";
-import L from 'leaflet';
+import Map from 'leaflet';
+import TileLayer from "../leaflet/TileLayer.js";
+import WMS from "../leaflet/WMS.js";
 
 export default class Layer {
   
@@ -9,7 +11,7 @@ export default class Layer {
   layerType;
   /** @type {LayerConfig} */
   config;
-  /** @type {L.map} */
+  /** @type {Map} */
   map;
   /** @type {HaUrlResolveService} */
   urlResolver;
@@ -17,7 +19,7 @@ export default class Layer {
   /**
    * @param {string} layerType 
    * @param {object} config 
-   * @param {L.map} map 
+   * @param {Map} map 
    * @param {HaUrlResolveService} urlResolver 
    */
   constructor(layerType, config, map, urlResolver) {
@@ -46,8 +48,9 @@ export default class Layer {
   render() {
     Logger.debug(`[Layer]: Setting up layer of type ${this.layerType}`);
     const layer = this.isWms ? 
-      L.tileLayer.wms(this.url, this.config.options) :
-      L.tileLayer(this.url, this.config.options);
+      new WMS(this.url, this.config.options) :
+      new TileLayer(this.url, this.config.options);
+
     this.urlResolver.registerLayer(layer, this.config.url);
     layer.addTo(this.map);
   }
