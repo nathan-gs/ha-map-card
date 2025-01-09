@@ -1,6 +1,7 @@
 
 import EntityHistory from "../models/EntityHistory.js";
 import L, { LayerGroup, LatLng, Map } from "leaflet";
+import Circle from "./Circle.js";
 import Logger from "../util/Logger.js"
 import EntityConfig from "../configs/EntityConfig.js";
 import HaHistoryService from "../services/HaHistoryService.js";
@@ -38,7 +39,9 @@ export default class Entity {
 
   /** @type {[boolean]} */
   darkMode;
-  
+  /** @type {Circle} */
+  circle;
+
   constructor(config, hass, map, historyService, dateRangeManager, linkedEntityService, darkMode) {
     this.config = config;
     this.hass = hass;
@@ -51,6 +54,7 @@ export default class Entity {
     if(this.display == "state") {
       this._currentState = this.title;
     }    
+    this.circle = new Circle(this.config.circleConfig, this);
   }
 
   setHistoryDates(start, end){
@@ -114,6 +118,8 @@ export default class Entity {
     this.marker = this._createMapMarker();
     this.marker.addTo(this.map);
     this.setupHistory();
+    
+    this.circle.setup();
   }
 
   get friendlyName() {
@@ -166,6 +172,7 @@ export default class Entity {
     }
     this.marker.setLatLng(this.latLng);
     this.renderHistory();
+    this.circle.update();
   }
 
 
@@ -175,7 +182,7 @@ export default class Entity {
     if(this.historyLayerGroup) this.map.removeLayer(this.historyLayerGroup);
 
     this.historyLayerGroup = new LayerGroup();
-    this.map.addLayer(this.historyLayerGroups[this.id]);
+    this.map.addLayer(this.historyLayerGroup);
 
     // Subscribe new history
     this.setupEntityHistories(this.currentHistoryStart, this.currentHistoryEnd);
@@ -243,11 +250,8 @@ export default class Entity {
 
       // Render history now if start is fixed and end isn't dynamic
       if (this.config.historyStart && !this.config.historyEndEntity) {
-        this.setupHistory(this.config.historyStart, this.config.historyEnd);
-      }
-
-    
-      
+        this.setupEntityHistories(this.config.historyStart, this.config.historyEnd);
+      }      
     }
     
   setupEntityHistories(start, end) {
