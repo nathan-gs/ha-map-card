@@ -1,65 +1,39 @@
 
-import EntityHistory from "../models/EntityHistory.js";
-import L, { LayerGroup, LatLng, Map } from "leaflet";
+import L, { LatLng, Map } from "leaflet";
 import Circle from "./Circle.js";
 import Logger from "../util/Logger.js"
 import EntityConfig from "../configs/EntityConfig.js";
-import HaHistoryService from "../services/HaHistoryService.js";
-import HaDateRangeService from "../services/HaDateRangeService.js";
-import HaLinkedEntityService from "../services/HaLinkedEntityService.js";
-import HaMapUtilities from "../util/HaMapUtilities.js";
+import EntityHistoryManager from "./EntityHistoryManager.js";
 
 export default class Entity {
   /** @type {EntityConfig} */
-  config;  
+  config;
   /** @type {L.Marker} */
   marker;
-  /** @type {EntityHistory} */
-  history;
-  /** @type {LayerGroup} */
-  historyLayerGroup;
   /** @type {object} */
   hass;
   /** @type {Map} */
   map;
   /** @type {string} */
   _currentState;
-  /** @type {HaHistoryService} */
-  historyService;
-  /** @type {HaDateRangeService} */
-  dateRangeManager;
-  /** @type {HaLinkedEntityService} */
-  linkedEntityService;
-
-  // Set initial values
-  /** @type {Date} */
-  currentHistoryStart;
-  /** @type {Date} */
-  currentHistoryEnd;
-
   /** @type {[boolean]} */
   darkMode;
   /** @type {Circle} */
   circle;
+  /** @type {EntityHistoryManager} */
+  historyManager;
 
   constructor(config, hass, map, historyService, dateRangeManager, linkedEntityService, darkMode) {
     this.config = config;
     this.hass = hass;
     this.map = map;
     this.darkMode = darkMode;
-    this.historyService = historyService;
-    this.dateRangeManager = dateRangeManager;
-    this.linkedEntityService = linkedEntityService;
 
     if(this.display == "state") {
       this._currentState = this.title;
-    }    
+    }
     this.circle = new Circle(this.config.circleConfig, this);
-  }
-
-  setHistoryDates(start, end){
-    this.currentHistoryStart = start;
-    this.currentHistoryEnd = end;
+    this.historyManager = new EntityHistoryManager(this, historyService, dateRangeManager, linkedEntityService);
   }
 
   get id() {
@@ -82,7 +56,6 @@ export default class Entity {
     return picture ? this.hass.hassUrl(picture) : null;
   }
 
-  
   /** @returns {LatLng} */
   get latLng() {
     if(this.config.fixedX && this.config.fixedY) {
@@ -117,8 +90,7 @@ export default class Entity {
   setup() {
     this.marker = this._createMapMarker();
     this.marker.addTo(this.map);
-    this.setupHistory();
-    
+    this.historyManager.setup();
     this.circle.setup();
   }
 
@@ -129,7 +101,7 @@ export default class Entity {
   /** @returns {string} */
   get title() {
     if(this.display == "state") {
-      return this.hass.formatEntityState(this.state);;
+      return this.hass.formatEntityState(this.state);
     }
     const title = this.friendlyName;
     if(title.length < 5) {
@@ -156,10 +128,6 @@ export default class Entity {
     return `style="height: ${size}px; width: ${size}px;"`;
   }
 
-  get hasHistory() {
-    return this.config.hasHistory;
-  }
-
   async update() {
     if(this.display == "state") {
       if(this.state != this._currentState) {
@@ -171,104 +139,10 @@ export default class Entity {
       }
     }
     this.marker.setLatLng(this.latLng);
-    this.renderHistory();
+    this.historyManager.update();
     this.circle.update();
   }
 
-
-  refreshEntityHistory() {
-    Logger.debug(`[Entity] Refreshing history for ${this.id}: ${this.currentHistoryStart} -> ${this.currentHistoryEnd}`);
-    // Remove layer if it already exists.
-    if(this.historyLayerGroup) this.map.removeLayer(this.historyLayerGroup);
-
-    this.historyLayerGroup = new LayerGroup();
-    this.map.addLayer(this.historyLayerGroup);
-
-    // Subscribe new history
-    this.setupEntityHistories(this.currentHistoryStart, this.currentHistoryEnd);
-  }
-
-  setupHistory() {    
-    let historyDebug = `History config for: ${this.id}\n`;
-      
-    if (!this.hasHistory) {
-      historyDebug += `- Not enabled`;
-      Logger.debug(historyDebug);
-      return;
-    }
-
-    // Setup layer for entities history
-    this.historyLayerGroup = new LayerGroup();
-    this.map.addLayer(this.historyLayerGroup);
-
-    // If entity is using the date range manager.
-    if (this.config.usingDateRangeManager) {
-      // HaDateRangeService, HaLinkedEntityService and future services should use same structure.
-      this.dateRangeManager.onDateRangeChange((range) => {
-        this.setHistoryDates(range.start, range.end);
-        this.refreshEntityHistory(this.map, this.historyService);
-      });
-
-      historyDebug += `- Using DateRangeManager`;
-      Logger.debug(historyDebug);
-    }
-
-    // If have start entity, link it
-    if (this.config.historyStartEntity) {
-      this.linkedEntityService.onStateChange(
-        this.config.historyStartEntity,
-        (newState) => {
-            const date = HaMapUtilities.getEntityHistoryDate(newState, this.config.historyStartEntitySuffix);
-            this.setHistoryDates(date, this.currentHistoryEnd);
-            this.refreshEntityHistory(this.map, this.historyService);
-          }
-        );
-        historyDebug += `- Start: linked entity "${this.config.historyStartEntity}"\n`;
-      } else {
-        this.currentHistoryStart = this.config.historyStart;
-        historyDebug += `- Start: fixed date ${this.currentHistoryStart}\n`;
-      }
-
-      // If have end entity, link it.
-      if (this.config.historyEndEntity) {
-        this.linkedEntityService.onStateChange(
-          this.config.historyEndEntity,
-          (newState) => {
-            const date = HaMapUtilities.getEntityHistoryDate(newState, this.config.historyEndEntitySuffix);
-            this.setHistoryDates(this.currentHistoryStart, date);
-            this.refreshEntityHistory(this.map, this.historyService);
-          }
-        );
-        historyDebug += `- End: linked entity "${this.config.historyEndEntity}"\n`;
-      } else {
-        this.currentHistoryEnd = this.config.historyEnd;
-        historyDebug += `- End: fixed date ${this.currentHistoryEnd??'now'}\n`;
-      }
-
-      // Provide summary of config for each entities history
-      Logger.debug(historyDebug);
-
-      // Render history now if start is fixed and end isn't dynamic
-      if (this.config.historyStart && !this.config.historyEndEntity) {
-        this.setupEntityHistories(this.config.historyStart, this.config.historyEnd);
-      }      
-    }
-    
-  setupEntityHistories(start, end) {
-    this.history = new EntityHistory(this.id, this.tooltip, this.config.historyLineColor, this.config.gradualOpacity, this.config.historyShowDots, this.config.historyShowLines);
-    this.historyService.subscribe(this.history.entityId, start, end, this.history.retrieve, this.config.useBaseEntityOnly);
-  }
-
-  renderHistory() {
-    if(!this.hasHistory) {
-      return;
-    }
-    this.history?.render().flat().forEach((marker) => {
-      marker.addTo(this.historyLayerGroup);
-    });
-  }
-
-  
   _createMapMarker() {
     Logger.debug("[MarkerEntity] Creating marker for " + this.id + " with display mode " + this.display);
     let icon = this.icon;
@@ -283,7 +157,7 @@ export default class Entity {
 
     const extraCssClasses = this.darkMode ? "dark" : "";
 
-    const marker = L.marker(this.latLng, {
+    return L.marker(this.latLng, {
       icon: L.divIcon({
         html: `
           <map-card-entity-marker
@@ -291,9 +165,7 @@ export default class Entity {
             title="${this.title}"
             tooltip="${this.tooltip}"
             icon="${icon ?? ""}"
-            picture="${
-              picture ?? ""
-            }"
+            picture="${picture ?? ""}"
             color="${this.config.color}"
             style="${this.config.css}"
             size="${this.config.size}"
@@ -307,7 +179,5 @@ export default class Entity {
       title: this.id,
       zIndexOffset: this.config.zIndexOffset
     });
-    return marker;
   }
-
 }
