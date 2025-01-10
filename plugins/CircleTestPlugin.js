@@ -1,4 +1,9 @@
-export default function (L, pluginBase) {
+/**
+ *
+ * @param L
+ * @param pluginBase
+ */
+export default function(L, pluginBase) {
   return class CircleTestPlugin extends pluginBase {
     constructor(map, name, options = {}) {
       super(map, name, options);
@@ -14,7 +19,7 @@ export default function (L, pluginBase) {
       console.log("Called init() of plugin:", this.name);
     }
 
-    renderMap() {
+    render() {
       console.log('Called render() of Plugin:', this.name);
       L.circle([this.x, this.y], { radius: this.r, ...this.circle_options }).addTo(this.map);
 
