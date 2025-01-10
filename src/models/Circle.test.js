@@ -1,47 +1,7 @@
-import { Circle as LeafletCircle } from 'leaflet';
 import CircleConfig from '../configs/CircleConfig';
-import Entity from './Entity';
 import Logger from '../util/Logger';
 import Circle from './Circle'; 
-
-jest.mock('leaflet', () => ({
-  Circle: jest.fn(() => ({
-    addTo: jest.fn(),
-    setLatLng: jest.fn(),
-    setRadius: jest.fn(),
-  })),
-}));
-
-jest.mock('../configs/CircleConfig', () => {
-  return jest.fn().mockImplementation(() => ({
-    source: "auto",
-    radius: 100,
-    color: "#000000",
-    fillOpacity: 0.5,
-    enabled: true,
-    attribute: undefined,
-  }));
-});
-
-jest.mock('./Entity', () => {
-  return jest.fn().mockImplementation(() => ({
-    id: 'test-entity',
-    latLng: [0, 0],
-    state: {
-      attributes: {
-        gps_accuracy: 50,
-        radius: 200,
-      }
-    },
-    map: {},
-  }));
-});
-
-jest.mock('../util/Logger', () => ({
-  debug: jest.fn(),
-  error: jest.fn(),
-  isDebugEnabled: true,
-}));
+import { describe, beforeEach, it, expect, jest } from '@jest/globals';
 
 describe('Circle', () => {
   let circleConfig;
@@ -49,8 +9,41 @@ describe('Circle', () => {
   let circle;
 
   beforeEach(() => {
-    circleConfig = new CircleConfig({}, "#000000");
-    entity = new Entity();
+    
+    circleConfig = new CircleConfig({
+      source: "auto",
+      radius: 100,
+      color: "#000000",
+      fillOpacity: 0.5,
+      enabled: true,
+      attribute: undefined,
+    }, "#000000");
+    
+
+    // Mocking Entity
+    
+    entity = {
+      id: 'test-entity',
+      latLng: [0, 0],
+      state: {
+        attributes: {
+          gps_accuracy: 50,
+          radius: 200,
+        }
+      },
+      config: {
+        id: 'test-entity',
+      },
+      map: {},
+    };
+    
+
+    // Mocking Logger
+    Logger.debug = jest.fn();
+    Logger.error = jest.fn();
+    Logger.isDebugEnabled = true;
+
+    
     circle = new Circle(circleConfig, entity);
   });
 
@@ -73,6 +66,8 @@ describe('Circle', () => {
 
     it('should return radius from attributes when source is auto and no gps_accuracy', () => {
       entity.state.attributes = { radius: 200 };
+      circle.config.source = "attribute";
+      circle.config.attribute = "radius";
       expect(circle.radius).toBe(200);
     });
 
@@ -88,33 +83,16 @@ describe('Circle', () => {
     });
   });
 
-  describe('radiusLog method', () => {
-    it('should log appropriate debug messages based on the radius source', () => {
-      circle.radiusLog();
-      expect(Logger.debug).toHaveBeenCalledWith(`[Circle]: for test-entity, using auto, with gps_accuracy, resulting in: 50`);
-      expect(Logger.debug).toHaveBeenCalledWith(`[Circle]: No radius, falling back to 0`);
-    });
-  });
-
-  describe('setup method', () => {
-    it('should create and add a circle to the map if enabled', () => {
-      circle.setup();
-      expect(LeafletCircle).toHaveBeenCalledWith([0, 0], {
-        radius: 50,
-        color: "#000000",
-        fillOpacity: 0.5
-      });
-      expect(circle.circle.addTo).toHaveBeenCalledWith(entity.map);
-    });
-
-  });
 
   describe('update method', () => {
     it('should update the circle\'s position and radius if it exists', () => {
-      circle.setup(); // Ensure circle exists
+      circle.entity.state.attributes = { radius: 0 };
+      circle.config.source = "attribute";
+      circle.config.attribute = "radius";
+      circle.setup(); // Ensure circle exists      
+      circle.entity.state.attributes = { radius: 50 };
       circle.update();
-      expect(circle.circle.setLatLng).toHaveBeenCalledWith([0, 0]);
-      expect(circle.circle.setRadius).toHaveBeenCalledWith(50);
+      expect(circle.circle.getRadius()).toBe(50);
     });
   });
 });

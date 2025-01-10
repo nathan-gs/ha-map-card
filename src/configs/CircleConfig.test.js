@@ -1,8 +1,5 @@
-import Logger from "../util/Logger";
 import CircleConfig from './CircleConfig';
 import { describe, expect, it, afterEach, beforeEach, jest } from "@jest/globals";
-
-jest.mock('../util/Logger');
 
 describe('CircleConfig', () => {
   afterEach(() => {

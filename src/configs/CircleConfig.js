@@ -1,5 +1,3 @@
-import Logger from "../util/Logger";
-
 export default class CircleConfig {
 
   /** @type {boolean} */
