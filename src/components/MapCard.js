@@ -44,7 +44,7 @@ export default class MapCard extends LitElement {
   entitiesRenderService;
   /** @type {InitialViewRenderService} */
   initialViewRenderService;
-  /** @type {PluginManager} */
+  /** @type {PluginsRenderService} */
   pluginManager;
   hasError = false;
   hadError = false;
