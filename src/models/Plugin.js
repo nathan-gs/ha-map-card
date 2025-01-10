@@ -6,10 +6,12 @@ export default class Plugin {
     this.options = options;
   }
 
-  init() {
-  }
+  init() { }
 
-  render() {
-  }
+  // method that modifies the map itself
+  renderMap() { }
+
+  // used if the plugin needs to respond to state changes
+  update() { }
 
 }

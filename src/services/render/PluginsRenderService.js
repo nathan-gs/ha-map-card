@@ -27,6 +27,7 @@ export default class PluginsRenderService {
 
     // Wait for all plugins to finish loading
     await Promise.all(loadPromises);
+    Logger.debug(`Initialized plugins: ${[...this.plugins.keys()]}`);
 
 
 
@@ -59,16 +60,22 @@ export default class PluginsRenderService {
       this.plugins.set(config.name, pluginInstance);
 
       Logger.debug(`Plugin ${config.name} has been registered and initialized.`);
-      Logger.debug([...this.plugins.keys()]);
 
-      await pluginInstance.render();
+      await pluginInstance.renderMap();
 
     } catch (error) {
       Logger.error(`Failed to load plugin ${config.name} from ${config.url}:`, error);
     }
   }
 
-  async render() {}
+  async render() {
+    const renderPromises = [];
+    this.plugins.forEach((pluginInstance) => {
+      renderPromises.push(pluginInstance.update());
+    })
+
+    await Promise.all(renderPromises);
+  }
 
   // List all registered plugins
   listPlugins() {
