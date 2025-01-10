@@ -14,7 +14,7 @@ export default function (L, pluginBase) {
       console.log("Called init() of plugin:", this.name);
     }
 
-    render() {
+    renderMap() {
       console.log('Called render() of Plugin:', this.name);
       L.circle([this.x, this.y], { radius: this.r, ...this.circle_options }).addTo(this.map);
 
