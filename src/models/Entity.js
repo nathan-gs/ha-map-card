@@ -15,7 +15,7 @@ export default class Entity {
   /** @type {Map} */
   map;
   /** @type {string} */
-  _currentState;
+  _currentTitle;
   /** @type {[boolean]} */
   darkMode;
   /** @type {Circle} */
@@ -30,7 +30,7 @@ export default class Entity {
     this.darkMode = darkMode;
 
     if(this.display == "state") {
-      this._currentState = this.title;
+      this._currentTitle = this.title;
     }
     this.circle = new Circle(this.config.circleConfig, this);
     this.historyManager = new EntityHistoryManager(this, historyService, dateRangeManager, linkedEntityService);
@@ -95,7 +95,7 @@ export default class Entity {
   }
 
   get friendlyName() {
-    return this.state.attributes.friendly_name;
+    return this.state.attributes?.friendly_name ?? this.id;
   }
 
   /** @returns {string} */
@@ -107,8 +107,9 @@ export default class Entity {
     if(title.length < 5) {
       return title;
     }
+    const regex = /[ _\/\\-]/; 
     return title
-      .split(" ")
+      .split(regex)
       .map((part) => part[0])
       .join("")
       .substr(0, 3)
@@ -130,12 +131,12 @@ export default class Entity {
 
   async update() {
     if(this.display == "state") {
-      if(this.state != this._currentState) {
-        Logger.debug("[Entity] updating marker for " + this.id + " from " + this._currentState + " to " + this.state);
+      if(this.title != this._currentTitle) {
+        Logger.debug("[Entity] updating marker for " + this.id + " from " + this._currentTitle + " to " + this.state);
         this.marker.remove();
         this.marker = this._createMapMarker();
         this.marker.addTo(this.map);
-        this._currentState = this.state;
+        this._currentTitle = this.title;
       }
     }
     this.marker.setLatLng(this.latLng);
