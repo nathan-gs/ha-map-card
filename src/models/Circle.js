@@ -38,24 +38,24 @@ export default class Circle {
   }
 
   radiusLog() {
-    if(Logger.isDebugEnabled) {
+    if(Logger.isDebugEnabled()) {
       if(this.config.source == "config") {
-        Logger.debug(`[Circle]: for ${this.entity.id}, using config, resulting in: ${this.config.radius}`)
+        Logger.debug(`[Circle]: for ${this.entity.id}, using config, resulting in: ${this.config.radius}`);
       }
       const attributes = this.entity.state.attributes;
       if(this.config.source == "attribute") {
-        Logger.debug(`[Circle]: for ${this.entity.id}, using attribute (${this.config.attribute}), resulting in: ${attributes[this.config.attribute]}`)
+        Logger.debug(`[Circle]: for ${this.entity.id}, using attribute (${this.config.attribute}), resulting in: ${attributes[this.config.attribute]}`);
       }
       if(attributes.gps_accuracy) {
-        Logger.debug(`[Circle]: for ${this.entity.id}, using auto, with gps_accuracy, resulting in: ${attributes.gps_accuracy}`)
+        Logger.debug(`[Circle]: for ${this.entity.id}, using auto, with gps_accuracy, resulting in: ${attributes.gps_accuracy}`);
       }
       if(attributes.radius) {
-        Logger.debug(`[Circle]: for ${this.entity.id}, using auto, with radius, resulting in: ${attributes.radius}`)
+        Logger.debug(`[Circle]: for ${this.entity.id}, using auto, with radius, resulting in: ${attributes.radius}`);
       }
       if(this.config.radius > 0) {
-        Logger.debug(`[Circle]: for ${this.entity.id}, using auto, with a radius defined in config, resulting in: ${this.config.radius}`)
+        Logger.debug(`[Circle]: for ${this.entity.id}, using auto, with a radius defined in config, resulting in: ${this.config.radius}`);
       }
-      Logger.debug(`[Circle]: No radius, falling back to 0`)
+      Logger.debug(`[Circle]: No radius, falling back to 0`);
     }
   }
 

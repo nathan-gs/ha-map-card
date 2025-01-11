@@ -4,7 +4,7 @@ export default class CircleConfig {
   enabled = false;
   /** @type {number} */
   radius = 0;
-  /** @type {source} */
+  /** @type {string} */
   source;
   /** @type {string} */
   color;
