@@ -38,7 +38,7 @@ describe('Entity class', () => {
         },
         hassUrl: jest.fn(url => url)
       },
-      formatEntityState: jest.fn(state => 'ENTITY_STATE')
+      formatEntityState: jest.fn().mockReturnValue('ENTITY_STATE')
     };
     map = { addTo: jest.fn() };
     historyService = {};

@@ -41,7 +41,7 @@ describe('Circle', () => {
     // Mocking Logger
     Logger.debug = jest.fn();
     Logger.error = jest.fn();
-    Logger.isDebugEnabled = true;
+    Logger.isDebugEnabled = jest.fn().mockReturnValue(true);
 
     
     circle = new Circle(circleConfig, entity);

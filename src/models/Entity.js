@@ -107,7 +107,7 @@ export default class Entity {
     if(title.length < 5) {
       return title;
     }
-    const regex = /[ _\/\\-]/; 
+    const regex = /[ _/-]/; 
     return title
       .split(regex)
       .map((part) => part[0])
