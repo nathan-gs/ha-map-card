@@ -18,6 +18,10 @@ export default class Logger {
       }
     }
 
+    static isDebugEnabled() {
+      return Logger._debugEnabled;
+    }
+
     static error(...args) {
       console.error(...args);
     }

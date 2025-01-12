@@ -1,5 +1,5 @@
 import EntitiesRenderService from "./EntitiesRenderService";
-import { LatLng } from "leaflet";
+import { LatLng, latLng } from "leaflet";
 
 describe("EntitiesRenderService", () => {
   describe("render", () => {
@@ -40,9 +40,7 @@ describe("EntitiesRenderService", () => {
 function testDataToMarker(testData) {
   return testData.map((data) => {
     return {     
-      marker: {
-        getLatLng: () => { return new LatLng(data[0], data[1]) },
-      },
+      latLng: new LatLng(data[0], data[1]),
       config: {
         focusOnFit: true,
       },
