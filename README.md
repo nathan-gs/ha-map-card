@@ -129,9 +129,9 @@ Display a circle around the marker. It can either be called with the string `aut
 
 | name         | Default | note                                                                                         |
 |--------------|---------|----------------------------------------------------------------------------------------------|
-| `source`     |         | The way to get the radius from. It checks the `gps_accuracy`, the `radius` attributes from the entity, or the `radius` set in config.         |
-| `attribute`  |         | The attribute to use for the radius.         |
-| `radius`     |         | Radius in meters (optional)                                                                            |
+| `source`     |         | Where to get the radius from, see below for options.       |
+| `attribute`  |         | The attribute to use for the radius (in case of `source: attribute`).         |
+| `radius`     |         | Radius in meters (in case of `source: config`)(optional)                                                                            |
 | `color`      |         | Color of the circle (will use the entity color if not set)                                                                          |
 | `fill_opacity`| 0.2     | Opacity of the fill color                                                                    |
 
