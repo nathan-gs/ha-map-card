@@ -136,6 +136,7 @@ Display a circle around the marker. It can either be called with the string `aut
 | `fill_opacity`| 0.2     | Opacity of the fill color                                                                    |
 
 Source
+* `auto` - Will use the `gps_accuracy`, then the `radius` attribute from the entity if available, otherwise will use the `radius` set in the config.
 * `gps_accuracy` - Will use the `gps_accuracy` attribute from the entity.
 * `radius` - Will use the `radius` attribute from the entity.
 * `config` - Will use the `radius` set in the config.
