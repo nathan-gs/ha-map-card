@@ -29,7 +29,8 @@ export default class EntityHistory {
     this.showLines = showLines;
   }
 
-  retrieve = (entry) => {
+  /** @param {TimelineEntry} entry  */
+  react(entry) {
     this.entries.push(entry);
     this.needRerender = true;
   };

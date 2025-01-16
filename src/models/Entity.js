@@ -4,24 +4,31 @@ import Circle from "./Circle.js";
 import Logger from "../util/Logger.js"
 import EntityConfig from "../configs/EntityConfig.js";
 import EntityHistoryManager from "./EntityHistoryManager.js";
+import TimelineEntry from "./TimelineEntry.js";
 
 export default class Entity {
   /** @type {EntityConfig} */
   config;
-  /** @type {L.Marker} */
+  /** @private @type {L.Marker} */
   marker;
-  /** @type {object} */
+  /** @private @type {object} */
   hass;
-  /** @type {Map} */
+  /** @private @type {Map} */
   map;
-  /** @type {string} */
+  /** @private @type {string} */
   _currentTitle;
-  /** @type {[boolean]} */
+  /** @private @type {[boolean]} */
   darkMode;
-  /** @type {Circle} */
+  /** @private @type {Circle} */
   circle;
-  /** @type {EntityHistoryManager} */
+  /** @private @type {EntityHistoryManager} */
   historyManager;
+  /** @private @type {TimelineEntry} */
+  currentTimelineEntry;
+  /** @private @type {LatLng} */
+  _currentLatLng;  
+  /** @private @type {boolean} */
+  _resetReactive = false;
 
   constructor(config, hass, map, historyService, dateRangeManager, linkedEntityService, darkMode) {
     this.config = config;
@@ -46,32 +53,42 @@ export default class Entity {
 
   /** @returns {object} */
   get state() {
-    return this.hass.states[this.id];
+    return this.currentTimelineEntry?.state.s ?? this.hass.states[this.id];
   }
 
+  /** @returns {Object.<string, *} */
+  get attributes() {
+    return this.currentTimelineEntry?.state.a ?? this.hass.states[this.id].attributes;
+  }
+
+  /** @private @returns {string} */
   get picture() {
     // If no configured picture, fallback to entity picture
-    let picture = this.config.picture ?? this.state.attributes.entity_picture;
+    let picture = this.config.picture ?? this.attributes.entity_picture;
     // Skip if neither found and return null
     return picture ? this.hass.hassUrl(picture) : null;
   }
 
   /** @returns {LatLng} */
   get latLng() {
+    if(this._currentLatLng) {
+      return this._currentLatLng;
+    }
+
     if(this.config.fixedX && this.config.fixedY) {
       return new LatLng(this.config.fixedX, this.config.fixedY);
     }
     
     // Do we have Lng/Lat directly?
-    if (this.state.attributes.latitude && this.state.attributes.longitude) {
-      return new LatLng(this.state.attributes.latitude, this.state.attributes.longitude);
+    if (this.attributes.latitude && this.attributes.longitude) {
+      return new LatLng(this.attributes.latitude, this.attributes.longitude);
     }
     
     // Get Lat/Lng of entity. Some entities such as "person" define device_trackers allowing
     // multiple lat/lng sources to be used. This method will call down through these looking for a
     // lat/lng value if none is defined on the parent entity.
     // If any, see if we can get a lng/lat from one instead
-    let subTrackerIds = this.state?.attributes?.device_trackers ?? []
+    let subTrackerIds = this.attributes.device_trackers ?? []
     for(let t=0; t<subTrackerIds.length; t++) {
       const entity = this.hass.states[subTrackerIds[t]];
       if (entity.attributes.latitude && entity.attributes.longitude) {
@@ -88,14 +105,41 @@ export default class Entity {
   }
 
   setup() {
-    this.marker = this._createMapMarker();
+    this.marker = this.createMapMarker();
     this.marker.addTo(this.map);
     this.historyManager.setup();
     this.circle.setup();
   }
 
+  /** @param {TimelineEntry} entry */  
+  react(entry) {
+    const updateEntity = (entry) => {
+      Logger.debug("[Entity] Date Reset, reacting to new entry for " + entry.entityId);
+      if (entry.entityId == this.id) {
+        this._resetReactive = false;
+        this.currentTimelineEntry = entry;
+      }
+      this._currentLatLng = new LatLng(entry.latitude, entry.longitude);
+      this.update()
+    }
+
+    if(this._resetReactive) {
+      updateEntity(entry)
+    }
+    if(this.currentTimelineEntry) {
+      if(entry.timestamp > this.currentTimelineEntry.timestamp) {
+        updateEntity(entry)
+      }
+    }
+  }
+
+  resetReactive() {
+    Logger.debug(`[Entity]: resetting reactive`);
+    this._resetReactive = true;
+  }
+
   get friendlyName() {
-    return this.state.attributes?.friendly_name ?? this.id;
+    return this.attributes.friendly_name ?? this.id;
   }
 
   /** @returns {string} */
@@ -122,11 +166,7 @@ export default class Entity {
   }
 
   get icon() {
-    return this.config.icon ?? this.state.attributes.icon;
-  }
-
-  _markerCss(size) {
-    return `style="height: ${size}px; width: ${size}px;"`;
+    return this.config.icon ?? this.attributes.icon;
   }
 
   async update() {
@@ -134,7 +174,7 @@ export default class Entity {
       if(this.title != this._currentTitle) {
         Logger.debug("[Entity] updating marker for " + this.id + " from " + this._currentTitle + " to " + this.state);
         this.marker.remove();
-        this.marker = this._createMapMarker();
+        this.marker = this.createMapMarker();
         this.marker.addTo(this.map);
         this._currentTitle = this.title;
       }
@@ -144,7 +184,8 @@ export default class Entity {
     this.circle.update();
   }
 
-  _createMapMarker() {
+  /** @private */
+  createMapMarker() {
     Logger.debug("[MarkerEntity] Creating marker for " + this.id + " with display mode " + this.display);
     let icon = this.icon;
     let picture = this.picture;

@@ -56,7 +56,7 @@ export default class HaHistoryService {
               // Get states from each
               if(state.a.latitude && state.a.longitude) {
                 Logger.debug("[HaHistoryService]: received new msg for entity id: " + entityId);
-                f(new TimelineEntry(new Date(state.lu * 1000), state.a.latitude, state.a.longitude));
+                f(new TimelineEntry(new Date(state.lu * 1000), state.entityId, state));
               } else {
                 Logger.warn("[HaHistoryService]: received new msg without latitude/longitude for entity id: " + entityId);
               }
