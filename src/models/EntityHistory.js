@@ -38,7 +38,7 @@ export default class EntityHistory {
   /**
    * @returns {[(Polyline|CircleMarker)]} 
    */
-  render() {
+  update() {
     if(this.needRerender == false || this.entries.length == 0) {
       return [];
     }

@@ -5,9 +5,12 @@ export default class TimelineEntry {
   entityId;
   /** @type {object} */
   state;
+  /** @type {string} */
+  originalEntityId;
 
-  constructor(timestamp, entityId, state) {  
+  constructor(timestamp, originalEntityId, entityId, state) {  
     this.timestamp = timestamp;  
+    this.originalEntityId = originalEntityId;
     this.entityId = entityId;
     this.state = state;
   }

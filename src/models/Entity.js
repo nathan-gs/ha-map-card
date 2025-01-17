@@ -27,8 +27,6 @@ export default class Entity {
   currentTimelineEntry;
   /** @private @type {LatLng} */
   _currentLatLng;  
-  /** @private @type {boolean} */
-  _resetReactive = false;
 
   constructor(config, hass, map, historyService, dateRangeManager, linkedEntityService, darkMode) {
     this.config = config;
@@ -51,9 +49,11 @@ export default class Entity {
     return this.config.display;
   }
 
+
+
   /** @returns {object} */
   get state() {
-    return this.currentTimelineEntry?.state.s ?? this.hass.states[this.id];
+    return this.hass.formatEntityState(this.hass.states[this.id], this.currentTimelineEntry?.state.s) ?? this.hass.formatEntityState(this.hass.states[this.id]);
   }
 
   /** @returns {Object.<string, *} */
@@ -112,30 +112,11 @@ export default class Entity {
   }
 
   /** @param {TimelineEntry} entry */  
-  react(entry) {
-    const updateEntity = (entry) => {
-      Logger.debug("[Entity] Date Reset, reacting to new entry for " + entry.entityId);
-      if (entry.entityId == this.id) {
-        this._resetReactive = false;
-        this.currentTimelineEntry = entry;
-      }
-      this._currentLatLng = new LatLng(entry.latitude, entry.longitude);
-      this.update()
+  react(entry) {    
+    if (entry.entityId == this.id) {
+      this.currentTimelineEntry = entry;
     }
-
-    if(this._resetReactive) {
-      updateEntity(entry)
-    }
-    if(this.currentTimelineEntry) {
-      if(entry.timestamp > this.currentTimelineEntry.timestamp) {
-        updateEntity(entry)
-      }
-    }
-  }
-
-  resetReactive() {
-    Logger.debug(`[Entity]: resetting reactive`);
-    this._resetReactive = true;
+    this._currentLatLng = new LatLng(entry.latitude, entry.longitude);    
   }
 
   get friendlyName() {
@@ -145,7 +126,7 @@ export default class Entity {
   /** @returns {string} */
   get title() {
     if(this.display == "state") {
-      return this.hass.formatEntityState(this.state);
+      return this.state;
     }
     const title = this.friendlyName;
     if(title.length < 5) {
@@ -167,7 +148,7 @@ export default class Entity {
 
   get icon() {
     return this.config.icon ?? this.attributes.icon;
-  }
+  }  
 
   async update() {
     if(this.display == "state") {

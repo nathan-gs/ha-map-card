@@ -50,13 +50,13 @@ export default class HaHistoryService {
       this.connection[entityId] = this.hass.connection.subscribeMessage(
         (message) => {
           // entities providing results
-          Object.values(message.states).map((entity) => {
+          Object.entries(message.states).map(([messageEntityId, value]) => {
             // Each entity can return own results
-            entity?.map((state) => {
+            value?.map((state) => {
               // Get states from each
               if(state.a.latitude && state.a.longitude) {
-                Logger.debug("[HaHistoryService]: received new msg for entity id: " + entityId);
-                f(new TimelineEntry(new Date(state.lu * 1000), state.entityId, state));
+                Logger.debug("[HaHistoryService]: received new msg for entity id: " + messageEntityId + " for entity: " + entityId);
+                f(new TimelineEntry(new Date(state.lu * 1000), entityId, messageEntityId, state));
               } else {
                 Logger.warn("[HaHistoryService]: received new msg without latitude/longitude for entity id: " + entityId);
               }

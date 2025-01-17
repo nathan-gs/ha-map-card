@@ -44,7 +44,7 @@ export default class EntityHistoryManager {
       this.historyLayerGroup = new LayerGroup();
       this.entity.map.addLayer(this.historyLayerGroup);         
 
-      this.history?.render().flat().forEach((marker) => {
+      this.history?.update().flat().forEach((marker) => {
         marker.addTo(this.historyLayerGroup);
       });
     }
@@ -97,7 +97,6 @@ export default class EntityHistoryManager {
   setHistoryDates(start, end) {
     this.currentHistoryStart = start;
     this.currentHistoryEnd = end;
-    this.entity.resetReactive();
   }
 
   refreshHistory() {
@@ -115,6 +114,10 @@ export default class EntityHistoryManager {
 
   /** @param {TimelineEntry} entry */
   react = (entry) => {
+    if(entry.originalEntityId != this.entity.id) {
+      return;
+    }
+
     if(this.hasHistory) {
       this.history.react(entry);
     }
@@ -127,7 +130,7 @@ export default class EntityHistoryManager {
     if(!this.hasHistory) {
       return;
     }
-    this.history?.render().flat().forEach((marker) => {
+    this.history?.update().flat().forEach((marker) => {
       marker.addTo(this.historyLayerGroup);
     });
   }
