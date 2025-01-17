@@ -1,5 +1,5 @@
 
-import L, { LatLng, Map } from "leaflet";
+import { DivIcon, LatLng, Map, Marker } from "leaflet";
 import Circle from "./Circle.js";
 import Logger from "../util/Logger.js"
 import EntityConfig from "../configs/EntityConfig.js";
@@ -9,23 +9,50 @@ import TimelineEntry from "./TimelineEntry.js";
 export default class Entity {
   /** @type {EntityConfig} */
   config;
-  /** @private @type {L.Marker} */
+  /** 
+   * @private 
+   * @type {Marker} 
+   */
   marker;
-  /** @private @type {object} */
+  /** 
+   * @private 
+   * @type {object} 
+   */
   hass;
-  /** @private @type {Map} */
+  /** 
+   * @private 
+   * @type {Map}
+   */
   map;
-  /** @private @type {string} */
+  /**
+   * @private 
+   * @type {string} 
+   */
   _currentTitle;
-  /** @private @type {[boolean]} */
+  /** 
+   * @private
+   * @type {boolean} 
+   */
   darkMode;
-  /** @private @type {Circle} */
+  /** 
+   * @private
+   * @type {Circle} 
+   */
   circle;
-  /** @private @type {EntityHistoryManager} */
+  /** 
+   * @private 
+   * @type {EntityHistoryManager} 
+   */
   historyManager;
-  /** @private @type {TimelineEntry} */
+  /** 
+   * @private 
+   * @type {TimelineEntry} 
+   */
   currentTimelineEntry;
-  /** @private @type {LatLng} */
+  /** 
+   * @private
+   * @type {LatLng} 
+   */
   _currentLatLng;  
 
   constructor(config, hass, map, historyService, dateRangeManager, linkedEntityService, darkMode) {
@@ -56,12 +83,15 @@ export default class Entity {
     return this.hass.formatEntityState(this.hass.states[this.id], this.currentTimelineEntry?.state.s) ?? this.hass.formatEntityState(this.hass.states[this.id]);
   }
 
-  /** @returns {Object.<string, *} */
+  /** @returns {{[key: string]: object}} */
   get attributes() {
     return this.currentTimelineEntry?.state.a ?? this.hass.states[this.id].attributes;
   }
 
-  /** @private @returns {string} */
+  /** 
+   * @private 
+   * @returns {string}
+   */
   get picture() {
     // If no configured picture, fallback to entity picture
     let picture = this.config.picture ?? this.attributes.entity_picture;
@@ -70,13 +100,13 @@ export default class Entity {
   }
 
   /** @returns {LatLng} */
-  get latLng() {
-    if(this._currentLatLng) {
-      return this._currentLatLng;
-    }
-
+  get latLng() {    
     if(this.config.fixedX && this.config.fixedY) {
       return new LatLng(this.config.fixedX, this.config.fixedY);
+    }
+    
+    if(this._currentLatLng) {
+      return this._currentLatLng;
     }
     
     // Do we have Lng/Lat directly?
@@ -165,7 +195,10 @@ export default class Entity {
     this.circle.update();
   }
 
-  /** @private */
+  /**
+   * @private 
+   * @returns {Marker}
+   */
   createMapMarker() {
     Logger.debug("[MarkerEntity] Creating marker for " + this.id + " with display mode " + this.display);
     let icon = this.icon;
@@ -180,8 +213,8 @@ export default class Entity {
 
     const extraCssClasses = this.darkMode ? "dark" : "";
 
-    return L.marker(this.latLng, {
-      icon: L.divIcon({
+    return new Marker(this.latLng, {
+      icon: new DivIcon({
         html: `
           <map-card-entity-marker
             entity-id="${this.id}"
