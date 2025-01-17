@@ -49,8 +49,13 @@ export default class EntityHistory {
     let baseOpacity;
 
     if (this.gradualOpacity) {
-      opacityStep = this.gradualOpacity / (this.entries.length - 2);
-      baseOpacity = 1 - this.gradualOpacity;
+      if(this.entries.length <= 2) {
+        baseOpacity = 1;
+        opacityStep = 0;
+      } else {
+        opacityStep = this.gradualOpacity / (this.entries.length - 2);
+        baseOpacity = 1 - this.gradualOpacity;
+      }
     }
 
     for (let i = 0; i < this.entries.length - 1; i++) {
