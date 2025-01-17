@@ -109,7 +109,7 @@ export default class EntityHistoryManager {
     if(this.hasHistory) {
       this.history = new EntityHistory(this.entity.id, this.entity.tooltip, this.entity.config.historyLineColor, this.entity.config.gradualOpacity, this.entity.config.historyShowDots, this.entity.config.historyShowLines);
     }
-    this.historyService.subscribe(this.entity.id, start, end, this.react, this.entity.config.useBaseEntityOnly);
+    this.historyService.subscribe(this.entity.id, start, end, this.react.bind(this), this.entity.config.useBaseEntityOnly);
   }
 
   /** @param {TimelineEntry} entry */
