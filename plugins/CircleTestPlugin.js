@@ -2,8 +2,9 @@
  *
  * @param L
  * @param pluginBase
+ * @param Logger
  */
-export default function(L, pluginBase) {
+export default function(L, pluginBase, Logger) {
   return class CircleTestPlugin extends pluginBase {
     constructor(map, name, options = {}) {
       super(map, name, options);
@@ -12,21 +13,26 @@ export default function(L, pluginBase) {
       this.y = y
       this.r = r;
       this.circle_options = circle_options;
-      console.debug("[HaMapCard] [CircleTestPlugin] Successfully invoked constructor of plugin:", this.name, "with options:", this.options);
+      Logger.debug(`[CircleTestPlugin] Successfully invoked constructor of plugin: ${this.name} with options: ${this.options}`);
     }
 
     init() {
-      console.debug("[HaMapCard] [CircleTestPlugin] Called init() of plugin:", this.name);
+      Logger.debug(`[CircleTestPlugin] Called init() of plugin: ${this.name}`);
     }
 
     renderMap() {
-      console.debug("[HaMapCard] [CircleTestPlugin] Called render() of Plugin:", this.name);
-      L.circle([this.x, this.y], { radius: this.r, ...this.circle_options }).addTo(this.map);
+      Logger.debug(`[CircleTestPlugin] Called render() of Plugin: ${this.name}`);
+      this.circle = L.circle([this.x, this.y], { radius: this.r, ...this.circle_options }).addTo(this.map);
 
     }
 
     update() {
-      console.debug("[HaMapCard] [CircleTestPlugin] Called update() of Plugin:", this.name);
+      Logger.debug(`[CircleTestPlugin] Called update() of Plugin: ${this.name}`);
+    }
+
+    destroy() {
+      Logger.debug(`[CircleTestPlugin] Called destroy() of Plugin: ${this.name}`);
+      this.circle.remove();
     }
   };
 }

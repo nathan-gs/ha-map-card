@@ -45,7 +45,7 @@ export default class MapCard extends LitElement {
   /** @type {InitialViewRenderService} */
   initialViewRenderService;
   /** @type {PluginsRenderService} */
-  pluginManager;
+  pluginsRenderService;
   hasError = false;
   hadError = false;
 
@@ -206,6 +206,7 @@ export default class MapCard extends LitElement {
     this.historyService?.unsubscribe();
     this.dateRangeManager?.disconnect();
     this.linkedEntityService?.disconnect();
+    this.pluginsRenderService?.cleanup();
   }
 
   _isDarkMode() {

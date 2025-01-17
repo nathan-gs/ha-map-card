@@ -1,4 +1,6 @@
 export default class Plugin {
+
+  // can be overwritten if necessary
   constructor(map, name, options = {}) {
     // TODO error if map and name are undef?
     this.map = map;
@@ -6,12 +8,24 @@ export default class Plugin {
     this.options = options;
   }
 
-  init() { }
+  async init() {
+    // Optional, called after the plugin has been constructed
+  }
 
-  // method that modifies the map itself
-  renderMap() { }
+  async renderMap() {
+    // Mandatory, the method that modifies/updates the leaflet map itself
+    throw new Error(`[HaMapCard] Plugin ${this.name} does not implement a renderMap() method!`, { cause: 'NotImplemented' });
+  }
 
-  // used if the plugin needs to respond to state changes
-  update() { }
+  async update() {
+    // Optional, called by the PluginsRenderService.render method
+    // useful if plugin needs to respond to HA state.
+  }
 
+  destroy() {
+    // Mandatory. Called from PluginsRenderService.cleanup when the
+    // MapCard.disconnectedCallback is called. Use this to clean up
+    // the state, remove listeners, intervals, timers, etc.
+    throw new Error(`[HaMapCard] Plugin ${this.name} does not implement a destroy() method!`, { cause: 'NotImplemented' });
+  }
 }
