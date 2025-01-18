@@ -1,4 +1,5 @@
 import HaMapUtilities from "../util/HaMapUtilities.js"
+import CircleConfig from "./CircleConfig.js";
 
 export default class EntityConfig {
   /** @type {string} */
@@ -54,6 +55,9 @@ export default class EntityConfig {
   zIndexOffset;
   /** @type {boolean} */
   useBaseEntityOnly;
+  
+  /** @type {CircleConfig} */
+  circleConfig;
 
   constructor(config, defaults) {
     this.id = (typeof config === 'string' || config instanceof String)? config : config.entity;
@@ -104,6 +108,8 @@ export default class EntityConfig {
     this.zIndexOffset = config.z_index_offset ? config.z_index_offset : 1;
 
     this.useBaseEntityOnly = config.use_base_entity_only ?? false;
+
+    this.circleConfig = new CircleConfig(config.circle, this.color);
   }
 
   // Get tap action_data

@@ -34,7 +34,7 @@ y: 3.652
 > Take a look at:
 > https://nathan.gs/2024/01/06/ha-map-card-a-new-and-alternative-leaflet-based-map/#a-more-advanced-example-measuring-pm25-air-quality-for-my-home 
 
-#### Options
+### Options
 
 | name                     | Default                                                                                                                      | note                                         |
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------|
@@ -60,7 +60,7 @@ y: 3.652
 
 If `x` & `y` or `focus_entity` is not set it will take the lat/long from the __first entity__.
 
-#### URL Entity lookup
+### URL Entity lookup
 
 You can add dynamic url's, for example to use a sensor value in the url. When the parameter changes, the map will redraw with the new tile layer.
 ```
@@ -72,7 +72,7 @@ tile_layer_url: https://tile.example.com/{{states('sensor.test') }}/{z}/{x}/{y}.
 > It only supports `states` without any filters, this is a crude javascript regex based implementation, not the Jinja2 templating engine from Home Assistant.
 
 
-#### Entity options
+### Entity options
 
 Either the name of the `entity` or:
 | name                   | Default                               | note                                                                                          |
@@ -98,8 +98,9 @@ Either the name of the `entity` or:
 | `focus_on_fit`         | true                                  | If this variable is set to false, This entity will be excluded when the map fits the included entities on the screen.|
 | `z_index_offset`       | 1                                     | z-index value that determines what is displayed on top when markers overlap. (Setting a gap of at least 20 between the values assigned to each entity is recommended.) |
 | `use_base_entity_only` | false                                 | When set to `true`, the tracking will use only the base entity without including any associated device trackers. This is useful for scenarios where you want to track the base entity directly and ignore any associated trackers. |
+| `circle`               |                                       | Display a circle around the marker. <br/>More details [Circle options](#circle-options) |
 
-#### History options.
+### History options
 
 If `history_date_selection:true`, any entities that do not define their own `history_start` and `history_end` configuration will be automatically linked to this. Please ensure a card of `type: energy-date-selection`  exists on the page before enabling this.
 
@@ -120,7 +121,28 @@ history_start:
 Each entity can individually override the base config by setting its own `history_start`/`history_end`, using any of the options above.
 Any entity without its own settings will inherit the map level config.
 
-#### WMS and tile_layers options
+### Circle options
+
+Display a circle around the marker. It can either be called with the string `auto` or following options.
+
+`circle: auto`
+
+| name         | Default | note                                                                                         |
+|--------------|---------|----------------------------------------------------------------------------------------------|
+| `source`     |         | Where to get the radius from, see below for options.       |
+| `attribute`  |         | The attribute to use for the radius (in case of `source: attribute`).         |
+| `radius`     |         | Radius in meters (in case of `source: config`)(optional)                                                                            |
+| `color`      |         | Color of the circle (will use the entity color if not set)                                                                          |
+| `fill_opacity`| 0.2     | Opacity of the fill color                                                                    |
+
+Source
+* `auto` - Will use the `gps_accuracy`, then the `radius` attribute from the entity if available, otherwise will use the `radius` set in the config.
+* `gps_accuracy` - Will use the `gps_accuracy` attribute from the entity.
+* `radius` - Will use the `radius` attribute from the entity.
+* `config` - Will use the `radius` set in the config.
+* `attribute` - Will use the `attribute` set in the config.
+
+### WMS and tile_layers options
 
 | name      | note                                                                                                                                                        |
 |-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -128,7 +150,7 @@ Any entity without its own settings will inherit the map level config.
 | `options` | The leaflet layer [WMS options](https://leafletjs.com/reference.html#tilelayer-wms) or [Tile Layer options](https://leafletjs.com/reference.html#tilelayer) |
 | `history` | The name of the layer option which controls the dat, if it supports a date or time option. Set history to the name of this property. The `history_start` value, state or date range picker will then set this property on the layer and update it as necessary. |
 
-###### Zooming & `tile_layer_options.maxZoom`
+#### Zooming & `tile_layer_options.maxZoom`
 
 By default the map-card will not zoom beyond [default property of the `maxZoom`](https://leafletjs.com/reference.html#tilelayer-maxzoom) of the tilelayer, the default is `18`, but it can be overriden as follows:
 
@@ -140,7 +162,7 @@ tile_layer_options:
 
 Keep in mind that the tile layer source also has a maximum zoom level, which is `20` for most OSM maps.
 
-###### Advanced WMS/Tile layer options.
+#### Advanced WMS/Tile layer options
 
 More complex use of the WMS/Tile history property can be configured within the history property of the layer.
 * `property` is the option this should control (often named `time` or `date`)
@@ -157,11 +179,11 @@ More complex use of the WMS/Tile history property can be configured within the h
 ```
 
 
-#### Extra Tile Layers
+## Extra Tile Layers
 
 The [leaflet-extras](https://github.com/leaflet-extras/leaflet-providers) has a nice list of available [tile layer providers](https://leaflet-extras.github.io/leaflet-providers/preview/).
 
-### Development
+## Development
 
 `git clone git@github.com:nathan-gs/ha-map-card.git`
 
@@ -170,14 +192,14 @@ This project uses [devenv.sh](https://devenv.sh/).
 1. Install devenv
 2. `devenv shell` and then `watch` or `devenv shell watch` to immediatly drop into a watched shell.
 
-#### NPM alternatives
+### NPM alternatives
 
 * `npm install`
 * `npm run build` (`npm run watch` to update on change)
 
 
 
-### Mentions & Discussions
+## Mentions & Discussions
 
 * [home-assistant community: map-card: a slightly improved map-card](https://community.home-assistant.io/t/map-card-a-slightly-improved-map-card/693088), this topic should be used for general discussions. 
 * [nathan.gs: Map Card, a new leaflet based map with WMS and other advanced features](https://nathan.gs/2024/01/06/ha-map-card-a-new-and-alternative-leaflet-based-map/)
