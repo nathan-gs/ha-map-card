@@ -6,6 +6,7 @@ import HaMapUtilities from "../../util/HaMapUtilities";
 import HaDateRangeService from "../HaDateRangeService";
 import HaLinkedEntityService from "../HaLinkedEntityService";
 import HaHistoryService from "../HaHistoryService";
+import MapConfig from "../../configs/MapConfig";
 
 
 export default class EntitiesRenderService {
@@ -26,10 +27,13 @@ export default class EntitiesRenderService {
   linkedEntityService;
   /** @type {HaHistoryService} */
   historyService;
+  /** @type {MapConfig} */
+  mapConfig;
 
-  constructor(map, hass, entityConfigs, linkedEntityService, dateRangeManager, historyService, isDarkMode) {
+  constructor(map, hass, mapConfig, entityConfigs, linkedEntityService, dateRangeManager, historyService, isDarkMode) {
     this.map = map;
     this.hass = hass;
+    this.mapConfig = mapConfig;
     this.entityConfigs = entityConfigs;
     this.linkedEntityService = linkedEntityService;
     this.dateRangeManager = dateRangeManager;
@@ -59,13 +63,36 @@ export default class EntitiesRenderService {
     this.entities.forEach((ent) => {
       ent.update();
     });
+    this.updateInitialView();
+  }
+
+  updateInitialView() {
+    if(this.mapConfig.isFocusFollowNone) {
+      return;
+    }
+    const points = this.entities.filter(e => e.config.focusOnFit).map((e) => e.latLng);
+    if(points.length === 0) {
+      return;
+    }
+    // If not, get bounds of all markers rendered
+    const bounds = (new LatLngBounds(points)).pad(0.1);
+    if(this.mapConfig.isFocusFollowContains) {
+      if(this.map.getBounds().contains(bounds)) {
+        return;
+      }
+    }
+    this.map.fitBounds(bounds);
+    Logger.debug("[EntitiesRenderService.updateInitialView]: Updating bounds to: " + points.join(","));
   }
 
   setInitialView() {
     const points = this.entities.filter(e => e.config.focusOnFit).map((e) => e.latLng);
+    if(points.length === 0) {
+      return;
+    }
     // If not, get bounds of all markers rendered
-    const bounds = new LatLngBounds(points);
-    this.map.fitBounds(bounds.pad(0.1));
+    const bounds = (new LatLngBounds(points)).pad(0.1);    
+    this.map.fitBounds(bounds);
     Logger.debug("[EntitiesRenderService.setInitialView]: Setting initial view to: " + points.join(","));
   }
 }

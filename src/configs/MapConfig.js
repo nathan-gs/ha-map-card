@@ -35,6 +35,8 @@ export default class MapConfig {
   themeMode;
   /** @type {object} */
   mapOptions;
+  /** @type {string} */
+  focusFollow;
 
   /** @type {boolean} */
   debug = false;
@@ -42,6 +44,7 @@ export default class MapConfig {
   constructor(inputConfig) {
     this.title = inputConfig.title;
     this.focusEntity = inputConfig.focus_entity;
+    this.focusFollow = ['refocus', 'contains', 'none' ].includes(inputConfig.focus_follow) ? inputConfig.focus_follow : "none";
     this.x = inputConfig.x;
     this.y = inputConfig.y;
     this.zoom = this._setConfigWithDefault(inputConfig.zoom, 12);
@@ -133,5 +136,17 @@ export default class MapConfig {
   /** @returns {[EntityConfig]} */
   get entitiesWithShowPath() {
     return this.entities.filter((ent) => ent.showPath);
+  }
+
+  get isFocusFollowRefocus() {
+    return this.focusFollow == "refocus";
+  }
+
+  get isFocusFollowNone() {
+    return this.focusFollow == "none";
+  }
+
+  get isFocusFollowContains() {
+    return this.focusFollow == "contains";
   }
 }
