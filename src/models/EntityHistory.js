@@ -29,7 +29,8 @@ export default class EntityHistory {
     this.showLines = showLines;
   }
 
-  retrieve = (entry) => {
+  /** @param {TimelineEntry} entry  */
+  react(entry) {
     this.entries.push(entry);
     this.needRerender = true;
   };
@@ -37,7 +38,7 @@ export default class EntityHistory {
   /**
    * @returns {[(Polyline|CircleMarker)]} 
    */
-  render() {
+  update() {
     if(this.needRerender == false || this.entries.length == 0) {
       return [];
     }
@@ -48,8 +49,13 @@ export default class EntityHistory {
     let baseOpacity;
 
     if (this.gradualOpacity) {
-      opacityStep = this.gradualOpacity / (this.entries.length - 2);
-      baseOpacity = 1 - this.gradualOpacity;
+      if(this.entries.length <= 2) {
+        baseOpacity = 1;
+        opacityStep = 0;
+      } else {
+        opacityStep = this.gradualOpacity / (this.entries.length - 2);
+        baseOpacity = 1 - this.gradualOpacity;
+      }
     }
 
     for (let i = 0; i < this.entries.length - 1; i++) {

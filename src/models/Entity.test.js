@@ -2,6 +2,7 @@
 import Entity from './Entity.js';
 import L from 'leaflet';
 import { jest, describe, beforeEach, it, expect } from '@jest/globals';
+import TimelineEntry from './TimelineEntry.js';
 
 jest.mock('./Circle.js');
 jest.mock('../util/Logger.js');
@@ -85,8 +86,8 @@ describe('Entity class', () => {
       expect(entity.display).toBe('state');
     });
 
-    it('should return the hass.states for entity', () => {
-      expect(entity.state).toBe(hass.states['test-entity']);
+    it('should return the state for the entity', () => {
+      expect(entity.state).toBe("ENTITY_STATE");
     });
 
     it('should return a picture', () => {
@@ -196,6 +197,36 @@ describe('Entity class', () => {
 
       const entity = new Entity(entityConfig, hass, jest.fn(), jest.fn(), jest.fn(), jest.fn(), false);
       expect(() => entity.latLng).toThrow("Entity: test-entity has no latitude & longitude and no fallback configured");
+    });    
+
+    it('returns the current latLng if set', () => {
+      const entity = new Entity(entityConfig, hass, jest.fn(), jest.fn(), jest.fn(), jest.fn(), false);
+      entity._currentLatLng = { lat: 10, lng: 20 };
+      expect(entity.latLng).toEqual({ lat: 10, lng: 20 });
     });
+
+    it("returns the fixedX and fixedY even if current latLng is set", () => {
+      const entity = new Entity(entityConfig, hass, jest.fn(), jest.fn(), jest.fn(), jest.fn(), false);
+      entity._currentLatLng = { lat: 10, lng: 20 };
+      entityConfig.fixedX = 30;
+      entityConfig.fixedY = 40;
+      expect(entity.latLng).toEqual({ lat: 30, lng: 40 });
+    });    
   })
+
+  describe('react', () => {
+    it('updates latLng', () => {
+      const entity = new Entity(entityConfig, hass, jest.fn(), jest.fn(), jest.fn(), jest.fn(), false);
+      entity.react(new TimelineEntry(new Date(), "originalEntity", "entity", { a: { latitude: 50, longitude: 60 } }));
+      expect(entity.latLng).toEqual({ lat: 50, lng: 60 });
+    });
+
+    it("updates the currentTimelineEntry if the entity matches", () => {
+      const entity = new Entity(entityConfig, hass, jest.fn(), jest.fn(), jest.fn(), jest.fn(), false);
+      entity.react(new TimelineEntry(new Date(), "test-entity", "test-entity", { a: { latitude: 50, longitude: 60 } }));
+      expect(entity.currentTimelineEntry).toBeDefined();
+      expect(entity.latLng).toEqual({ lat: 50, lng: 60 });
+    });
+  });
+
 });

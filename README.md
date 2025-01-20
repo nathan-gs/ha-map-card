@@ -100,7 +100,7 @@ Either the name of the `entity` or:
 | `use_base_entity_only` | false                                 | When set to `true`, the tracking will use only the base entity without including any associated device trackers. This is useful for scenarios where you want to track the base entity directly and ignore any associated trackers. |
 | `circle`               |                                       | Display a circle around the marker. <br/>More details [Circle options](#circle-options) |
 
-### History options.
+### History options
 
 If `history_date_selection:true`, any entities that do not define their own `history_start` and `history_end` configuration will be automatically linked to this. Please ensure a card of `type: energy-date-selection`  exists on the page before enabling this.
 
@@ -121,7 +121,7 @@ history_start:
 Each entity can individually override the base config by setting its own `history_start`/`history_end`, using any of the options above.
 Any entity without its own settings will inherit the map level config.
 
-### Circle options.
+### Circle options
 
 Display a circle around the marker. It can either be called with the string `auto` or following options.
 
@@ -162,7 +162,7 @@ tile_layer_options:
 
 Keep in mind that the tile layer source also has a maximum zoom level, which is `20` for most OSM maps.
 
-#### Advanced WMS/Tile layer options.
+#### Advanced WMS/Tile layer options
 
 More complex use of the WMS/Tile history property can be configured within the history property of the layer.
 * `property` is the option this should control (often named `time` or `date`)

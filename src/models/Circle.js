@@ -21,7 +21,7 @@ export default class Circle {
     if(this.config.source == "config") {
       return this.config.radius ?? 0;
     }
-    const attributes = this.entity.state.attributes;
+    const attributes = this.entity.attributes;
     if(this.config.source == "attribute") {
       return attributes[this.config.attribute] ?? 0;
     }
@@ -42,7 +42,7 @@ export default class Circle {
       if(this.config.source == "config") {
         Logger.debug(`[Circle]: for ${this.entity.id}, using config, resulting in: ${this.config.radius}`);
       }
-      const attributes = this.entity.state.attributes;
+      const attributes = this.entity.attributes;
       if(this.config.source == "attribute") {
         Logger.debug(`[Circle]: for ${this.entity.id}, using attribute (${this.config.attribute}), resulting in: ${attributes[this.config.attribute]}`);
       }
