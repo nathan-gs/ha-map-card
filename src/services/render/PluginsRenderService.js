@@ -29,18 +29,21 @@ export default class PluginsRenderService {
     await Promise.all(loadPromises);
     Logger.debug(`[PluginsRenderService] Initialized plugins: ${[...this.plugins.keys()]}`);
 
-
-
     Logger.debug('[PluginsRenderService] All plugins have been loaded and initialized.');
   }
 
   // called by MapCard.disconnectedCallback to deregister plugins
   cleanup() {
-    this.plugins.forEach((pluginInstance) => {
-      Logger.debug(`[PluginsRenderService] Destroying plugin ${pluginInstance.name}`);
+    this.plugins.forEach((pluginInstance, pluginName) => {
+      Logger.debug(`[PluginsRenderService] Destroying plugin ${pluginName}`);
 
-      pluginInstance.destroy();
-    })
+      try {
+        pluginInstance.destroy();
+      } catch (error) {
+        Logger.error(`[PluginsRenderService] Call to destroy() for plugin ${pluginName} failed:`, error);
+      }
+
+    });
 
     this.plugins.clear();
   }
@@ -49,7 +52,7 @@ export default class PluginsRenderService {
     try {
       // Check if the plugin is already registered
       if (this.plugins.has(config.name)) {
-        Logger.warn(`[PluginsRenderService] Plugin ${config.name} is already registered.`);
+        Logger.warn(`[PluginsRenderService] Plugin ${config.name} is already registered. Check your configuration for duplicates.`);
         return;
       }
 
@@ -62,10 +65,11 @@ export default class PluginsRenderService {
       const PluginClass = pluginFactory(L, Plugin, Logger);
       const pluginInstance = new PluginClass(this.map, config.name, config.options)
 
-      // call the init method of the plugin if it exists
-      if (typeof pluginInstance.init === 'function') {
-        await pluginInstance.init();
+      if (pluginInstance.destroy === Plugin.prototype.destroy) {
+        throw new Error(`Plugin ${config.name} does not implement a destroy() method!`, { cause: 'NotImplemented' });
       }
+
+      await pluginInstance.init();
 
       // Add the loaded plugin instance to the plugins map
       this.plugins.set(config.name, pluginInstance);
@@ -80,12 +84,25 @@ export default class PluginsRenderService {
   }
 
   async render() {
-    const renderPromises = [];
-    this.plugins.forEach((pluginInstance) => {
-      renderPromises.push(pluginInstance.update());
-    })
+    try {
+      const renderPromises = [];
+      this.plugins.forEach((pluginInstance, pluginName) => {
+        const wrappedPromise = (async () => {
+          try {
+            await pluginInstance.update();
+          } catch (error) {
+            Logger.error(`[PluginsRenderService] call to update() for plugin ${pluginName} failed:`, error);
+          }
+        });
 
-    await Promise.all(renderPromises);
+        renderPromises.push(wrappedPromise());
+      });
+
+      await Promise.all(renderPromises);
+
+    } catch (error) {
+      Logger.error(`[PluginsRenderService] call to render() failed:`, error);
+    }
   }
 
   // List all registered plugins
