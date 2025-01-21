@@ -57,6 +57,7 @@ y: 3.652
 | `follow_focus`        | none                                  | `none`, `refocus`, `contains`, reset the map focused entity's, on each update.                                                               |
 | `map_options`          | {}                                                                                                                           | The `options` for the default [Leaflet Map](https://leafletjs.com/reference.html#map) |
 | `debug` | false                                                                                                                        | Enable debug messages in console.
+| `plugins`            | []                                                                                                                           | An array of plugin definitions, see: [Plugin Options](#plugin-options) and [Available plugins](#available-plugins)     |
 
 
 If `x` & `y` or `focus_entity` is not set it will take the lat/long from the __first entity__.
@@ -151,6 +152,38 @@ Source
 | `options` | The leaflet layer [WMS options](https://leafletjs.com/reference.html#tilelayer-wms) or [Tile Layer options](https://leafletjs.com/reference.html#tilelayer) |
 | `history` | The name of the layer option which controls the dat, if it supports a date or time option. Set history to the name of this property. The `history_start` value, state or date range picker will then set this property on the layer and update it as necessary. |
 
+### Plugin options
+| name      | note                                                                                                                                                        |
+|-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `name`  | Mandatory, a helpful name for this instance of the plugin. Useful for debugging issues. |
+| `url`     | Mandatory, The url of the plugin, if the plugin is in the file `/var/lib/hass/www/SomePlugin.js` , then this would be `./local/SomePlugin.js`. |
+| `options` | Options for configuring the plugin |
+
+
+
+#### Example config with plugin
+```yaml
+type: custom:map-card
+x: -25.3744
+y: 133.7751
+plugins:
+  - name: plugin
+    url: /local/my-plugin.js
+    options:
+      some_option: true
+  - name: another_instance
+    url: /local/my-plugin.js
+    options:
+      some_option: false
+```
+
+#### Available Plugins
+| name      | description                                                                                         |
+|-----------|-----------------------------------------------------------------------------------------------------|
+| [`bom-radar`](https://github.com/bezmi/ha-map-card-plugin-bom-radar) | Displays the Australian BoM rainfall radar for the past 90 minutes and the radar forecast for the next 90 minutes as an overlay on the map. | 
+| [`buienradar`](https://github.com/Kevinjil/ha-map-card-buienradar) | Displays `buienradar.nl` as an overlay on the map | 
+
+
 #### Zooming & `tile_layer_options.maxZoom`
 
 By default the map-card will not zoom beyond [default property of the `maxZoom`](https://leafletjs.com/reference.html#tilelayer-maxzoom) of the tilelayer, the default is `18`, but it can be overriden as follows:
@@ -198,6 +231,10 @@ This project uses [devenv.sh](https://devenv.sh/).
 * `npm install`
 * `npm run build` (`npm run watch` to update on change)
 
+### Developing Plugins
+* All plugins should implement the `Plugin` class. See [`Plugin.js`](./src/models/Plugin.js) and [`Plugin.d.ts`](./src/models/Plugin.d.ts).
+* For a concrete example, see [`CircleTestPlugin.js`](./plugins/CircleTestPlugin.js).
+* Typescript example: see [bezmi/ha-map-card-plugin-bom-radar](https://github.com/bezmi/ha-map-card-plugin-bom-radar).
 
 
 ## Mentions & Discussions
