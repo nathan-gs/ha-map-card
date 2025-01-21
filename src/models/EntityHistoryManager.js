@@ -6,6 +6,7 @@ import HaDateRangeService from '../services/HaDateRangeService';
 import HaLinkedEntityService from '../services/HaLinkedEntityService';
 import Entity from './Entity';
 import Logger from '../util/Logger';
+import TimelineEntry from './TimelineEntry';
 
 export default class EntityHistoryManager {
   /** @type {Entity} */
@@ -37,14 +38,19 @@ export default class EntityHistoryManager {
   }
 
   setup() {
+    this.setupListeners();
+
     if (this.hasHistory) {
       this.historyLayerGroup = new LayerGroup();
-      this.entity.map.addLayer(this.historyLayerGroup);    
-      this._setupHistoryListeners();
+      this.entity.map.addLayer(this.historyLayerGroup);         
+
+      this.history?.update().flat().forEach((marker) => {
+        marker.addTo(this.historyLayerGroup);
+      });
     }
   }
 
-  _setupHistoryListeners() {
+  setupListeners() {
     if (this.entity.config.usingDateRangeManager) {
       Logger.debug(`[EntityHistoryManager] Using date range manager for ${this.entity.id}`);
       this.dateRangeManager.onDateRangeChange((range) => {
@@ -83,9 +89,9 @@ export default class EntityHistoryManager {
       this.currentHistoryEnd = this.entity.config.historyEnd;
     }
 
-    if (this.entity.config.historyStart && !this.entity.config.historyEndEntity) {
-      this._subscribeHistory(this.entity.config.historyStart, this.entity.config.historyEnd);
-    }
+    const historyStart = this.entity.config.historyStart ?? new Date(Date.now() - 10 * 1000);
+    this.subscribeHistory(historyStart, this.entity.config.historyEnd);    
+
   }
 
   setHistoryDates(start, end) {
@@ -96,19 +102,35 @@ export default class EntityHistoryManager {
   refreshHistory() {
     Logger.debug(`[EntityHistoryManager] Refreshing history for ${this.entity.id}: ${this.currentHistoryStart} -> ${this.currentHistoryEnd}`);
     this.historyLayerGroup.clearLayers();
-    this._subscribeHistory(this.currentHistoryStart, this.currentHistoryEnd);
+    this.subscribeHistory(this.currentHistoryStart, this.currentHistoryEnd);
   }
 
-  _subscribeHistory(start, end) {
-    this.history = new EntityHistory(this.entity.id, this.entity.tooltip, this.entity.config.historyLineColor, this.entity.config.gradualOpacity, this.entity.config.historyShowDots, this.entity.config.historyShowLines);
-    this.historyService.subscribe(this.history.entityId, start, end, this.history.retrieve, this.entity.config.useBaseEntityOnly);
+  subscribeHistory(start, end) {
+    if(this.hasHistory) {
+      this.history = new EntityHistory(this.entity.id, this.entity.tooltip, this.entity.config.historyLineColor, this.entity.config.gradualOpacity, this.entity.config.historyShowDots, this.entity.config.historyShowLines);
+    }
+    this.historyService.subscribe(this.entity.id, start, end, this.react.bind(this), this.entity.config.useBaseEntityOnly);
   }
+
+  /** @param {TimelineEntry} entry */
+  react = (entry) => {
+    if(entry.originalEntityId != this.entity.id) {
+      return;
+    }
+
+    if(this.hasHistory) {
+      this.history.react(entry);
+    }
+    this.entity.react(entry);
+  }
+
+  
 
   update() {
     if(!this.hasHistory) {
       return;
     }
-    this.history?.render().flat().forEach((marker) => {
+    this.history?.update().flat().forEach((marker) => {
       marker.addTo(this.historyLayerGroup);
     });
   }

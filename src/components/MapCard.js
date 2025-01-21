@@ -64,7 +64,7 @@ export default class MapCard extends LitElement {
       this.dateRangeManager = new HaDateRangeService(this.hass);
     }
     this.tileLayersService = new TileLayersService(this.map, this._config.tileLayers, this._config.wms, this.urlResolver, this.linkedEntityService, this.dateRangeManager);
-    this.entitiesRenderService = new EntitiesRenderService(this.map, this.hass, this._config.entities, this.linkedEntityService, this.dateRangeManager, this.historyService, this._isDarkMode());
+    this.entitiesRenderService = new EntitiesRenderService(this.map, this.hass, this._config, this._config.entities, this.linkedEntityService, this.dateRangeManager, this.historyService, this._isDarkMode());
     this.initialViewRenderService = new InitialViewRenderService(this.map, this._config, this.hass, this.entitiesRenderService);
 
     this.pluginsRenderService = new PluginsRenderService(this.map, this._config.plugins);
@@ -112,7 +112,7 @@ export default class MapCard extends LitElement {
 
     return html`
             <link rel="stylesheet" href="/static/images/leaflet/leaflet.css">
-            <ha-card header="${this._config.title}" style="height: 100%">
+            <ha-card header="${this._config.title}">
                 <div id="map" style="min-height: ${this._config.mapHeight}px">
                   <ha-icon-button
                     label='Reset focus'
@@ -234,7 +234,12 @@ export default class MapCard extends LitElement {
   }
 
   static get styles() {
-    return css`       
+    return css`
+      ha-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
       #map {
         height: 100%;
         border-radius: var(--ha-card-border-radius,12px);
