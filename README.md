@@ -57,7 +57,7 @@ y: 3.652
 | `follow_focus`        | none                                  | `none`, `refocus`, `contains`, reset the map focused entity's, on each update.                                                               |
 | `map_options`          | {}                                                                                                                           | The `options` for the default [Leaflet Map](https://leafletjs.com/reference.html#map) |
 | `debug` | false                                                                                                                        | Enable debug messages in console.
-| `plugins`            | []                                                                                                                           | An array of plugin definitions, see: [Plugin Options](#plugin-options) and [Available plugins](#available-plugins)     |
+| `plugins`            | []                                                                                                                           | An array of plugin definitions, see: [Plugin Options](#plugin-options), [Available plugins](#available-plugins) and [Developing plugins](#developing-plugins)     |
 
 
 If `x` & `y` or `focus_entity` is not set it will take the lat/long from the __first entity__.
