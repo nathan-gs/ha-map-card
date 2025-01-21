@@ -152,6 +152,34 @@ Source
 | `options` | The leaflet layer [WMS options](https://leafletjs.com/reference.html#tilelayer-wms) or [Tile Layer options](https://leafletjs.com/reference.html#tilelayer) |
 | `history` | The name of the layer option which controls the dat, if it supports a date or time option. Set history to the name of this property. The `history_start` value, state or date range picker will then set this property on the layer and update it as necessary. |
 
+#### Zooming & `tile_layer_options.maxZoom`
+
+By default the map-card will not zoom beyond [default property of the `maxZoom`](https://leafletjs.com/reference.html#tilelayer-maxzoom) of the tilelayer, the default is `18`, but it can be overriden as follows:
+
+```
+type: custom:map-card
+tile_layer_options:
+  maxZoom: 20
+```
+
+Keep in mind that the tile layer source also has a maximum zoom level, which is `20` for most OSM maps.
+
+#### Advanced WMS/Tile layer options
+
+More complex use of the WMS/Tile history property can be configured within the history property of the layer.
+* `property` is the option this should control (often named `time` or `date`)
+* `source` defaults to auto (which means it will inherit from the main map settings). Set this to a date or number entity if this is different.
+* `suffix` days ago/weeks ago as with other history entities
+* `force_midnight` some WMS/Tile layers only work if the date is set as midnight.
+
+```
+  history:
+    property: time
+    source: input_number.test_number_value
+    suffix: months ago
+    force_midnight: true
+```
+
 ### Plugin options
 | name      | note                                                                                                                                                        |
 |-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -183,34 +211,6 @@ plugins:
 | [`bom-radar`](https://github.com/bezmi/ha-map-card-plugin-bom-radar) | Displays the Australian BoM rainfall radar for the past 90 minutes and the radar forecast for the next 90 minutes as an overlay on the map. | 
 | [`buienradar`](https://github.com/Kevinjil/ha-map-card-buienradar) | Displays `buienradar.nl` as an overlay on the map | 
 
-
-#### Zooming & `tile_layer_options.maxZoom`
-
-By default the map-card will not zoom beyond [default property of the `maxZoom`](https://leafletjs.com/reference.html#tilelayer-maxzoom) of the tilelayer, the default is `18`, but it can be overriden as follows:
-
-```
-type: custom:map-card
-tile_layer_options:
-  maxZoom: 20
-```
-
-Keep in mind that the tile layer source also has a maximum zoom level, which is `20` for most OSM maps.
-
-#### Advanced WMS/Tile layer options
-
-More complex use of the WMS/Tile history property can be configured within the history property of the layer.
-* `property` is the option this should control (often named `time` or `date`)
-* `source` defaults to auto (which means it will inherit from the main map settings). Set this to a date or number entity if this is different.
-* `suffix` days ago/weeks ago as with other history entities
-* `force_midnight` some WMS/Tile layers only work if the date is set as midnight.
-
-```
-  history:
-    property: time
-    source: input_number.test_number_value
-    suffix: months ago
-    force_midnight: true
-```
 
 
 ## Extra Tile Layers
