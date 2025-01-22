@@ -211,7 +211,7 @@ plugins:
 | [`bom-radar`](https://github.com/bezmi/ha-map-card-plugin-bom-radar) | Displays the Australian BoM rainfall radar for the past 90 minutes and the radar forecast for the next 90 minutes as an overlay on the map. | 
 | [`buienradar`](https://github.com/Kevinjil/ha-map-card-buienradar) | Displays `buienradar.nl` as an overlay on the map | 
 
-
+You can find more plugins using the [ha-map-card-plugin](https://github.com/topics/ha-map-card-plugin) topic.
 
 ## Extra Tile Layers
 
@@ -235,6 +235,8 @@ This project uses [devenv.sh](https://devenv.sh/).
 * All plugins should implement the `Plugin` class. See [`Plugin.js`](./src/models/Plugin.js) and [`Plugin.d.ts`](./src/models/Plugin.d.ts).
 * For a concrete example, see [`CircleTestPlugin.js`](./plugins/CircleTestPlugin.js).
 * Typescript example: see [bezmi/ha-map-card-plugin-bom-radar](https://github.com/bezmi/ha-map-card-plugin-bom-radar).
+
+Tag your Github repo with [ha-map-card-plugin](https://github.com/topics/ha-map-card-plugin) for discoverability.
 
 
 ## Mentions & Discussions
