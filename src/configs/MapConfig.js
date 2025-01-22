@@ -1,4 +1,5 @@
 import EntityConfig from "./EntityConfig.js";
+import PluginConfig from "./PluginConfig.js";
 import TileLayerConfig from "./TileLayerConfig.js";
 import WmsLayerConfig from "./WmsLayerConfig.js";
 import Logger from "../util/Logger.js";
@@ -25,6 +26,8 @@ export default class MapConfig {
   tileLayers;
   /** @type {TileLayerConfig} */
   tileLayer;
+  /** @type {[PluginConfig]} */
+  plugins;
    /** @type {Date|Entity} */
   historyStart;
   /** @type {Date|Entity} */
@@ -95,6 +98,12 @@ export default class MapConfig {
     let tile_layers = this._setConfigWithDefault(inputConfig.tile_layers, []);
     this.tileLayers = (this._setConfigWithDefault(Array.isArray(tile_layers) ? tile_layers : [tile_layers], [])).map((tile) => {
       return new TileLayerConfig(tile.url, tile.options, tile.history);
+    });
+
+    // Allow as none array
+    let plugins = this._setConfigWithDefault(inputConfig.plugins, []);
+    this.plugins = (this._setConfigWithDefault(Array.isArray(plugins) ? plugins : [plugins], [])).map((plugin) => {
+      return new PluginConfig(plugin.url, plugin.name, plugin.options);
     });
 
     this.tileLayer = new TileLayerConfig(

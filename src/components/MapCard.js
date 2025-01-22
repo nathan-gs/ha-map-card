@@ -12,6 +12,7 @@ import TileLayersService from '../services/render/TileLayersRenderService.js';
 import EntitiesRenderService from '../services/render/EntitiesRenderService.js';
 import InitialViewRenderService from '../services/render/InitialViewRenderService.js';
 import TileLayer from '../leaflet/TileLayer.js';
+import PluginsRenderService from '../services/render/PluginsRenderService.js';
 
 export default class MapCard extends LitElement {
   static get properties() {
@@ -21,7 +22,7 @@ export default class MapCard extends LitElement {
     };
   }
 
-  setupNeeded = true;  
+  setupNeeded = true;
   /** @type {L.Map} */
   map;
   resizeObserver;
@@ -43,33 +44,39 @@ export default class MapCard extends LitElement {
   entitiesRenderService;
   /** @type {InitialViewRenderService} */
   initialViewRenderService;
+  /** @type {PluginsRenderService} */
+  pluginsRenderService;
   hasError = false;
   hadError = false;
 
   setup() {
     Logger.debug("[MapCard] Setting up map card");
+
     this.themeMode = this._config.themeMode;
     this.map = this._setupMap();
     // redraw the map every time it resizes
     this.resizeObserver = this._setupResizeObserver();
-    
+
     // Setup core history service
     this.historyService = new HaHistoryService(this.hass);
     // Is history date range enabled?
     if (this._config.historyDateSelection) {
       this.dateRangeManager = new HaDateRangeService(this.hass);
-    }    
+    }
     this.tileLayersService = new TileLayersService(this.map, this._config.tileLayers, this._config.wms, this.urlResolver, this.linkedEntityService, this.dateRangeManager);
     this.entitiesRenderService = new EntitiesRenderService(this.map, this.hass, this._config, this._config.entities, this.linkedEntityService, this.dateRangeManager, this.historyService, this._isDarkMode());
     this.initialViewRenderService = new InitialViewRenderService(this.map, this._config, this.hass, this.entitiesRenderService);
-  
+
+    this.pluginsRenderService = new PluginsRenderService(this.map, this._config.plugins);
+
     try {
+      this.pluginsRenderService.setup();
       this.tileLayersService.setup();
       this.entitiesRenderService.setup();
       this.initialViewRenderService.setup();
 
       this.setupNeeded = false;
-      this.render();          
+      this.render();
       this.hasError = false;
     } catch (e) {
       this.hasError = true;
@@ -80,22 +87,22 @@ export default class MapCard extends LitElement {
     Logger.debug("[MapCard] Map card setup complete");
   }
 
-  firstUpdated() {    
+  firstUpdated() {
     this.setup();
   };
 
-
   render() {
-    
+
     if (this.map) {
       if (this.setupNeeded) {
         this.setup();
       }
+      this.pluginsRenderService.render();
       this.tileLayersService.render();
       this.entitiesRenderService.render();
       this.initialViewRenderService.render();
 
-      if(!this.hasError && this.hadError) {
+      if (!this.hasError && this.hadError) {
         HaMapUtilities.removeWarningOnMap(this.map, "Error found, check Console");
         HaMapUtilities.removeWarningOnMap(this.map, "Error found in first run, check Console");
         this.hadError = false;
@@ -145,9 +152,9 @@ export default class MapCard extends LitElement {
   /** @returns {L.Map} Leaflet Map */
   _setupMap() {
     // Manages watching external entities.
-    this.linkedEntityService = new HaLinkedEntityService(this.hass);     
+    this.linkedEntityService = new HaLinkedEntityService(this.hass);
     this.urlResolver = new HaUrlResolveService(this.hass, this.linkedEntityService);
-    
+
     L.Icon.Default.imagePath = "/static/images/leaflet/images/";
 
     const mapEl = this.shadowRoot.querySelector('#map');
@@ -159,11 +166,11 @@ export default class MapCard extends LitElement {
     let tileUrl = this.urlResolver.resolveUrl(this._config.tileLayer.url);
     let layer = new TileLayer(tileUrl, this._config.tileLayer.options);
     map.addLayer(layer);
-    this.urlResolver.registerLayer(layer, this._config.tileLayer.url);    
+    this.urlResolver.registerLayer(layer, this._config.tileLayer.url);
     return map;
   }
 
-  
+
 
   setConfig(config) {
     this.config = config;
@@ -199,6 +206,7 @@ export default class MapCard extends LitElement {
     this.historyService?.unsubscribe();
     this.dateRangeManager?.disconnect();
     this.linkedEntityService?.disconnect();
+    this.pluginsRenderService?.cleanup();
   }
 
   _isDarkMode() {
@@ -213,8 +221,8 @@ export default class MapCard extends LitElement {
     const sampleEntities = Object.keys(hass.states).filter(
       (entityId) => {
         const entity = hass.states[entityId];
-        return (entity.state && entity.attributes && entity.attributes.latitude && entity.attributes.longitude); 
-      }  
+        return (entity.state && entity.attributes && entity.attributes.latitude && entity.attributes.longitude);
+      }
     );
 
     // Sample config
