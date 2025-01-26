@@ -1,3 +1,5 @@
+import Logger from "../util/Logger";
+
 export default class PluginConfig {
   /** @type {string} */
   url;
@@ -10,5 +12,9 @@ export default class PluginConfig {
     this.url = url;
     this.name = name;
     this.options = { ...options };
+
+    Logger.debug(
+      `[PluginConfig]: created with url: ${this.url}, name: ${this.name}, options: ${this.options}`
+    );
   }
 }

@@ -1,3 +1,5 @@
+import Logger from "../util/Logger";
+
 export default class LayerConfig {
   /** @type {string} */
   url;
@@ -33,5 +35,8 @@ export default class LayerConfig {
         this.historyProperty = historyConfig;
       }
     }
+    Logger.debug(
+      `[LayerConfig]: created with url: ${this.url}, options: ${this.options}, historyProperty: ${this.historyProperty}, historySource: ${this.historySource}, historyForceMidnight: ${this.historyForceMidnight}, historySourceSuffix: ${this.historySourceSuffix}`
+    );
   }
 }

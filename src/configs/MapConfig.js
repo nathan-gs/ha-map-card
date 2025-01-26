@@ -116,6 +116,7 @@ export default class MapConfig {
     if(!(Number.isFinite(this.x) && Number.isFinite(this.y)) && this.focusEntity == null && this.entities.length == 0) {
       throw new Error("We need a map latitude & longitude; set at least [x, y], a focus_entity or have at least 1 entities defined.");
     }
+    Logger.debug(`[MapConfig]: created with title: ${this.title}, focusEntity: ${this.focusEntity}, x: ${this.x}, y: ${this.y}, zoom: ${this.zoom}, cardSize: ${this.cardSize}, entities: ${this.entities.map(e => e.id)}, wms: ${this.wms.map(l => l.url)}, tileLayers: ${this.tileLayers.map(l => l.url)}, plugins: ${this.plugins.map(p => p.name)}, historyStart: ${this.historyStart}, historyEnd: ${this.historyEnd}, historyDateSelection: ${this.historyDateSelection}, themeMode: ${this.themeMode}, mapOptions: ${this.mapOptions}, focusFollow: ${this.focusFollow}`);
   }
 
   _setConfigWithDefault(input, d = null) {
