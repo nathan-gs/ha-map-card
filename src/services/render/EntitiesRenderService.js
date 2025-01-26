@@ -6,7 +6,7 @@ import HaMapUtilities from "../../util/HaMapUtilities";
 import HaDateRangeService from "../HaDateRangeService";
 import HaLinkedEntityService from "../HaLinkedEntityService";
 import HaHistoryService from "../HaHistoryService";
-import MapConfig from "../../configs/MapConfig";
+import FocusFollowConfig from "../../configs/FocusFollowConfig";
 
 
 export default class EntitiesRenderService {
@@ -27,13 +27,13 @@ export default class EntitiesRenderService {
   linkedEntityService;
   /** @type {HaHistoryService} */
   historyService;
-  /** @type {MapConfig} */
-  mapConfig;
+  /** @type {FocusFollowConfig} */
+  focusFollowConfig;
 
-  constructor(map, hass, mapConfig, entityConfigs, linkedEntityService, dateRangeManager, historyService, isDarkMode) {
+  constructor(map, hass, focusFollowConfig, entityConfigs, linkedEntityService, dateRangeManager, historyService, isDarkMode) {
     this.map = map;
     this.hass = hass;
-    this.mapConfig = mapConfig;
+    this.focusFollowConfig = focusFollowConfig;
     this.entityConfigs = entityConfigs;
     this.linkedEntityService = linkedEntityService;
     this.dateRangeManager = dateRangeManager;
@@ -67,7 +67,7 @@ export default class EntitiesRenderService {
   }
 
   updateInitialView() {
-    if(this.mapConfig.isFocusFollowNone) {
+    if(this.focusFollowConfig.isNone) {
       return;
     }
     const points = this.entities.filter(e => e.config.focusOnFit).map((e) => e.latLng);
@@ -76,7 +76,7 @@ export default class EntitiesRenderService {
     }
     // If not, get bounds of all markers rendered
     const bounds = (new LatLngBounds(points)).pad(0.1);
-    if(this.mapConfig.isFocusFollowContains) {
+    if(this.focusFollowConfig.isContains) {
       if(this.map.getBounds().contains(bounds)) {
         return;
       }
