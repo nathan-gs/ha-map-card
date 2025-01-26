@@ -64,7 +64,7 @@ export default class MapCard extends LitElement {
       this.dateRangeManager = new HaDateRangeService(this.hass);
     }
     this.tileLayersService = new TileLayersService(this.map, this._config.tileLayers, this._config.wms, this.urlResolver, this.linkedEntityService, this.dateRangeManager);
-    this.entitiesRenderService = new EntitiesRenderService(this.map, this.hass, this._config, this._config.entities, this.linkedEntityService, this.dateRangeManager, this.historyService, this._isDarkMode());
+    this.entitiesRenderService = new EntitiesRenderService(this.map, this.hass, this._config.focusFollow, this._config.entities, this.linkedEntityService, this.dateRangeManager, this.historyService, this._isDarkMode());
     this.initialViewRenderService = new InitialViewRenderService(this.map, this._config, this.hass, this.entitiesRenderService);
 
     this.pluginsRenderService = new PluginsRenderService(this.map, this._config.plugins);

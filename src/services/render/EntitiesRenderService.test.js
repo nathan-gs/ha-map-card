@@ -1,3 +1,4 @@
+import FocusFollowConfig from "../../configs/FocusFollowConfig";
 import EntitiesRenderService from "./EntitiesRenderService";
 import { LatLng, latLng } from "leaflet";
 
@@ -59,16 +60,15 @@ describe("EntitiesRenderService", () => {
       
   });
 
-  it("in case of MapConfig.isFocusFollowNone", () => {
+  it("in case of FocusFollow.isNone", () => {
     const map = {
       setView: jest.fn(),
       fitBounds: jest.fn(),
       getBounds: jest.fn().mockReturnValue({contains: jest.fn().mockReturnValue(true)}),
     };
-    const mapConfig = {isFocusFollowNone: true};
+    const focusFollow = new FocusFollowConfig("contains");
     const hass = {};
-    const entitiesRenderService = new EntitiesRenderService(map, hass, mapConfig, {}, {}, {}, true);
-    entitiesRenderService.mapConfig = {isFocusFollowNone: true};
+    const entitiesRenderService = new EntitiesRenderService(map, hass, focusFollow, {}, {}, {}, true);
 
     // Test data
     const testData = [
@@ -82,15 +82,15 @@ describe("EntitiesRenderService", () => {
     expect(map.fitBounds).not.toBeCalled();
   });
 
-  it("in case of MapConfig.isFocusFollowContains", () => {
+  it("in case of FocusFollow.isContains", () => {
     const map = {
       setView: jest.fn(),
       fitBounds: jest.fn(),
       getBounds: jest.fn().mockReturnValue({contains: jest.fn().mockReturnValue(true)}),
     };
-    const mapConfig = {isFocusFollowContains: true};
+    const focusFollow = new FocusFollowConfig("contains");
     const hass = {};
-    const entitiesRenderService = new EntitiesRenderService(map, hass, mapConfig, {}, {}, {}, true);
+    const entitiesRenderService = new EntitiesRenderService(map, hass, focusFollow, {}, {}, {}, true);
 
     // Test data
     const testData = [
@@ -104,15 +104,15 @@ describe("EntitiesRenderService", () => {
     expect(map.fitBounds).not.toBeCalled();
   });
 
-  it("in case of MapConfig.isFocusFollowContains and bounds not contains", () => {
+  it("in case of FocusFollow.isContains and bounds not contains", () => {
     const map = {
       setView: jest.fn(),
       fitBounds: jest.fn(),
       getBounds: jest.fn().mockReturnValue({contains: jest.fn().mockReturnValue(false)}),
     };
-    const mapConfig = {isFocusFollowContains: true};
+    const focusFollow = new FocusFollowConfig("contains");
     const hass = {};
-    const entitiesRenderService = new EntitiesRenderService(map, hass, mapConfig, {}, {}, {}, true);
+    const entitiesRenderService = new EntitiesRenderService(map, hass, focusFollow, {}, {}, {}, true);
 
     // Test data
     const testData = [
@@ -126,15 +126,15 @@ describe("EntitiesRenderService", () => {
     expect(map.fitBounds).toBeCalled();
   });
 
-  it("in case of MapConfig.isFocusFollowRefocus", () => {
+  it("in case of FocusFollow.isRefocus", () => {
     const map = {
       setView: jest.fn(),
       fitBounds: jest.fn(),
       getBounds: jest.fn().mockReturnValue({contains: jest.fn().mockReturnValue(true)}),
     };
-    const mapConfig = {isFocusFollowRefocus: true};
+    const focusFollow = new FocusFollowConfig("refocus");
     const hass = {};
-    const entitiesRenderService = new EntitiesRenderService(map, hass, mapConfig, {}, {}, {}, true);
+    const entitiesRenderService = new EntitiesRenderService(map, hass, focusFollow, {}, {}, {}, true);
 
     // Test data
     const testData = [
