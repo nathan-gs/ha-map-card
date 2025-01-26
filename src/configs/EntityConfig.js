@@ -1,4 +1,5 @@
 import HaMapUtilities from "../util/HaMapUtilities.js"
+import Logger from "../util/Logger.js";
 import CircleConfig from "./CircleConfig.js";
 
 export default class EntityConfig {
@@ -110,6 +111,9 @@ export default class EntityConfig {
     this.useBaseEntityOnly = config.use_base_entity_only ?? false;
 
     this.circleConfig = new CircleConfig(config.circle, this.color);
+    Logger.debug(
+      `[EntityConfig]: created with id: ${this.id}, display: ${this.display}, size: ${this.size}, historyStart: ${this.historyStart}, historyEnd: ${this.historyEnd}, historyStartEntity: ${this.historyStartEntity}, historyEndEntity: ${this.historyEndEntity}, historyLineColor: ${this.historyLineColor}, historyShowDots: ${this.historyShowDots}, historyShowLines: ${this.historyShowLines}, fixedX: ${this.fixedX}, fixedY: ${this.fixedY}, fallbackX: ${this.fallbackX}, fallbackY: ${this.fallbackY}, css: ${this.css}, picture: ${this.picture}, icon: ${this.icon}, color: ${this.color}, gradualOpacity: ${this.gradualOpacity}, tapAction: ${this.tapAction}, focusOnFit: ${this.focusOnFit}, zIndexOffset: ${this.zIndexOffset}, useBaseEntityOnly: ${this.useBaseEntityOnly}, circleConfig: ${this.circleConfig}`
+    );
   }
 
   // Get tap action_data

@@ -1,3 +1,5 @@
+import Logger from "../util/Logger";
+
 export default class CircleConfig {
 
   /** @type {boolean} */
@@ -25,7 +27,7 @@ export default class CircleConfig {
       this.color = config.color ?? defaultColor;
       this.fillOpacity = config.fill_opacity ?? 0.1;
     }
-
+    Logger.debug(`[CircleConfig]: created with enabled: ${this.enabled}, source: ${this.source}, radius: ${this.radius}, color: ${this.color}, fillOpacity: ${this.fillOpacity}, attribute: ${this.attribute}`);
   }
 
   /** 
