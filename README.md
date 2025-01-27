@@ -184,9 +184,13 @@ More complex use of the WMS/Tile history property can be configured within the h
 | name      | note                                                                                                                                                        |
 |-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `name`  | Mandatory, a helpful name for this instance of the plugin. Useful for debugging issues. |
-| `url`     | Mandatory, The url of the plugin, if the plugin is in the file `/var/lib/hass/www/SomePlugin.js` , then this would be `./local/SomePlugin.js`. |
+| `url`     | The url of the plugin, if the plugin is in the file `/var/lib/hass/www/SomePlugin.js` , then this would be `./local/SomePlugin.js`. |
+| `hacs.module` | The HACS module from which the plugin must be loaded if `url` is not set. |
+| `hacs.file` | The file within the module from which the plugin must be loaded if `url is not set. |
 | `options` | Options for configuring the plugin |
 
+The `url` option is used when set.
+If the `url` is not set and the `hacs` object is, the plugin will be loaded from the [HACS plugin](https://hacs.xyz/docs/publish/plugin/) with the given name and given filename.
 
 
 #### Example config with plugin
@@ -235,6 +239,7 @@ This project uses [devenv.sh](https://devenv.sh/).
 * All plugins should implement the `Plugin` class. See [`Plugin.js`](./src/models/Plugin.js) and [`Plugin.d.ts`](./src/models/Plugin.d.ts).
 * For a concrete example, see [`CircleTestPlugin.js`](./plugins/CircleTestPlugin.js).
 * Typescript example: see [bezmi/ha-map-card-plugin-bom-radar](https://github.com/bezmi/ha-map-card-plugin-bom-radar).
+* For an example HACS plugin installation: see [`buienradar`](https://github.com/Kevinjil/ha-map-card-buienradar).
 
 Tag your Github repo with [ha-map-card-plugin](https://github.com/topics/ha-map-card-plugin) for discoverability.
 
