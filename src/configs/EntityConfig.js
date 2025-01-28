@@ -164,6 +164,28 @@ export default class EntityConfig {
   }  
 
   _generateRandomColor() {
-    return "#" + ((1 << 24) * Math.random() | 0).toString(16).padStart(6, "0");
+    // Generate pseudo-random color from provided entity id
+    let str = this.id;
+    
+    // Generate a BigInt numeric hash of the string provided.
+    // 53-bit hash based on cyrb53 (c) 2018 bryc (github.com/bryc). 
+    // License: Public domain, https://github.com/bryc/code/blob/master/jshash/experimental/cyrb53.js
+    let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    for(let i = 0, ch; i < str.length; i++) {
+      ch = str.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761);
+      h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1  = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+    h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2  = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+    h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    let hash =  4294967296 * (2097151 & h2) + (h1 >>> 0);
+
+    // Now that we have a numeric hash, construct a CSS hsl() color with hue derived from the hash above (hash % 360), 95% saturation and 35% lightness.
+    // Unlike the simplified RGB approach (#RRGGBB) this method produces colors with similar saturation and lightness, resulting in a more aesthetically pleasing palette.
+    // N.B. hue value might be computed to a negative number which is not strictly allowed in HSL palette - but CSS handles these cases well.
+    let color = `hsl(${hash % 360}, 95%, 35%)`;
+    return color;
   }
 }
