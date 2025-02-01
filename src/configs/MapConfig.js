@@ -104,7 +104,7 @@ export default class MapConfig {
     // Allow as none array
     let plugins = this._setConfigWithDefault(inputConfig.plugins, []);
     this.plugins = (this._setConfigWithDefault(Array.isArray(plugins) ? plugins : [plugins], [])).map((plugin) => {
-      return new PluginConfig(plugin.url, plugin.name, plugin.options);
+      return new PluginConfig(plugin.hacs, plugin.url, plugin.name, plugin.options);
     });
 
     this.tileLayer = new TileLayerConfig(
