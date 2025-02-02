@@ -56,8 +56,22 @@ export default class PluginsRenderService {
         return;
       }
 
+      let url = config.url;
+      if (url === undefined && config.hacs) {
+        const module = document.querySelectorAll("script[src][type='module']")
+            .values()
+            .find(m => new URL(m.src).pathname.includes(`/hacsfiles/${config.hacs.module}/${config.hacs.file}`));
+
+        if (!module) {
+          Logger.warn(`[PluginsRenderService] Could not find HACS file for plugin ${config.name}. Check your configuration.`);
+          return
+        }
+
+        url = module.src;
+      }
+
       // Dynamically import the plugin module from the URL
-      const module = await import(config.url);
+      const module = await import(url);
 
       const pluginFactory = module.default;
 
