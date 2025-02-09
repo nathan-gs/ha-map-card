@@ -113,7 +113,7 @@ export default class MapCard extends LitElement {
     return html`
             <link rel="stylesheet" href="/static/images/leaflet/leaflet.css">
             <ha-card header="${this._config.title}">
-              <div>
+              <div id="mapContainer">
                 <div id="map" style="min-height: ${this._config.mapHeight}px">
                   <ha-icon-button
                     label='Reset focus'
