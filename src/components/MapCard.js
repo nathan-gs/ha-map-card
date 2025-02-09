@@ -244,7 +244,7 @@ export default class MapCard extends LitElement {
         flex-direction: column;
         overflow: hidden;
       }
-      div:has(#map) {
+      #mapContainer {
         border-radius: var(--ha-card-border-radius, 12px);
         overflow: hidden;
         z-index: 0;
