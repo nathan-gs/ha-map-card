@@ -113,6 +113,7 @@ export default class MapCard extends LitElement {
     return html`
             <link rel="stylesheet" href="/static/images/leaflet/leaflet.css">
             <ha-card header="${this._config.title}">
+              <div id="mapContainer">
                 <div id="map" style="min-height: ${this._config.mapHeight}px">
                   <ha-icon-button
                     label='Reset focus'
@@ -123,6 +124,7 @@ export default class MapCard extends LitElement {
                     <ha-icon icon="mdi:image-filter-center-focus"></ha-icon>
                   </ha-icon-button>
                 </div>
+              </div>
             </ha-card>
         `;
   }
@@ -238,11 +240,19 @@ export default class MapCard extends LitElement {
       ha-card {
         height: 100%;
         display: flex;
+        width: 100%;
         flex-direction: column;
+        overflow: hidden;
+      }
+      #mapContainer {
+        border-radius: var(--ha-card-border-radius, 12px);
+        overflow: hidden;
+        z-index: 0;
+        height: 100%;
+        width: 100%;
       }
       #map {
         height: 100%;
-        border-radius: var(--ha-card-border-radius,12px);
       }
       .leaflet-pane {
         z-index: 0 !important;
