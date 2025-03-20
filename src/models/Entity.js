@@ -61,7 +61,7 @@ export default class Entity {
     this.map = map;
     this.darkMode = darkMode;
 
-    if(this.display == "state") {
+    if(this.display == "state" || this.display == "attribute") {
       this._currentTitle = this.title;
     }
     this.circle = new Circle(this.config.circleConfig, this);
@@ -158,6 +158,12 @@ export default class Entity {
     if(this.display == "state") {
       return this.state;
     }
+    if(this.display == "attribute") {
+      if(this.config.attribute && this.attributes[this.config.attribute])
+        return this.attributes[this.config.attribute];
+      else
+        return "?";
+    }
     const title = this.friendlyName;
     if(title.length < 5) {
       return title;
@@ -181,9 +187,9 @@ export default class Entity {
   }  
 
   async update() {
-    if(this.display == "state") {
+    if(this.display == "state" || this.display == "attribute") {
       if(this.title != this._currentTitle) {
-        Logger.debug("[Entity] updating marker for " + this.id + " from " + this._currentTitle + " to " + this.state);
+        Logger.debug("[Entity] updating marker for " + this.id + " from " + this._currentTitle + " to " + this.title);
         this.marker.remove();
         this.marker = this.createMapMarker();
         this.marker.addTo(this.map);
@@ -206,7 +212,7 @@ export default class Entity {
     if(this.display == "icon") {
       picture = null;
     }
-    if(this.display == "state") {
+    if(this.display == "state" || this.display == "attribute") {
       picture = null;
       icon = null;
     }
