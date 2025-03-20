@@ -65,6 +65,7 @@ export default class EntityConfig {
   constructor(config, defaults) {
     this.id = (typeof config === 'string' || config instanceof String)? config : config.entity;
     this.display = config.display ? config.display : "marker";
+    this.attribute = config.attribute ? config.attribute : "";
     this.size = config.size ? config.size : 48;
     // If historyLineColor not set, inherit icon color
     this.color = config.color ?? this._generateRandomColor();
