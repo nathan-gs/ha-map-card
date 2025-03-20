@@ -80,7 +80,7 @@ Either the name of the `entity` or:
 | name                   | Default                               | note                                                                                          |
 |------------------------|---------------------------------------|-----------------------------------------------------------------------------------------------|
 | `entity`               |                                       | The entity id                                                                                 |
-| `display`              | `marker`                              | `icon`, `state`, `attribute` or `marker`. <br/>`marker` will display the picture if available. <br/>`icon` will display the icon if available, otherwise a label composed of first letters of the entity's name. <br/>`attribute` will fallback to `icon` if a defined `attribute` is not available |
+| `display`              | `marker`                              | `icon`, `state`, `attribute` or `marker`. <br/>`marker` will display the picture if available. <br/>`icon` will display the icon if available, otherwise a label composed of first letters of the entity's name |
 | `picture`              |                                       | Set a custom picture to use on the marker.                                                    |
 | `icon`                 |                                       | Set a custom icon to use if display is set to `icon`. e.g. `mdi:cake`                           |
 | `attribute`            |                                       | Set an attribute to use if display is set to `attribute`. e.g. `friendly_name`                |
