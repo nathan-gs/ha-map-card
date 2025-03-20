@@ -159,10 +159,7 @@ export default class Entity {
       return this.state;
     }
     if(this.display == "attribute") {
-      // if(this.config.attribute && this.attributes[this.config.attribute])
-        return this.attributes[this.config.attribute];
-      // else
-        // return "?";
+      return this.attributes[this.config.attribute];
     }
     const title = this.friendlyName;
     if(title.length < 5) {
