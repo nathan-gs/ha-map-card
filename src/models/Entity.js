@@ -159,7 +159,7 @@ export default class Entity {
       return this.state;
     }
     if(this.display == "attribute") {
-      return this.attributes[this.config.attribute];
+      return this.hass.formatEntityAttributeValue(this.hass.states[this.id], this.config.attribute);
     }
     const title = this.friendlyName;
     if(title.length < 5) {
