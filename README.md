@@ -83,7 +83,7 @@ Either the name of the `entity` or:
 | `display`              | `marker`                              | `icon`, `state`, `attribute` or `marker`. <br/>`marker` will display the picture if available. <br/>`icon` will display the icon if available, otherwise a label composed of first letters of the entity's name |
 | `picture`              |                                       | Set a custom picture to use on the marker.                                                    |
 | `icon`                 |                                       | Set a custom icon to use if display is set to `icon`. e.g. `mdi:cake`                           |
-| `attribute`            |                                       | Set an attribute to use if display is set to `attribute`. e.g. `friendly_name`                |
+| `attribute`            |                                       | Set an attribute to use if display is set to `attribute`. e.g. `speed`                |
 | `size`                 | 48                                    | Size of the icon                                                                              |
 | `color`                | Random Color                          | Can defined as `red`, `rgb(255,0,0)`, `rgba(255,0,0,0.1)`, `#ff0000`, `var(--red-color)`      |
 | `css`                  | `text-align: center; font-size: 60%;` | CSS for the marker (only for `state` and `marker`)                                            |
