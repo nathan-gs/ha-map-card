@@ -222,8 +222,8 @@ export default class Entity {
           <map-card-entity-marker
             entity-id="${this.id}"
             title="${this.title}"
-            prefix="${this.prefix}"
-            suffix="${this.suffix}"
+            prefix="${this.config.prefix}"
+            suffix="${this.config.suffix}"
             tooltip="${this.tooltip}"
             icon="${icon ?? ""}"
             picture="${picture ?? ""}"
