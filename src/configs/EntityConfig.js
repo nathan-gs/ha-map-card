@@ -7,6 +7,12 @@ export default class EntityConfig {
   id;
   /** @type {string} */
   display;
+  /** @type {string} */
+  attribute;
+  /** @type {string} */
+  prefix;
+  /** @type {string} */
+  suffix;
   /** @type {number} */
   size;
   /** @type {Date} */
@@ -63,6 +69,9 @@ export default class EntityConfig {
   constructor(config, defaults) {
     this.id = (typeof config === 'string' || config instanceof String)? config : config.entity;
     this.display = config.display ? config.display : "marker";
+    this.attribute = config.attribute ? config.attribute : "";
+    this.prefix = config.display === "attribute" ? (config.prefix ? config.prefix : "") : "";
+    this.suffix = config.display === "attribute" ? (config.suffix ? config.suffix : "") : "";
     this.size = config.size ? config.size : 48;
     // If historyLineColor not set, inherit icon color
     this.color = config.color ?? this._generateRandomColor();
@@ -112,7 +121,7 @@ export default class EntityConfig {
 
     this.circleConfig = new CircleConfig(config.circle, this.color);
     Logger.debug(
-      `[EntityConfig]: created with id: ${this.id}, display: ${this.display}, size: ${this.size}, historyStart: ${this.historyStart}, historyEnd: ${this.historyEnd}, historyStartEntity: ${this.historyStartEntity}, historyEndEntity: ${this.historyEndEntity}, historyLineColor: ${this.historyLineColor}, historyShowDots: ${this.historyShowDots}, historyShowLines: ${this.historyShowLines}, fixedX: ${this.fixedX}, fixedY: ${this.fixedY}, fallbackX: ${this.fallbackX}, fallbackY: ${this.fallbackY}, css: ${this.css}, picture: ${this.picture}, icon: ${this.icon}, color: ${this.color}, gradualOpacity: ${this.gradualOpacity}, tapAction: ${this.tapAction}, focusOnFit: ${this.focusOnFit}, zIndexOffset: ${this.zIndexOffset}, useBaseEntityOnly: ${this.useBaseEntityOnly}, circleConfig: ${this.circleConfig}`
+      `[EntityConfig]: created with id: ${this.id}, display: ${this.display}, attribute: ${this.attribute}, prefix: ${this.prefix}, suffix: ${this.suffix}, size: ${this.size}, historyStart: ${this.historyStart}, historyEnd: ${this.historyEnd}, historyStartEntity: ${this.historyStartEntity}, historyEndEntity: ${this.historyEndEntity}, historyLineColor: ${this.historyLineColor}, historyShowDots: ${this.historyShowDots}, historyShowLines: ${this.historyShowLines}, fixedX: ${this.fixedX}, fixedY: ${this.fixedY}, fallbackX: ${this.fallbackX}, fallbackY: ${this.fallbackY}, css: ${this.css}, picture: ${this.picture}, icon: ${this.icon}, color: ${this.color}, gradualOpacity: ${this.gradualOpacity}, tapAction: ${this.tapAction}, focusOnFit: ${this.focusOnFit}, zIndexOffset: ${this.zIndexOffset}, useBaseEntityOnly: ${this.useBaseEntityOnly}, circleConfig: ${this.circleConfig}`
     );
   }
 

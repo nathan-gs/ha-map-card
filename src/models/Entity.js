@@ -61,7 +61,7 @@ export default class Entity {
     this.map = map;
     this.darkMode = darkMode;
 
-    if(this.display == "state") {
+    if(this.display == "state" || this.display == "attribute") {
       this._currentTitle = this.title;
     }
     this.circle = new Circle(this.config.circleConfig, this);
@@ -158,6 +158,9 @@ export default class Entity {
     if(this.display == "state") {
       return this.state;
     }
+    if(this.display == "attribute") {
+      return this.hass.formatEntityAttributeValue(this.hass.states[this.id], this.config.attribute);
+    }
     const title = this.friendlyName;
     if(title.length < 5) {
       return title;
@@ -181,9 +184,9 @@ export default class Entity {
   }  
 
   async update() {
-    if(this.display == "state") {
+    if(this.display == "state" || this.display == "attribute") {
       if(this.title != this._currentTitle) {
-        Logger.debug("[Entity] updating marker for " + this.id + " from " + this._currentTitle + " to " + this.state);
+        Logger.debug("[Entity] updating marker for " + this.id + " from " + this._currentTitle + " to " + this.title);
         this.marker.remove();
         this.marker = this.createMapMarker();
         this.marker.addTo(this.map);
@@ -206,7 +209,7 @@ export default class Entity {
     if(this.display == "icon") {
       picture = null;
     }
-    if(this.display == "state") {
+    if(this.display == "state" || this.display == "attribute") {
       picture = null;
       icon = null;
     }
@@ -219,6 +222,8 @@ export default class Entity {
           <map-card-entity-marker
             entity-id="${this.id}"
             title="${this.title}"
+            prefix="${this.config.prefix}"
+            suffix="${this.config.suffix}"
             tooltip="${this.tooltip}"
             icon="${icon ?? ""}"
             picture="${picture ?? ""}"
