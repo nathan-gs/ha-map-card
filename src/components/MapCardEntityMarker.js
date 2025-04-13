@@ -5,6 +5,8 @@ export default class MapCardEntityMarker extends LitElement {
     return {
       'entityId': {type: String, attribute: 'entity-id'},
       'title': {type: String, attribute: 'title'},
+      'prefix': {type: String, attribute: 'prefix'},
+      'suffix': {type: String, attribute: 'suffix'},
       'tooltip': {type: String, attribute: 'tooltip'},
       'picture': {type: String, attribute: 'picture'},
       'icon': {type: String, attribute: 'icon'},
@@ -51,7 +53,15 @@ export default class MapCardEntityMarker extends LitElement {
     if(this.icon) {
       return html`<ha-icon icon="${this.icon}" style="--icon-primary-color: ${this.color}; --mdc-icon-size: ${this.size - 10}px;">icon</ha-icon>`
     }
-    return this.title;
+    if (!this.prefix && !this.suffix) {
+      return this.title;
+    } else {
+      return html`
+        <span class="prefix" style="display: ${this.prefix ? 'initial' : 'none'}">${this.prefix}</span>
+        ${this.title}
+        <span class="suffix" style="display: ${this.suffix ? 'initial' : 'none'}">${this.suffix}</span>
+      `;
+    }
   }
 
   static get styles() {
@@ -80,6 +90,12 @@ export default class MapCardEntityMarker extends LitElement {
       .marker.dark {
         color: #ffffff;
         background: #1c1c1c;
+      }
+      .prefix {
+        margin-left: var(--ha-marker-prefix-margin, 2px);
+      }
+      .suffix {
+        margin-right: var(--ha-marker-suffix-margin, 2px);
       }
     `;
   }
