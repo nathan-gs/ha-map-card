@@ -92,10 +92,10 @@ export default class MapCardEntityMarker extends LitElement {
         background: #1c1c1c;
       }
       .prefix {
-        margin-left: var(--ha-marker-prefix-margin, 2px);
+        margin-right: var(--ha-marker-prefix-margin, 2px);
       }
       .suffix {
-        margin-right: var(--ha-marker-suffix-margin, 2px);
+        margin-left: var(--ha-marker-suffix-margin, 2px);
       }
     `;
   }
