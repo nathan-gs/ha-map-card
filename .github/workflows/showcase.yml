@@ -1,0 +1,68 @@
+name: Validate Showcase READMEs
+
+on:
+  pull_request:
+    paths:
+      - 'showcase/**'
+
+jobs:
+  validate-readmes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Validate READMEs
+        run: |
+          python -c '
+          import os
+          import yaml
+          from pathlib import Path
+
+          errors = []
+          # Only check README.md files in showcase/*/README.md
+          for readme_path in Path("showcase").glob("*/README.md"):
+              with open(readme_path, "r", encoding="utf-8") as f:
+                  content = f.read()
+
+              # Check front matter
+              if not content.startswith("---\n"):
+                  errors.append(f"{readme_path}: Missing front matter")
+                  continue
+              
+              try:
+                  front_matter = yaml.safe_load(content.split("---")[1])
+                  if not front_matter.get("title"):
+                      errors.append(f"{readme_path}: Missing title in front matter")
+                  if not front_matter.get("authors"):
+                      errors.append(f"{readme_path}: Missing authors in front matter")
+              except Exception as e:
+                  errors.append(f"{readme_path}: Invalid front matter - {str(e)}")
+
+              # Check for at least one image reference
+              if not "![" in content:
+                  errors.append(f"{readme_path}: No image references found")
+
+              # Check image files exist
+              folder = readme_path.parent
+              for line in content.splitlines():
+                  if line.startswith("![") and "](" in line:
+                      img_path = line.split("](")[1].split(")")[0]
+                      if not (folder / img_path).exists():
+                          errors.append(f"{readme_path}: Image {img_path} not found")
+
+          if errors:
+              print("\n".join(errors))
+              exit(1)
+          '

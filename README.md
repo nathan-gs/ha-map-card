@@ -254,3 +254,7 @@ Tag your Github repo with [ha-map-card-plugin](https://github.com/topics/ha-map-
 * [nathan.gs: Map Card, displaying Weather and Other Tile Layers](https://nathan.gs/2024/02/25/ha-map-card-displaying-weather-and-other-tilelayers/)
 * [userbag.co.uk: Home Assistant Exploring location history](https://userbag.co.uk/development/home-assistant-exploring-location-history/)
 * [leaflet.js: third party plugins](https://leafletjs.com/plugins.html#3rd-party-integration)
+
+### Showcase
+
+We have a gallery of nice examples at [nathan.gs/ha-map-card](https://nathan.gs/ha-map-card/), contributions are welcome, check the [showcase/README.md](showcase/README.md).
