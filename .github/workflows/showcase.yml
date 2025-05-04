@@ -51,7 +51,7 @@ jobs:
                   errors.append(f"{readme_path}: Invalid front matter - {str(e)}")
 
               # Check for at least one image reference
-              if not "![ " in content:
+              if not "![" in content:
                   errors.append(f"{readme_path}: No image references found")
 
               # Check image files exist

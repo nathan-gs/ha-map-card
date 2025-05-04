@@ -1,5 +1,5 @@
 ---
-author: nathan-gs
+authors: [ nathan-gs ]
 title: Displaying PM2.5 in Belgium (WMS map)
 ---
 
