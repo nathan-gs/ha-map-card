@@ -32,6 +32,23 @@ Optionally, add more images:
 
 The images go in the folder as well.
 
+##### Authors
+
+Following Frontmatter will work:
+
+```yaml
+authors:
+- nathan-gs
+- name: Nathan
+  website: https://nathan.gs
+- name: Nathan
+  github: nathan-gs
+- github: nathan-gs
+- website: https://nathan.gs
+```
+
+In this case, we will have 5 authors.
+
 #### Publishing
 
 Once the PR is merged, nathan-gs will trigger an update on the website.
