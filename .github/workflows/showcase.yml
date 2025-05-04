@@ -31,7 +31,8 @@ jobs:
           from pathlib import Path
 
           errors = []
-          for readme_path in Path("showcase").rglob("README.md"):
+          # Only check README.md files in showcase/*/README.md
+          for readme_path in Path("showcase").glob("*/README.md"):
               with open(readme_path, "r", encoding="utf-8") as f:
                   content = f.read()
 
