@@ -1,6 +1,6 @@
 # ha-map-card showcase
 
-The item's are showcased at: [nathan.gs/ha-map-card](https://nathan.gs/ha-map-card/)
+The item's are showcased at: [nathan.gs/ha-map-card](https://nathan.gs/ha-map-card/).
 
 ## Contributing
 
@@ -30,3 +30,8 @@ Optionally, add more images:
 ![Second Image](second-image.jpg)
 ```
 
+The images go in the folder as well.
+
+#### Publishing
+
+Once the PR is merged, nathan-gs will trigger an update on the website.
