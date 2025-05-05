@@ -145,7 +145,7 @@ tile_layers:
 
 Here is how it looks:
 
-![Image](https://github.com/user-attachments/assets/4c93f9da-7f15-478e-bb37-75c0b933d001)
+![rainviewer screenshot](rainviewer.png)
 
 
 I tried getting a traffic overlay on the map as well, but I gave up at the point where I realized I'd probably have to pay for an API to do so. If anyone has any suggestions, I'd love to hear them!
