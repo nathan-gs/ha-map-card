@@ -4,13 +4,15 @@ authors:
 title: Rainviewer Overlay
 ---
 
+![rainviewer screenshot](rainviewer.png)
+
 I just wanted to share my config after creating a rainviewer overlay, and correcting the dark mode display with card mod.
 
 I'll lay out the code first, then mention some hurdles I had, and how I worked around them.
 
 Firstly, in your configuration.yaml, you'll need rest sensors to get the current frame, and previous frames from rainviewer:
-
-```
+{% raw %}
+```yaml
 rest:
   - resource: https://api.rainviewer.com/public/weather-maps.json
     scan_interval: 300  # Every 5 minutes
@@ -20,33 +22,36 @@ rest:
      - name: rainviewer_frames
        value_template: "{{ value_json.radar.past[-10:] | map(attribute='path') | join(',') }}"
 ```
-
+{% endraw %}
 Adjust the value_json.radar.past[-10:] to suit your needs. I left it at -10 even though I only animate 5 frames (for resource purposes.)
 
 
 Next, you'll need two helpers:
 
 First, one that is the frame number index that will be changed via an automation:
-
+{% raw %}
+```
 input_number.rainviewer_frame_index
 Minimum value: 0
 Maximum value :10 <---- adjust for your needs, but it needs to be at least 1 more than configured in the automation
 Step size: 1
 Display Mode: Slider
-
-
+```
+{% endraw %}
 Second, you'll need a template sensor
 
 sensor.rainviewer_current_frame
-```
+{% raw %}
+```jinja
 {% set frames = states('sensor.rainviewer_frames').split(',') %}
-          {% set idx = states('input_number.rainviewer_frame_index')|int(0) %}
-          {{ frames[idx] if frames|length > idx else frames[-1] }}
+{% set idx = states('input_number.rainviewer_frame_index')|int(0) %}
+{{ frames[idx] if frames|length > idx else frames[-1] }}
 ```
-
+{% endraw %}
 Now, We need to create an automation to cycle the frames on the map:
 
-```
+{% raw %}
+```yaml
 alias: Cycle RainViewer Frames
 triggers:
   - seconds: /1 # every 1 second. Adjust to your needs.
@@ -78,11 +83,11 @@ actions:
             - sensor.rainviewer_current_frame
             - input_number.rainviewer_frame_index
 ```
-
+{% endraw %}
 
 Lastly, the card itself. This is a stripped down anonymized version:
-
-```
+{% raw %}
+```yaml
 type: custom:map-card
 focus_follow: none
 theme_mode: light # Dark mode applies css filters to all layers and makes the rainmap layer look wrong.
@@ -116,7 +121,7 @@ card_mod: # This inverts ONLY the openstreetmap layer.
 
 
 ```
-
+{% endraw %}
 
 Many of the things I found I had mentioned in the notes. 
 
@@ -127,8 +132,8 @@ Some of my lower end clients aren't super happy with the map with the animation 
 I'm running homeassistant OS as a VM on a healthily configured Dell R730XD running proxmox and I was still experiencing some lag on the map until I added the purge to the automation.
 
 If you don't want or need animation, All you would need to overlay the latest radar images is the first rest sensor:
-
-```
+{% raw %}
+```yaml
 rest:
   - resource: https://api.rainviewer.com/public/weather-maps.json
     scan_interval: 300  # Every 5 minutes
@@ -136,10 +141,11 @@ rest:
      - name: rainviewer_frame
        value_template: "{{ value_json.radar.nowcast[0].path }}"
 ```
+{% endraw %}
 
 then adjust the card yaml and add this:
-
-```
+{% raw %}
+```yaml
 tile_layers:
   - url: >-
       https://tilecache.rainviewer.com{{
@@ -147,7 +153,7 @@ tile_layers:
     options:
       opacity: 0.4
 ```
-
+{% endraw %}
 
 Here is how it looks:
 

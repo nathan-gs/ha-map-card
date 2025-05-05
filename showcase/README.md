@@ -11,7 +11,7 @@ Put it under `showcase/NAME/README.md`.
 
 Add `front matter`a and content:
 
-```markdown
+````markdown
 ---
 title: Your title
 authors:
@@ -28,7 +28,14 @@ Detailed description of your HA Map Card implementation, including:
 
 Optionally, add more images:
 ![Second Image](second-image.jpg)
+
+Be sure to escape code blocks:
+{% raw %}
+```jinja
+{% set test = true %}
 ```
+{% endraw %}
+````
 
 The images go in the folder as well.
 
