@@ -1,3 +1,9 @@
+---
+authors: 
+- Milkysunshine
+title: Rainviewer Overlay
+---
+
 I just wanted to share my config after creating a rainviewer overlay, and correcting the dark mode display with card mod.
 
 I'll lay out the code first, then mention some hurdles I had, and how I worked around them.
