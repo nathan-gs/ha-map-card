@@ -11,6 +11,7 @@ I just wanted to share my config after creating a rainviewer overlay, and correc
 I'll lay out the code first, then mention some hurdles I had, and how I worked around them.
 
 Firstly, in your configuration.yaml, you'll need rest sensors to get the current frame, and previous frames from rainviewer:
+
 {% raw %}
 ```yaml
 rest:
@@ -23,12 +24,13 @@ rest:
        value_template: "{{ value_json.radar.past[-10:] | map(attribute='path') | join(',') }}"
 ```
 {% endraw %}
-Adjust the value_json.radar.past[-10:] to suit your needs. I left it at -10 even though I only animate 5 frames (for resource purposes.)
 
+Adjust the value_json.radar.past[-10:] to suit your needs. I left it at -10 even though I only animate 5 frames (for resource purposes.)
 
 Next, you'll need two helpers:
 
 First, one that is the frame number index that will be changed via an automation:
+
 {% raw %}
 ```
 input_number.rainviewer_frame_index
@@ -38,9 +40,9 @@ Step size: 1
 Display Mode: Slider
 ```
 {% endraw %}
-Second, you'll need a template sensor
 
-sensor.rainviewer_current_frame
+Second, you'll need a template sensor: `sensor.rainviewer_current_frame`:
+
 {% raw %}
 ```jinja
 {% set frames = states('sensor.rainviewer_frames').split(',') %}
@@ -48,6 +50,7 @@ sensor.rainviewer_current_frame
 {{ frames[idx] if frames|length > idx else frames[-1] }}
 ```
 {% endraw %}
+
 Now, We need to create an automation to cycle the frames on the map:
 
 {% raw %}
@@ -86,6 +89,7 @@ actions:
 {% endraw %}
 
 Lastly, the card itself. This is a stripped down anonymized version:
+
 {% raw %}
 ```yaml
 type: custom:map-card
@@ -132,6 +136,7 @@ Some of my lower end clients aren't super happy with the map with the animation 
 I'm running homeassistant OS as a VM on a healthily configured Dell R730XD running proxmox and I was still experiencing some lag on the map until I added the purge to the automation.
 
 If you don't want or need animation, All you would need to overlay the latest radar images is the first rest sensor:
+
 {% raw %}
 ```yaml
 rest:
@@ -143,7 +148,8 @@ rest:
 ```
 {% endraw %}
 
-then adjust the card yaml and add this:
+Then adjust the card yaml and add this:
+
 {% raw %}
 ```yaml
 tile_layers:
