@@ -1,5 +1,8 @@
 name: HACS Validate
 
+permissions:
+  contents: read
+
 on:
   push:
     tags:
