@@ -5,6 +5,9 @@ on:
     paths:
       - 'showcase/**'
 
+permissions:
+  contents: read
+
 jobs:
   validate-readmes:
     runs-on: ubuntu-latest
