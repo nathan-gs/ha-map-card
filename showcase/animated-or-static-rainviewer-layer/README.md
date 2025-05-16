@@ -35,7 +35,7 @@ First, one that is the frame number index that will be changed via an automation
 ```
 input_number.rainviewer_frame_index
 Minimum value: 0
-Maximum value :10 <---- adjust for your needs, but it needs to be at least 1 more than configured in the automation
+Maximum value :4 <---- This will determine the number of frames shown. In this case, 5 frames (0 through 4). adjust for your needs.
 Step size: 1
 Display Mode: Slider
 ```
@@ -45,9 +45,16 @@ Second, you'll need a template sensor: `sensor.rainviewer_current_frame`:
 
 {% raw %}
 ```jinja
-{% set frames = states('sensor.rainviewer_frames').split(',') %}
-{% set idx = states('input_number.rainviewer_frame_index')|int(0) %}
-{{ frames[idx] if frames|length > idx else frames[-1] }}
+{% set past = states('sensor.rainviewer_frames').split(',') %}
+{# cap = total frames you want. Determined by the helper rainviewer_frame_index max value #}
+{% set cap  = state_attr('input_number.rainviewer_frame_index','max')|int + 1 %}
+{# take the last (cap-1) historical URLs #}
+{% set hist = past[-(cap-1):] %}
+{# append the live frame from your other sensor #}
+{% set full = hist + [ states('sensor.rainviewer_frame') ] %}
+{# pick by index #}
+{% set idx  = states('input_number.rainviewer_frame_index')|int %}
+{{ full[idx] }}
 ```
 {% endraw %}
 
@@ -56,10 +63,13 @@ Now, We need to create an automation to cycle the frames on the map:
 {% raw %}
 ```yaml
 alias: Cycle RainViewer Frames
+description: >-
+  Cycle through the most‑recent N RainViewer frames, pause on the newest, then
+  loop
 triggers:
-  - seconds: /1 # every 1 second. Adjust to your needs.
+  - seconds: /1 # This is how quickly the frames will change. Adjust to your needs.
     trigger: time_pattern
-conditions:  # This entire condition is optional. I do it to give the system a break and not keep cycling when no one will see it.
+conditions: # Optional. I do this to let the server rest when not needed.
   - condition: time
     after: "06:00:00"
     before: "00:00:00"
@@ -68,23 +78,29 @@ actions:
       entity_id: input_number.rainviewer_frame_index
     action: input_number.increment
     data: {}
-  - if:
-      - condition: numeric_state
-        entity_id: input_number.rainviewer_frame_index
-        above: 3 # When it hits 4 (which is the 5th frame), it will pause for the below delay, and restart. Adjust to change the # of frames animated, but keep it at least 1 less than input_number.rainviewer_frame_index.
-    then:
-      - delay: "00:00:05" # delay for the last frame.
-      - target:
-          entity_id: input_number.rainviewer_frame_index
-        data:
-          value: 0
-        action: input_number.set_value
-      - action: recorder.purge_entities # This entire action is optional, but I do it to not bloat the database. 
-        data:
-          keep_days: 0.05 # this keeps the last 1.2 hours (72 minutes) of history. I do this for debugging, but will probably reduce it.
-          entity_id:
-            - sensor.rainviewer_current_frame
-            - input_number.rainviewer_frame_index
+  - choose:
+      - conditions: # This checks to see if we have reached the last frame
+          - condition: template
+            value_template: >
+              {% set idx = states('input_number.rainviewer_frame_index')|int %}
+              {% set cap =
+              state_attr('input_number.rainviewer_frame_index','max')|int + 1 %}
+              {{ idx >= (cap - 1) }}
+        sequence:
+          - delay: "00:00:05" # How long to pause on the last frame.
+          - target:
+              entity_id: input_number.rainviewer_frame_index
+            data:
+              value: 0
+            action: input_number.set_value
+          - data: # This is optional, but suggested to keep database bloat to a minimum. This clears the history of the sensors older than the keep_days below.
+              keep_days: 0.05
+              entity_id:
+                - sensor.rainviewer_current_frame
+                - input_number.rainviewer_frame_index
+            action: recorder.purge_entities
+mode: single
+
 ```
 {% endraw %}
 
@@ -167,3 +183,8 @@ Here is how it looks:
 
 
 I tried getting a traffic overlay on the map as well, but I gave up at the point where I realized I'd probably have to pay for an API to do so. If anyone has any suggestions, I'd love to hear them!
+
+
+----------------------
+- Updated 05/16/2025 -
+Corrected the project to ensure the current frame is shown at the end of the animation, and adjusted frame count determination.
