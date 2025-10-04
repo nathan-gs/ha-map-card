@@ -134,9 +134,15 @@ export default class Entity {
     throw Error("Entity: " + this.id + " has no latitude & longitude and no fallback configured")
   }
 
-  setup() {
+  setup(clusterGroup = null) {
     this.marker = this.createMapMarker();
-    this.marker.addTo(this.map);
+    if (clusterGroup) {
+      Logger.debug("[Entity] Adding marker for " + this.id + " to cluster group");
+      clusterGroup.addLayer(this.marker);
+    } else {
+      Logger.debug("[Entity] Adding marker for " + this.id + " directly to map");
+      this.marker.addTo(this.map);
+    }
     this.historyManager.setup();
     this.circle.setup();
   }
@@ -183,13 +189,17 @@ export default class Entity {
     return this.config.icon ?? this.attributes.icon;
   }  
 
-  async update() {
+  async update(clusterGroup = null) {
     if(this.display == "state" || this.display == "attribute") {
       if(this.title != this._currentTitle) {
         Logger.debug("[Entity] updating marker for " + this.id + " from " + this._currentTitle + " to " + this.title);
         this.marker.remove();
         this.marker = this.createMapMarker();
-        this.marker.addTo(this.map);
+        if (clusterGroup) {
+          clusterGroup.addLayer(this.marker);
+        } else {
+          this.marker.addTo(this.map);
+        }
         this._currentTitle = this.title;
       }
     }

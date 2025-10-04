@@ -41,6 +41,8 @@ export default class MapConfig {
   mapOptions;
   /** @type {FocusFollowConfig} */
   focusFollow;
+  /** @type {boolean} */
+  clusterMarkers;
 
   /** @type {boolean} */
   debug = false;
@@ -57,6 +59,9 @@ export default class MapConfig {
 
     // Get theme mode.
     this.themeMode = ['dark', 'light', 'auto'].includes(inputConfig.theme_mode) ? inputConfig.theme_mode : 'auto';
+
+    // Enable marker clustering (default: true)
+    this.clusterMarkers = this._setConfigWithDefault(inputConfig.cluster_markers, true);
 
     // Enable debug messaging. 
     // Card is quite chatty with this enabled.
