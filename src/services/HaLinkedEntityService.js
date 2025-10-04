@@ -21,6 +21,9 @@ export default class HaLinkedEntityService {
     // Skip if already connected
     if (this.connections[entity]) return;
 
+    // Setup listeners array for entity before subscribing
+    if(!this.listeners[entity]) this.listeners[entity] = [];
+
     Logger.debug(`[HaLinkedEntityService] initializing connection for ${entity}`);
     const connection  = this.hass.connection.subscribeMessage(
         (message) => {
@@ -36,9 +39,11 @@ export default class HaLinkedEntityService {
             Logger.debug(`[HaLinkedEntityService] ${entity} state updated to ${state}`);
 
             // Hit callback for all listeners listing to entities changes
-            this.listeners[entity].forEach(function(callback) { 
-              callback(state)
-            }); 
+            if (this.listeners[entity] && this.listeners[entity].length > 0) {
+              this.listeners[entity].forEach(function(callback) {
+                callback(state)
+              });
+            } 
           }
         },
         {
