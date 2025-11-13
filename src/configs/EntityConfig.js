@@ -1,6 +1,7 @@
 import HaMapUtilities from "../util/HaMapUtilities.js"
 import Logger from "../util/Logger.js";
 import CircleConfig from "./CircleConfig.js";
+import GeoJsonConfig from "./GeoJsonConfig.js";
 
 export default class EntityConfig {
   /** @type {string} */
@@ -45,7 +46,7 @@ export default class EntityConfig {
   css;
   // Cannot be set via config. Passed from parent
   historyManagedExternally;
-  
+
   /** @type {string} */
   picture;
   /** @type {string} */
@@ -62,12 +63,15 @@ export default class EntityConfig {
   zIndexOffset;
   /** @type {boolean} */
   useBaseEntityOnly;
-  
+
   /** @type {CircleConfig} */
   circleConfig;
 
+  /** @type {GeoJsonConfig} */
+  geoJsonConfig;
+
   constructor(config, defaults) {
-    this.id = (typeof config === 'string' || config instanceof String)? config : config.entity;
+    this.id = (typeof config === 'string' || config instanceof String) ? config : config.entity;
     this.display = config.display ? config.display : "marker";
     this.attribute = config.attribute ? config.attribute : "";
     this.prefix = config.display === "attribute" ? (config.prefix ? config.prefix : "") : "";
@@ -76,7 +80,7 @@ export default class EntityConfig {
     // If historyLineColor not set, inherit icon color
     this.color = config.color ?? this._generateRandomColor();
     this.gradualOpacity = config.gradual_opacity ? config.gradual_opacity : undefined;
-    
+
     // Get history value to use (normal of default)
     const historyStart = config.history_start ?? defaults.historyStart;
     const historyEnd = config.history_end ?? defaults.historyEnd;
@@ -86,7 +90,7 @@ export default class EntityConfig {
       this.historyStartEntity = historyStart['entity'] ?? historyStart;
       this.historyStartEntitySuffix = historyStart['suffix'];
     } else {
-        this.historyStart = historyStart ? HaMapUtilities.convertToAbsoluteDate(historyStart) : null;
+      this.historyStart = historyStart ? HaMapUtilities.convertToAbsoluteDate(historyStart) : null;
     }
 
     // If end is an entity, setup entity config
@@ -112,7 +116,7 @@ export default class EntityConfig {
     this.usingDateRangeManager = (!historyStart && !historyEnd) && defaults.dateRangeManagerEnabled;
 
     // Tap action defaults to standard more-info.
-    this.tapAction = (typeof config.tap_action == 'object') ? this.parseAction(config.tap_action) : {action: 'more-info'};
+    this.tapAction = (typeof config.tap_action == 'object') ? this.parseAction(config.tap_action) : { action: 'more-info' };
 
     this.focusOnFit = config.focus_on_fit ?? true;
     this.zIndexOffset = config.z_index_offset ? config.z_index_offset : 1;
@@ -120,14 +124,14 @@ export default class EntityConfig {
     this.useBaseEntityOnly = config.use_base_entity_only ?? false;
 
     this.circleConfig = new CircleConfig(config.circle, this.color);
+    this.geoJsonConfig = new GeoJsonConfig(config.geojson, this.color);
     Logger.debug(
-      `[EntityConfig]: created with id: ${this.id}, display: ${this.display}, attribute: ${this.attribute}, prefix: ${this.prefix}, suffix: ${this.suffix}, size: ${this.size}, historyStart: ${this.historyStart}, historyEnd: ${this.historyEnd}, historyStartEntity: ${this.historyStartEntity}, historyEndEntity: ${this.historyEndEntity}, historyLineColor: ${this.historyLineColor}, historyShowDots: ${this.historyShowDots}, historyShowLines: ${this.historyShowLines}, fixedX: ${this.fixedX}, fixedY: ${this.fixedY}, fallbackX: ${this.fallbackX}, fallbackY: ${this.fallbackY}, css: ${this.css}, picture: ${this.picture}, icon: ${this.icon}, color: ${this.color}, gradualOpacity: ${this.gradualOpacity}, tapAction: ${this.tapAction}, focusOnFit: ${this.focusOnFit}, zIndexOffset: ${this.zIndexOffset}, useBaseEntityOnly: ${this.useBaseEntityOnly}, circleConfig: ${this.circleConfig}`
+      `[EntityConfig]: created with id: ${this.id}, display: ${this.display}, attribute: ${this.attribute}, prefix: ${this.prefix}, suffix: ${this.suffix}, size: ${this.size}, historyStart: ${this.historyStart}, historyEnd: ${this.historyEnd}, historyStartEntity: ${this.historyStartEntity}, historyEndEntity: ${this.historyEndEntity}, historyLineColor: ${this.historyLineColor}, historyShowDots: ${this.historyShowDots}, historyShowLines: ${this.historyShowLines}, fixedX: ${this.fixedX}, fixedY: ${this.fixedY}, fallbackX: ${this.fallbackX}, fallbackY: ${this.fallbackY}, css: ${this.css}, picture: ${this.picture}, icon: ${this.icon}, color: ${this.color}, gradualOpacity: ${this.gradualOpacity}, tapAction: ${this.tapAction}, focusOnFit: ${this.focusOnFit}, zIndexOffset: ${this.zIndexOffset}, useBaseEntityOnly: ${this.useBaseEntityOnly}, circleConfig: ${this.circleConfig}, geoJsonConfig: ${this.geoJsonConfig}`
     );
   }
 
   // Get tap action_data
-  parseAction(tap_action)
-  {
+  parseAction(tap_action) {
     // No additional props
     if (['more-info', 'none'].includes(tap_action.action)) {
       return {
@@ -137,7 +141,7 @@ export default class EntityConfig {
 
     if (tap_action.action == 'navigate') {
       // Validate
-      if(!tap_action.navigation_path) throw new Error("'navigation_path' is required when using action 'navigate'");
+      if (!tap_action.navigation_path) throw new Error("'navigation_path' is required when using action 'navigate'");
 
       return {
         action: tap_action.action,
@@ -146,11 +150,11 @@ export default class EntityConfig {
     }
     if (tap_action.action == 'url') {
       // Validate
-      if(!tap_action.url_path) throw new Error("'url_path' is required when using action 'url'");
+      if (!tap_action.url_path) throw new Error("'url_path' is required when using action 'url'");
 
       return {
         action: tap_action.action,
-        url_path: tap_action.url_path 
+        url_path: tap_action.url_path
       };
     }
 
@@ -158,10 +162,10 @@ export default class EntityConfig {
       // Validate
       if (!tap_action.service) throw new Error("'service' is required when using action 'call-service'");
       return {
-        action:   tap_action.action,
-        service:  tap_action.service,
+        action: tap_action.action,
+        service: tap_action.service,
         // I belive this is truely optional.
-        data:     tap_action.data   
+        data: tap_action.data
       };
     }
 
@@ -170,26 +174,26 @@ export default class EntityConfig {
 
   get hasHistory() {
     return this.historyStart != null || this.historyStartEntity != null || this.usingDateRangeManager === true;
-  }  
+  }
 
   _generateRandomColor() {
     // Generate pseudo-random color from provided entity id
     let str = this.id;
-    
+
     // Generate a BigInt numeric hash of the string provided.
     // 53-bit hash based on cyrb53 (c) 2018 bryc (github.com/bryc). 
     // License: Public domain, https://github.com/bryc/code/blob/master/jshash/experimental/cyrb53.js
     let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
-    for(let i = 0, ch; i < str.length; i++) {
+    for (let i = 0, ch; i < str.length; i++) {
       ch = str.charCodeAt(i);
       h1 = Math.imul(h1 ^ ch, 2654435761);
       h2 = Math.imul(h2 ^ ch, 1597334677);
     }
-    h1  = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
     h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
-    h2  = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
     h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-    let hash =  4294967296 * (2097151 & h2) + (h1 >>> 0);
+    let hash = 4294967296 * (2097151 & h2) + (h1 >>> 0);
 
     // Now that we have a numeric hash, construct a CSS hsl() color with hue derived from the hash above (hash % 360), 95% saturation and 35% lightness.
     // Unlike the simplified RGB approach (#RRGGBB) this method produces colors with similar saturation and lightness, resulting in a more aesthetically pleasing palette.
