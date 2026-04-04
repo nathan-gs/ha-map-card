@@ -46,6 +46,9 @@ export default class HaDateRangeService {
       if (this.hass.connection['_energy']) {
         energyCollection =  this.hass.connection['_energy'];
       }
+      if (this.hass.panelUrl && this.hass.connection['_energy_' + this.hass.panelUrl]) {
+        energyCollection =  this.hass.connection['_energy_'+ this.hass.panelUrl];
+      }
        
       if (energyCollection) {
         complete(energyCollection);
