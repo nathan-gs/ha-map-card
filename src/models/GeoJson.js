@@ -1,6 +1,7 @@
 import L from "leaflet";
 import Logger from "../util/Logger.js";
 import GeoJsonConfig from "../configs/GeoJsonConfig.js";
+/** @typedef {import('./Entity').default} Entity */
 
 export default class GeoJson {
   /** @type {GeoJsonConfig} */
