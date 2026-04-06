@@ -48,7 +48,18 @@ export default class MapCardEntityMarker extends LitElement {
 
   _inner() {
     if(this.picture) {
-      return html`<div class="entity-picture" style="background-image: url(${this.picture})"></div>`
+      // Show picture with optional label overlay
+      const hasLabel = this.title && (this.prefix || this.suffix || this.title.trim());
+      return html`
+        <div class="entity-picture" style="background-image: url(${this.picture})"></div>
+        ${hasLabel ? html`
+          <div class="picture-label">
+            <span class="prefix" style="display: ${this.prefix ? 'initial' : 'none'}">${this.prefix}</span>
+            ${this.title}
+            <span class="suffix" style="display: ${this.suffix ? 'initial' : 'none'}">${this.suffix}</span>
+          </div>
+        ` : ''}
+      `;
     }
     if(this.icon) {
       return html`<ha-icon icon="${this.icon}" style="--icon-primary-color: ${this.color}; --mdc-icon-size: ${this.size - 10}px;">icon</ha-icon>`
@@ -78,6 +89,7 @@ export default class MapCardEntityMarker extends LitElement {
         border: 1px solid var(--ha-marker-color, var(--primary-color));
         color: var(--primary-text-color);
         background-color: var(--card-background-color);
+        position: relative;
       }
       .marker.picture {
         overflow: hidden;
@@ -86,6 +98,20 @@ export default class MapCardEntityMarker extends LitElement {
         background-size: cover;
         height: 100%;
         width: 100%;
+      }
+      .picture-label {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        padding: 2px 4px;
+        font-size: 0.7em;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .marker.dark {
         color: #ffffff;

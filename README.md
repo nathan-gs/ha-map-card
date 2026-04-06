@@ -56,6 +56,7 @@ y: 3.652
 | `theme_mode`          | auto                                  | `auto`, `light` or`dark`                                                                      |
 | `focus_follow`        | none                                  | `none`, `refocus`, `contains`, reset the map focused entity's, on each update. Some people call this the `Autofit` feature.                                                              |
 | `map_options`          | {}                                                                                                                           | The `options` for the default [Leaflet Map](https://leafletjs.com/reference.html#map) |
+| `cluster_markers`      | true                                                                                                                         | Enable marker clustering to group nearby entities together. Click the group icon button to toggle clustering on/off. |
 | `debug` | false                                                                                                                        | Enable debug messages in console.
 | `plugins`            | []                                                                                                                           | An array of plugin definitions, see: [Plugin Options](#plugin-options), [Available plugins](#available-plugins) and [Developing plugins](#developing-plugins)     |
 
@@ -83,6 +84,7 @@ Either the name of the `entity` or:
 | `display`              | `marker`                              | `icon`, `state`, `attribute` or `marker`. <br/>`marker` will display the picture if available. <br/>`icon` will display the icon if available, otherwise a label composed of first letters of the entity's name |
 | `picture`              |                                       | Set a custom picture to use on the marker.                                                    |
 | `icon`                 |                                       | Set a custom icon to use if `display` is set to `icon`. e.g. `mdi:cake`                           |
+| `label`                |                                       | Set a custom text label to display on the marker (overrides auto-generated initials). Works with picture overlays.                |
 | `attribute`            |                                       | Set an attribute to use if `display` is set to `attribute`. e.g. `speed`                |
 | `prefix`            |                                       | Optional prefix for a value if `display` is set to `attribute`                |
 | `suffix`            |                                       | Optional suffix for a value if `display` is set to `attribute`                |
@@ -103,6 +105,7 @@ Either the name of the `entity` or:
 | `focus_on_fit`         | true                                  | If this variable is set to false, This entity will be excluded when the map fits the included entities on the screen.|
 | `z_index_offset`       | 1                                     | z-index value that determines what is displayed on top when markers overlap. (Setting a gap of at least 20 between the values assigned to each entity is recommended.) |
 | `use_base_entity_only` | false                                 | When set to `true`, the tracking will use only the base entity without including any associated device trackers. This is useful for scenarios where you want to track the base entity directly and ignore any associated trackers. |
+| `position_update_threshold` | 10                               | Distance threshold in meters. Marker position only updates if the entity has moved more than this distance. Prevents unnecessary map updates from GPS drift. Useful for clustered markers. |
 | `circle`               |                                       | Display a circle around the marker. <br/>More details [Circle options](#circle-options) |
 
 ### History options
