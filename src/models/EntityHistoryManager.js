@@ -4,9 +4,9 @@ import HaMapUtilities from '../util/HaMapUtilities';
 import HaHistoryService from '../services/HaHistoryService';
 import HaDateRangeService from '../services/HaDateRangeService';
 import HaLinkedEntityService from '../services/HaLinkedEntityService';
-import Entity from './Entity';
 import Logger from '../util/Logger';
 import TimelineEntry from './TimelineEntry';
+/** @typedef {import('./Entity').default} Entity */
 
 export default class EntityHistoryManager {
   /** @type {Entity} */

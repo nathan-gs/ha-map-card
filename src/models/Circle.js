@@ -1,7 +1,7 @@
 import { Circle as LeafletCircle } from 'leaflet';
 import CircleConfig from '../configs/CircleConfig';
-import Entity from './Entity';
 import Logger from '../util/Logger';
+/** @typedef {import('./Entity').default} Entity */
 
 export default class Circle {
 
