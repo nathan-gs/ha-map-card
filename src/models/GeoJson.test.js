@@ -2,30 +2,24 @@ import GeoJson from './GeoJson';
 import GeoJsonConfig from '../configs/GeoJsonConfig';
 import Logger from '../util/Logger';
 import L from 'leaflet';
+import { describe, expect, it, beforeEach, jest } from "@jest/globals";
 
-// Mock Leaflet
-jest.mock('leaflet', () => ({
-  geoJSON: jest.fn(() => ({
-    addTo: jest.fn()
-  })),
-  circleMarker: jest.fn(),
-  DomEvent: {
-    stopPropagation: jest.fn()
-  }
-}));
-
-// Mock Logger to suppress expected error messages in tests
-jest.mock('../util/Logger', () => ({
-  debug: jest.fn(),
-  error: jest.fn(),
-  warn: jest.fn()
-}));
+jest.mock('leaflet');
+jest.mock('../util/Logger');
 
 describe('GeoJson', () => {
   let mockEntity;
   let mockMap;
+  let mockGeoJsonLayer;
 
   beforeEach(() => {
+    jest.clearAllMocks();
+
+    mockGeoJsonLayer = { addTo: jest.fn() };
+    L.geoJSON = jest.fn(() => mockGeoJsonLayer);
+    L.circleMarker = jest.fn();
+    L.DomEvent = { stopPropagation: jest.fn() };
+
     mockMap = {
       removeLayer: jest.fn(),
       getContainer: jest.fn(() => ({
@@ -41,8 +35,6 @@ describe('GeoJson', () => {
         tapAction: { action: 'more-info' }
       }
     };
-
-    jest.clearAllMocks();
   });
 
   describe('setup', () => {

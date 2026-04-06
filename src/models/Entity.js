@@ -196,6 +196,7 @@ export default class Entity {
       return this.config.label;
     }
     if (this.display == "state") {
+      return this.state;
     }
     if (this.display == "attribute") {
       return this.hass.formatEntityAttributeValue(this.hass.states[this.id], this.config.attribute);

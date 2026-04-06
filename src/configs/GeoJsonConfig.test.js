@@ -1,4 +1,5 @@
 import GeoJsonConfig from './GeoJsonConfig';
+import { describe, expect, it } from "@jest/globals";
 
 describe('GeoJsonConfig', () => {
   describe('constructor', () => {

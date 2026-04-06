@@ -137,7 +137,7 @@ export default class GeoJson {
   _createTooltipContent(properties) {
     // Create a simple tooltip from properties
     const entries = Object.entries(properties)
-      .filter(([key, value]) => value !== null && value !== undefined)
+      .filter(([, value]) => value !== null && value !== undefined)
       .map(([key, value]) => `${key}: ${value}`)
       .slice(0, 5); // Limit to first 5 properties
 
