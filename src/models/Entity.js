@@ -1,6 +1,7 @@
 
 import { DivIcon, LatLng, Map, Marker } from "leaflet";
 import Circle from "./Circle.js";
+import GeoJson from "./GeoJson.js";
 import Logger from "../util/Logger.js"
 import EntityConfig from "../configs/EntityConfig.js";
 import EntityHistoryManager from "./EntityHistoryManager.js";
@@ -34,14 +35,19 @@ export default class Entity {
    * @type {boolean} 
    */
   darkMode;
-  /** 
+  /**
    * @private
-   * @type {Circle} 
+   * @type {Circle}
    */
   circle;
-  /** 
-   * @private 
-   * @type {EntityHistoryManager} 
+  /**
+   * @private
+   * @type {GeoJson}
+   */
+  geoJson;
+  /**
+   * @private
+   * @type {EntityHistoryManager}
    */
   historyManager;
   /** 
@@ -66,10 +72,11 @@ export default class Entity {
     this.map = map;
     this.darkMode = darkMode;
 
-    if(this.display == "state" || this.display == "attribute") {
+    if (this.display == "state" || this.display == "attribute") {
       this._currentTitle = this.title;
     }
     this.circle = new Circle(this.config.circleConfig, this);
+    this.geoJson = new GeoJson(this.config.geoJsonConfig, this);
     this.historyManager = new EntityHistoryManager(this, historyService, dateRangeManager, linkedEntityService);
   }
 
@@ -105,34 +112,34 @@ export default class Entity {
   }
 
   /** @returns {LatLng} */
-  get latLng() {    
-    if(this.config.fixedX && this.config.fixedY) {
+  get latLng() {
+    if (this.config.fixedX && this.config.fixedY) {
       return new LatLng(this.config.fixedX, this.config.fixedY);
     }
-    
-    if(this._currentLatLng) {
+
+    if (this._currentLatLng) {
       return this._currentLatLng;
     }
-    
+
     // Do we have Lng/Lat directly?
     if (this.attributes.latitude && this.attributes.longitude) {
       return new LatLng(this.attributes.latitude, this.attributes.longitude);
     }
-    
+
     // Get Lat/Lng of entity. Some entities such as "person" define device_trackers allowing
     // multiple lat/lng sources to be used. This method will call down through these looking for a
     // lat/lng value if none is defined on the parent entity.
     // If any, see if we can get a lng/lat from one instead
     let subTrackerIds = this.attributes.device_trackers ?? []
-    for(let t=0; t<subTrackerIds.length; t++) {
+    for (let t = 0; t < subTrackerIds.length; t++) {
       const entity = this.hass.states[subTrackerIds[t]];
       if (entity.attributes.latitude && entity.attributes.longitude) {
         return new LatLng(entity.attributes.latitude, entity.attributes.longitude);
       }
-    }    
-    
+    }
+
     Logger.warn("Entity: " + this.id + " has no latitude & longitude");
-    if(this.config.fallbackX && this.config.fallbackY) {
+    if (this.config.fallbackX && this.config.fallbackY) {
       return new LatLng(this.config.fallbackX, this.config.fallbackY);
     }
     Logger.error("Entity: " + this.id + " has no fallback latitude & longitude");
@@ -140,39 +147,42 @@ export default class Entity {
   }
 
   setup(clusterGroup = null) {
-    this.marker = this.createMapMarker();
-    this.marker.addTo(this.map);
-    
-    // Bind distance tooltip if configured
-    if (this.config.distanceEntity) {
-      this.marker.bindTooltip('', {
-        permanent: true,
-        direction: 'top',
-        offset: [0, -this.config.size / 2 - 5],
-        className: 'distance-tooltip'
-      });
-      this.updateDistanceTooltip(this.hass);
+    // Only add marker if GeoJSON is not configured to hide it
+    if (!this.config.geoJsonConfig.hideMarker) {
+      this.marker = this.createMapMarker();
+
+      // Bind distance tooltip if configured
+      if (this.config.distanceEntity) {
+        this.marker.bindTooltip('', {
+          permanent: true,
+          direction: 'top',
+          offset: [0, -this.config.size / 2 - 5],
+          className: 'distance-tooltip'
+        });
+        this.updateDistanceTooltip(this.hass);
+      }
+
+      if (clusterGroup) {
+        Logger.debug("[Entity] Adding marker for " + this.id + " to cluster group");
+        clusterGroup.addLayer(this.marker);
+      } else {
+        Logger.debug("[Entity] Adding marker for " + this.id + " directly to map");
+        this.marker.addTo(this.map);
+      }
+      // Initialize last set position to prevent immediate update
+      this._lastSetLatLng = this.latLng;
     }
-    
-    if (clusterGroup) {
-      Logger.debug("[Entity] Adding marker for " + this.id + " to cluster group");
-      clusterGroup.addLayer(this.marker);
-    } else {
-      Logger.debug("[Entity] Adding marker for " + this.id + " directly to map");
-      this.marker.addTo(this.map);
-    }
-    // Initialize last set position to prevent immediate update
-    this._lastSetLatLng = this.latLng;
     this.historyManager.setup();
     this.circle.setup();
+    this.geoJson.setup();
   }
 
-  /** @param {TimelineEntry} entry */  
-  react(entry) {    
+  /** @param {TimelineEntry} entry */
+  react(entry) {
     if (entry.entityId == this.id) {
       this.currentTimelineEntry = entry;
     }
-    this._currentLatLng = new LatLng(entry.latitude, entry.longitude);    
+    this._currentLatLng = new LatLng(entry.latitude, entry.longitude);
   }
 
   get friendlyName() {
@@ -182,17 +192,16 @@ export default class Entity {
   /** @returns {string} */
   get title() {
     // Use custom label if provided
-    if(this.config.label) {
+    if (this.config.label) {
       return this.config.label;
     }
-    if(this.display == "state") {
-      return this.state;
+    if (this.display == "state") {
     }
-    if(this.display == "attribute") {
+    if (this.display == "attribute") {
       return this.hass.formatEntityAttributeValue(this.hass.states[this.id], this.config.attribute);
     }
     const title = this.friendlyName;
-    if(title.length < 5) {
+    if (title.length < 5) {
       return title;
     }
     const regex = /[ _/-]/;
@@ -255,34 +264,38 @@ export default class Entity {
   }
 
   async update(clusterGroup = null) {
-    if(this.display == "state" || this.display == "attribute") {
-      if(this.title != this._currentTitle) {
-        Logger.debug("[Entity] updating marker for " + this.id + " from " + this._currentTitle + " to " + this.title);
-        // When recreating marker, we need to track if it was in a cluster
-        const wasInCluster = clusterGroup && clusterGroup.hasLayer(this.marker);
-        this.marker.remove();
-        this.marker = this.createMapMarker();
-        if (wasInCluster) {
-          clusterGroup.addLayer(this.marker);
-        } else if (clusterGroup) {
-          clusterGroup.addLayer(this.marker);
-        } else {
-          this.marker.addTo(this.map);
+    // Only update marker if it exists (not hidden by GeoJSON config)
+    if (this.marker) {
+      if(this.display == "state" || this.display == "attribute") {
+        if(this.title != this._currentTitle) {
+          Logger.debug("[Entity] updating marker for " + this.id + " from " + this._currentTitle + " to " + this.title);
+          // When recreating marker, we need to track if it was in a cluster
+          const wasInCluster = clusterGroup && clusterGroup.hasLayer(this.marker);
+          this.marker.remove();
+          this.marker = this.createMapMarker();
+          if (wasInCluster) {
+            clusterGroup.addLayer(this.marker);
+          } else if (clusterGroup) {
+            clusterGroup.addLayer(this.marker);
+          } else {
+            this.marker.addTo(this.map);
+          }
+          this._currentTitle = this.title;
         }
-        this._currentTitle = this.title;
       }
-    }
 
-    // Update position only if it has changed significantly (configurable threshold in meters)
-    const newLatLng = this.latLng;
-    const threshold = this.config.positionUpdateThreshold;
-    if (!this._lastSetLatLng || this.map.distance(this._lastSetLatLng, newLatLng) > threshold) {
-      this.marker.setLatLng(newLatLng);
-      this._lastSetLatLng = newLatLng;
+      // Update position only if it has changed significantly (configurable threshold in meters)
+      const newLatLng = this.latLng;
+      const threshold = this.config.positionUpdateThreshold;
+      if (!this._lastSetLatLng || this.map.distance(this._lastSetLatLng, newLatLng) > threshold) {
+        this.marker.setLatLng(newLatLng);
+        this._lastSetLatLng = newLatLng;
+      }
     }
 
     this.historyManager.update();
     this.circle.update();
+    this.geoJson.update();
   }
 
   /**
@@ -293,10 +306,10 @@ export default class Entity {
     Logger.debug("[MarkerEntity] Creating marker for " + this.id + " with display mode " + this.display);
     let icon = this.icon;
     let picture = this.picture;
-    if(this.display == "icon") {
+    if (this.display == "icon") {
       picture = null;
     }
-    if(this.display == "state" || this.display == "attribute") {
+    if (this.display == "state" || this.display == "attribute") {
       picture = null;
       icon = null;
     }
