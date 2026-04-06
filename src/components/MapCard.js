@@ -67,7 +67,7 @@ export default class MapCard extends LitElement {
       this.dateRangeManager = new HaDateRangeService(this.hass);
     }
     this.tileLayersService = new TileLayersService(this.map, this._config.tileLayers, this._config.wms, this.urlResolver, this.linkedEntityService, this.dateRangeManager);
-    this.entitiesRenderService = new EntitiesRenderService(this.map, this.hass, this._config.focusFollow, this._config.entities, this.linkedEntityService, this.dateRangeManager, this.historyService, this._isDarkMode());
+    this.entitiesRenderService = new EntitiesRenderService(this.map, this.hass, this._config.focusFollow, this._config.entities, this.linkedEntityService, this.dateRangeManager, this.historyService, this._isDarkMode(), this._config.clusterMarkers);
     this.initialViewRenderService = new InitialViewRenderService(this.map, this._config, this.hass, this.entitiesRenderService);
 
     this.pluginsRenderService = new PluginsRenderService(this.map, this._config.plugins);
@@ -118,6 +118,8 @@ export default class MapCard extends LitElement {
 
     return html`
             <link rel="stylesheet" href="/static/images/leaflet/leaflet.css">
+            <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+            <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
             <ha-card header="${this._config.title}">
               <div id="mapContainer">
                 <div id="map" style="min-height: ${this._config.mapHeight}px">
@@ -129,6 +131,16 @@ export default class MapCard extends LitElement {
                   >
                     <ha-icon icon="mdi:image-filter-center-focus"></ha-icon>
                   </ha-icon-button>
+                  ${this._config.clusterMarkers ? html`
+                    <ha-icon-button
+                      label='Toggle grouping'
+                      style='${this._isDarkMode() ? "color:#ffffff;" : "color:#000000;"} position: absolute; top: 115px; left: 3px; z-index: 1;'
+                      @click=${this._toggleClustering}
+                      tabindex="0"
+                    >
+                      <ha-icon icon="mdi:group"></ha-icon>
+                    </ha-icon-button>
+                  ` : ''}
                 </div>
               </div>
             </ha-card>
@@ -137,6 +149,10 @@ export default class MapCard extends LitElement {
 
   _fitMap() {
     this.initialViewRenderService.setup();
+  }
+
+  _toggleClustering() {
+    this.entitiesRenderService.toggleClustering();
   }
 
   _setupResizeObserver() {

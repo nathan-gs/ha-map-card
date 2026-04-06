@@ -49,11 +49,16 @@ export default class Entity {
    * @type {TimelineEntry} 
    */
   currentTimelineEntry;
-  /** 
+  /**
    * @private
-   * @type {LatLng} 
+   * @type {LatLng}
    */
-  _currentLatLng;  
+  _currentLatLng;
+  /**
+   * @private
+   * @type {LatLng}
+   */
+  _lastSetLatLng;
 
   constructor(config, hass, map, historyService, dateRangeManager, linkedEntityService, darkMode) {
     this.config = config;
@@ -134,7 +139,7 @@ export default class Entity {
     throw Error("Entity: " + this.id + " has no latitude & longitude and no fallback configured")
   }
 
-  setup() {
+  setup(clusterGroup = null) {
     this.marker = this.createMapMarker();
     this.marker.addTo(this.map);
     
@@ -149,6 +154,15 @@ export default class Entity {
       this.updateDistanceTooltip(this.hass);
     }
     
+    if (clusterGroup) {
+      Logger.debug("[Entity] Adding marker for " + this.id + " to cluster group");
+      clusterGroup.addLayer(this.marker);
+    } else {
+      Logger.debug("[Entity] Adding marker for " + this.id + " directly to map");
+      this.marker.addTo(this.map);
+    }
+    // Initialize last set position to prevent immediate update
+    this._lastSetLatLng = this.latLng;
     this.historyManager.setup();
     this.circle.setup();
   }
@@ -167,6 +181,10 @@ export default class Entity {
 
   /** @returns {string} */
   get title() {
+    // Use custom label if provided
+    if(this.config.label) {
+      return this.config.label;
+    }
     if(this.display == "state") {
       return this.state;
     }
@@ -177,7 +195,7 @@ export default class Entity {
     if(title.length < 5) {
       return title;
     }
-    const regex = /[ _/-]/; 
+    const regex = /[ _/-]/;
     return title
       .split(regex)
       .map((part) => part[0])
@@ -236,17 +254,33 @@ export default class Entity {
     }
   }
 
-  async update() {
+  async update(clusterGroup = null) {
     if(this.display == "state" || this.display == "attribute") {
       if(this.title != this._currentTitle) {
         Logger.debug("[Entity] updating marker for " + this.id + " from " + this._currentTitle + " to " + this.title);
+        // When recreating marker, we need to track if it was in a cluster
+        const wasInCluster = clusterGroup && clusterGroup.hasLayer(this.marker);
         this.marker.remove();
         this.marker = this.createMapMarker();
-        this.marker.addTo(this.map);
+        if (wasInCluster) {
+          clusterGroup.addLayer(this.marker);
+        } else if (clusterGroup) {
+          clusterGroup.addLayer(this.marker);
+        } else {
+          this.marker.addTo(this.map);
+        }
         this._currentTitle = this.title;
       }
     }
-    this.marker.setLatLng(this.latLng);
+
+    // Update position only if it has changed significantly (configurable threshold in meters)
+    const newLatLng = this.latLng;
+    const threshold = this.config.positionUpdateThreshold;
+    if (!this._lastSetLatLng || this.map.distance(this._lastSetLatLng, newLatLng) > threshold) {
+      this.marker.setLatLng(newLatLng);
+      this._lastSetLatLng = newLatLng;
+    }
+
     this.historyManager.update();
     this.circle.update();
   }
