@@ -33,18 +33,23 @@ export default class HaHistoryService {
       Logger.debug("[HaHistoryService]: tracking following entities " + trackerEntityIds + " for entity: " + entityId);
     }
 
-    let params = {  
-      type: 'history/stream',  
-      entity_ids: trackerEntityIds,
-      significant_changes_only: false,
-      start_time: start.toISOString()
-    };
-
-    if (end) {
-      params.end_time = end.toISOString();
-    }
-
     try {
+      if (!start || !(start instanceof Date) || isNaN(start.getTime())) {
+        Logger.error(`[HaHistoryService] Invalid start date for entity ${entityId}: ${start}`);
+        return;
+      }
+
+      let params = {  
+        type: 'history/stream',  
+        entity_ids: trackerEntityIds,
+        significant_changes_only: false,
+        start_time: start.toISOString()
+      };
+
+      if (end) {
+        params.end_time = end.toISOString();
+      }
+
       if(this.connection[entityId]) this.unsubscribeEntity(entityId);
 
       this.connection[entityId] = this.hass.connection.subscribeMessage(
@@ -65,6 +70,10 @@ export default class HaHistoryService {
           
         },
         params);
+      this.connection[entityId].catch((error) => {
+        Logger.error(`[HaHistoryService] Subscription rejected by server for entity ${entityId}: ${JSON.stringify(error)}`, error);
+        this.connection[entityId] = undefined;
+      });
       Logger.debug(`[HaHistoryService] successfully subscribed to history from ${entityId} showing ${params.start_time} till ${params.end_time ?? 'now'}`);
       Logger.debug(`[HaHistoryService] ${entityId} is connected to ${trackerEntityIds.length} location sources.`);
     } catch (error) {        
