@@ -233,6 +233,16 @@ tile_layer_options:
 
 Keep in mind that the tile layer source also has a maximum zoom level, which is `20` for most OSM maps.
 
+#### OSM & `tile_layer_options.referrerPolicy`
+
+OpenStreetMap tile servers may block tile requests that lack a valid `Referer` header. Setting `referrerPolicy` to `"origin-when-cross-origin"` ensures the browser sends the origin with cross-origin tile requests, which is required by OSM's [Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/):
+
+```
+type: custom:map-card
+tile_layer_options:
+  referrerPolicy: "origin-when-cross-origin"
+```
+
 #### Advanced WMS/Tile layer options
 
 More complex use of the WMS/Tile history property can be configured within the history property of the layer.

@@ -113,6 +113,7 @@ focus_follow: none
 theme_mode: light # Dark mode applies css filters to all layers and makes the rainmap layer look wrong.
 tile_layer_options:
   maxZoom: 21
+  referrerPolicy: "origin-when-cross-origin"
 entities:
   - entity: person.user
     use_base_entity_only: true
