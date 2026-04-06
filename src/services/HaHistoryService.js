@@ -71,7 +71,7 @@ export default class HaHistoryService {
         },
         params);
       this.connection[entityId].catch((error) => {
-        Logger.error(`[HaHistoryService] Subscription rejected by server for entity ${entityId}: ${JSON.stringify(error)}`, error);
+        Logger.error(`[HaHistoryService] Subscription rejected by server for entity ${entityId} (start_time: ${params.start_time}, end_time: ${params.end_time ?? 'now'}): ${JSON.stringify(error)}`, error);
         this.connection[entityId] = undefined;
       });
       Logger.debug(`[HaHistoryService] successfully subscribed to history from ${entityId} showing ${params.start_time} till ${params.end_time ?? 'now'}`);

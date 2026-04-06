@@ -89,8 +89,15 @@ export default class EntityHistoryManager {
       this.currentHistoryEnd = this.entity.config.historyEnd;
     }
 
-    const historyStart = this.entity.config.historyStart ?? new Date(Date.now() - 10 * 1000);
-    this.subscribeHistory(historyStart, this.entity.config.historyEnd);    
+    // Skip the initial subscription when dates will be provided dynamically.
+    // The date range manager or linked entity callbacks will call refreshHistory()
+    // with the proper dates shortly after init.
+    if (!this.entity.config.usingDateRangeManager && !this.entity.config.historyStartEntity) {
+      const historyStart = this.entity.config.historyStart ?? new Date(Date.now() - 10 * 1000);
+      this.subscribeHistory(historyStart, this.entity.config.historyEnd);
+    } else {
+      Logger.debug(`[EntityHistoryManager] Skipping initial subscription for ${this.entity.id}, waiting for dynamic dates`);
+    }
 
   }
 
