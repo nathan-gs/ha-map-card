@@ -55,6 +55,14 @@ export default class MapCard extends LitElement {
   setup() {
     Logger.debug("[MapCard] Setting up map card");
 
+    // Clean up existing map instance before reinitializing (e.g. when setConfig triggers a re-setup)
+    if (this.map) {
+      this.resizeObserver?.disconnect();
+      this.resizeObserver = undefined;
+      this.map.remove();
+      this.map = undefined;
+    }
+
     this.themeMode = this._config.themeMode;
     this.map = this._setupMap();
     // redraw the map every time it resizes
