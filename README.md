@@ -107,6 +107,7 @@ Either the name of the `entity` or:
 | `use_base_entity_only` | false                                 | When set to `true`, the tracking will use only the base entity without including any associated device trackers. This is useful for scenarios where you want to track the base entity directly and ignore any associated trackers. |
 | `position_update_threshold` | 10                               | Distance threshold in meters. Marker position only updates if the entity has moved more than this distance. Prevents unnecessary map updates from GPS drift. Useful for clustered markers. |
 | `circle`               |                                       | Display a circle around the marker. <br/>More details [Circle options](#circle-options) |
+| `geojson`              |                                       | Display GeoJSON data from an entity attribute. <br/>More details [GeoJSON options](#geojson-options) |
 
 ### History options
 
@@ -149,6 +150,68 @@ Source
 * `radius` - Will use the `radius` attribute from the entity.
 * `config` - Will use the `radius` set in the config.
 * `attribute` - Will use the `attribute` set in the config.
+
+### GeoJSON options
+
+Display GeoJSON data from an entity attribute. This is useful for displaying zones, areas, routes, or any geographic data stored as GeoJSON in your Home Assistant entities.
+
+The `geojson` option can be configured in several ways:
+
+**Simple usage (uses default attribute name `geo_location`):**
+```yaml
+geojson: true
+```
+
+**Specify a custom attribute name:**
+```yaml
+geojson: zone_geojson
+```
+
+**Full configuration:**
+```yaml
+geojson:
+  attribute: zone_geojson
+  color: '#FF5733'
+  weight: 3
+  opacity: 1.0
+  fill_opacity: 0.2
+  hide_marker: false
+```
+
+| name           | Default        | note                                                                                         |
+|----------------|----------------|----------------------------------------------------------------------------------------------|
+| `attribute`    | `geo_location` | The entity attribute containing the GeoJSON data                                             |
+| `color`        | Entity color   | Color for the GeoJSON features (lines and fills)                                             |
+| `weight`       | 3              | Line weight for GeoJSON features                                                             |
+| `opacity`      | 1.0            | Opacity of lines                                                                             |
+| `fill_opacity` | 0.2            | Opacity of filled areas                                                                      |
+| `hide_marker`  | false          | When set to `true`, hides the default entity marker and only displays the GeoJSON           |
+
+**Supported GeoJSON types:**
+- Point, MultiPoint
+- LineString, MultiLineString
+- Polygon, MultiPolygon
+- GeometryCollection
+- Feature, FeatureCollection
+
+**Example entity configuration:**
+```yaml
+entities:
+  - entity: sensor.my_zone
+    geojson:
+      attribute: zone_data
+      color: '#3388ff'
+      fill_opacity: 0.3
+      hide_marker: true
+```
+
+The GeoJSON data in the entity attribute can be either:
+- A JSON string: `'{"type": "Polygon", "coordinates": [[[0,0], [1,0], [1,1], [0,1], [0,0]]]}'`
+- A parsed JSON object (if your integration provides it that way)
+
+**Interactive Features:**
+- GeoJSON zones are **clickable** - clicking on any GeoJSON feature will show the entity's more-info dialog (or trigger the configured `tap_action`)
+- If the GeoJSON Feature or FeatureCollection includes properties, they will be displayed in tooltips when hovering over the features
 
 ### WMS and tile_layers options
 

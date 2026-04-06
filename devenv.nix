@@ -6,6 +6,7 @@
   packages = [ pkgs.git pkgs.jq ];
 
   languages.javascript.enable = true;
+  languages.javascript.npm.enable = true;
 
   scripts.watch.exec = ''
     npm run watch
