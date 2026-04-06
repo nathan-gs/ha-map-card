@@ -13,6 +13,7 @@ import EntitiesRenderService from '../services/render/EntitiesRenderService.js';
 import InitialViewRenderService from '../services/render/InitialViewRenderService.js';
 import TileLayer from '../leaflet/TileLayer.js';
 import PluginsRenderService from '../services/render/PluginsRenderService.js';
+import GeoJsonRenderService from '../services/render/GeoJsonRenderService.js';
 
 export default class MapCard extends LitElement {
   static get properties() {
@@ -46,6 +47,8 @@ export default class MapCard extends LitElement {
   initialViewRenderService;
   /** @type {PluginsRenderService} */
   pluginsRenderService;
+  /** @type {GeoJsonRenderService} */
+  geoJsonRenderService;
   hasError = false;
   hadError = false;
 
@@ -68,10 +71,12 @@ export default class MapCard extends LitElement {
     this.initialViewRenderService = new InitialViewRenderService(this.map, this._config, this.hass, this.entitiesRenderService);
 
     this.pluginsRenderService = new PluginsRenderService(this.map, this._config.plugins);
+    this.geoJsonRenderService = new GeoJsonRenderService(this.map, this.hass, this._config.geojson);
 
     try {
       this.pluginsRenderService.setup();
       this.tileLayersService.setup();
+      this.geoJsonRenderService.setup();
       this.entitiesRenderService.setup();
       this.initialViewRenderService.setup();
 
@@ -99,6 +104,7 @@ export default class MapCard extends LitElement {
       }
       this.pluginsRenderService.render();
       this.tileLayersService.render();
+      this.geoJsonRenderService.render(this.hass);
       this.entitiesRenderService.render();
       this.initialViewRenderService.render();
 
@@ -225,6 +231,7 @@ export default class MapCard extends LitElement {
     this.dateRangeManager?.disconnect();
     this.linkedEntityService?.disconnect();
     this.pluginsRenderService?.cleanup();
+    this.geoJsonRenderService?.cleanup();
   }
 
   _isDarkMode() {
@@ -289,6 +296,19 @@ export default class MapCard extends LitElement {
         color: white !important;
         border-radius: 4px;
         box-shadow: none !important;
+      }
+      .distance-tooltip {
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: bold;
+        background: rgba(0, 0, 0, 0.8) !important;
+        color: white !important;
+        border-radius: 12px;
+        border: none !important;
+        white-space: nowrap;
+      }
+      .distance-tooltip::before {
+        display: none;
       }
       #map.dark {
          background: #090909;

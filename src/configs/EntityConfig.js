@@ -69,6 +69,10 @@ export default class EntityConfig {
 
   /** @type {CircleConfig} */
   circleConfig;
+  /** @type {string} Entity ID containing distance value for tooltip display */
+  distanceEntity;
+  /** @type {string} Unit for distance display (km, mi, or auto) */
+  distanceUnit;
 
   constructor(config, defaults) {
     this.id = (typeof config === 'string' || config instanceof String)? config : config.entity;
@@ -126,6 +130,11 @@ export default class EntityConfig {
     this.positionUpdateThreshold = config.position_update_threshold ?? 10;
 
     this.circleConfig = new CircleConfig(config.circle, this.color);
+
+    // Distance tooltip configuration
+    this.distanceEntity = config.distance_entity ?? null;
+    this.distanceUnit = config.distance_unit ?? 'auto';
+
     Logger.debug(
       `[EntityConfig]: created with id: ${this.id}, display: ${this.display}, attribute: ${this.attribute}, prefix: ${this.prefix}, suffix: ${this.suffix}, size: ${this.size}, historyStart: ${this.historyStart}, historyEnd: ${this.historyEnd}, historyStartEntity: ${this.historyStartEntity}, historyEndEntity: ${this.historyEndEntity}, historyLineColor: ${this.historyLineColor}, historyShowDots: ${this.historyShowDots}, historyShowLines: ${this.historyShowLines}, fixedX: ${this.fixedX}, fixedY: ${this.fixedY}, fallbackX: ${this.fallbackX}, fallbackY: ${this.fallbackY}, css: ${this.css}, picture: ${this.picture}, icon: ${this.icon}, color: ${this.color}, gradualOpacity: ${this.gradualOpacity}, tapAction: ${this.tapAction}, focusOnFit: ${this.focusOnFit}, zIndexOffset: ${this.zIndexOffset}, useBaseEntityOnly: ${this.useBaseEntityOnly}, circleConfig: ${this.circleConfig}`
     );

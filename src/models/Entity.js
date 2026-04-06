@@ -141,6 +141,19 @@ export default class Entity {
 
   setup(clusterGroup = null) {
     this.marker = this.createMapMarker();
+    this.marker.addTo(this.map);
+    
+    // Bind distance tooltip if configured
+    if (this.config.distanceEntity) {
+      this.marker.bindTooltip('', {
+        permanent: true,
+        direction: 'top',
+        offset: [0, -this.config.size / 2 - 5],
+        className: 'distance-tooltip'
+      });
+      this.updateDistanceTooltip(this.hass);
+    }
+    
     if (clusterGroup) {
       Logger.debug("[Entity] Adding marker for " + this.id + " to cluster group");
       clusterGroup.addLayer(this.marker);
@@ -198,7 +211,48 @@ export default class Entity {
 
   get icon() {
     return this.config.icon ?? this.attributes.icon;
-  }  
+  }
+
+  /**
+   * Format distance value for display
+   * @param {number} meters - Distance in meters
+   * @param {string} unit - Unit preference (km, mi, or auto)
+   * @returns {string} Formatted distance string
+   */
+  formatDistance(meters, unit) {
+    if (!meters || isNaN(meters)) return '';
+    const m = parseFloat(meters);
+    
+    if (unit === 'mi') {
+      const miles = m / 1609.344;
+      return miles < 0.1 ? Math.round(m * 3.28084) + ' ft' : miles.toFixed(1) + ' mi';
+    }
+    
+    // Default to km/m (metric)
+    if (unit === 'km' || unit === 'auto') {
+      return m >= 1000 ? (m / 1000).toFixed(1) + ' km' : Math.round(m) + ' m';
+    }
+    
+    // Fallback
+    if (m >= 1000) return (m / 1000).toFixed(1) + ' km';
+    return Math.round(m) + ' m';
+  }
+
+  /**
+   * Update the distance tooltip content from linked entity
+   * @param {object} hass - Home Assistant object
+   */
+  updateDistanceTooltip(hass) {
+    if (!this.config.distanceEntity || !this.marker) return;
+    
+    const entity = hass?.states?.[this.config.distanceEntity];
+    if (entity && entity.state) {
+      const distance = this.formatDistance(entity.state, this.config.distanceUnit);
+      if (distance) {
+        this.marker.setTooltipContent(distance);
+      }
+    }
+  }
 
   async update(clusterGroup = null) {
     if(this.display == "state" || this.display == "attribute") {

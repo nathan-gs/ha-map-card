@@ -2,6 +2,7 @@ import EntityConfig from "./EntityConfig.js";
 import PluginConfig from "./PluginConfig.js";
 import TileLayerConfig from "./TileLayerConfig.js";
 import WmsLayerConfig from "./WmsLayerConfig.js";
+import GeoJsonLayerConfig from "./GeoJsonLayerConfig.js";
 import Logger from "../util/Logger.js";
 import Entity from "../models/Entity.js";
 import FocusFollowConfig from "./FocusFollowConfig.js";
@@ -23,6 +24,8 @@ export default class MapConfig {
   entities;
   /** @type {[WmsLayerConfig]} */
   wms;
+  /** @type {[GeoJsonLayerConfig]} */
+  geojson;
   /** @type {[TileLayerConfig]} */
   tileLayers;
   /** @type {TileLayerConfig} */
@@ -98,6 +101,12 @@ export default class MapConfig {
     let wms = this._setConfigWithDefault(inputConfig.wms, []);
     this.wms = (this._setConfigWithDefault(Array.isArray(wms) ? wms : [wms], [])).map((wms) => {
       return new WmsLayerConfig(wms.url, wms.options, wms.history);
+    });
+
+    // GeoJSON layers from Home Assistant entity attributes
+    let geojson = this._setConfigWithDefault(inputConfig.geojson, []);
+    this.geojson = (this._setConfigWithDefault(Array.isArray(geojson) ? geojson : [geojson], [])).map((gj) => {
+      return new GeoJsonLayerConfig(gj);
     });
 
     // Allow as none array
