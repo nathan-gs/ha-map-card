@@ -134,7 +134,7 @@ export default class MapConfig {
   }
 
   _setConfigWithDefault(input, d = null) {
-    if (!input) {
+    if (input === undefined || input === null) {
       if (d == null) {
         throw new Error("Missing key ");
       }
