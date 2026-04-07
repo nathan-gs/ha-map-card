@@ -63,8 +63,8 @@ export default class MapConfig {
     // Get theme mode.
     this.themeMode = ['dark', 'light', 'auto'].includes(inputConfig.theme_mode) ? inputConfig.theme_mode : 'auto';
 
-    // Enable marker clustering (default: true)
-    this.clusterMarkers = this._setConfigWithDefault(inputConfig.cluster_markers, true);
+    // Enable marker clustering (default: false)
+    this.clusterMarkers = this._setConfigWithDefault(inputConfig.cluster_markers, false);
 
     // Enable debug messaging. 
     // Card is quite chatty with this enabled.
