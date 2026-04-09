@@ -64,7 +64,7 @@ export default class MapConfig {
     this.themeMode = ['dark', 'light', 'auto'].includes(inputConfig.theme_mode) ? inputConfig.theme_mode : 'auto';
 
     // Enable marker clustering (default: true)
-    this.clusterMarkers = this._setConfigWithDefault(inputConfig.cluster_markers, false);
+    this.clusterMarkers = this._setConfigWithDefault(inputConfig.cluster_markers, true);
 
     // Enable debug messaging. 
     // Card is quite chatty with this enabled.
@@ -134,7 +134,7 @@ export default class MapConfig {
   }
 
   _setConfigWithDefault(input, d = null) {
-    if (input === undefined || input === null) {
+    if (!input) {
       if (d == null) {
         throw new Error("Missing key ");
       }
