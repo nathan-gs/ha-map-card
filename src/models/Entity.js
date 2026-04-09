@@ -317,24 +317,25 @@ export default class Entity {
 
     const extraCssClasses = this.darkMode ? "dark" : "";
 
+    const entityMarker = document.createElement("map-card-entity-marker");
+    entityMarker.hass = this.hass;
+    entityMarker.entityId = this.id;
+    entityMarker.title = this.title;
+    entityMarker.prefix = this.config.prefix;
+    entityMarker.suffix = this.config.suffix; 
+    entityMarker.tooltip = this.tooltip;
+    entityMarker.icon = icon ?? "";
+    entityMarker.picture = picture ?? "";
+    entityMarker.color = this.config.color;
+    entityMarker.style = this.config.css;
+    entityMarker.size = this.config.size;
+    entityMarker.extraCssClasses = extraCssClasses;
+    entityMarker.tapAction = this.config.tapAction;
+    entityMarker.badge = this.config.badge;
+
     return new Marker(this.latLng, {
       icon: new DivIcon({
-        html: `
-          <map-card-entity-marker
-            entity-id="${this.id}"
-            title="${this.title}"
-            prefix="${this.config.prefix}"
-            suffix="${this.config.suffix}"
-            tooltip="${this.tooltip}"
-            icon="${icon ?? ""}"
-            picture="${picture ?? ""}"
-            color="${this.config.color}"
-            style="${this.config.css}"
-            size="${this.config.size}"
-            extra-css-classes="${extraCssClasses}"
-            tap-action='${JSON.stringify(this.config.tapAction)}'
-          ></map-card-entity-marker>
-        `,
+        html: entityMarker,
         iconSize: [this.config.size, this.config.size],
         className: ''
       }),
