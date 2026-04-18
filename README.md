@@ -91,6 +91,7 @@ Either the name of the `entity` or:
 | `size`                 | 48                                    | Size of the icon                                                                              |
 | `color`                | Random Color                          | Can defined as `red`, `rgb(255,0,0)`, `rgba(255,0,0,0.1)`, `#ff0000`, `var(--red-color)`      |
 | `css`                  | `text-align: center; font-size: 60%;` | CSS for the marker (only for `state` and `marker`)                                            |
+| `badge`                  |  | Display a small badge |
 | `history_start`        |                                       | Will inherit from map config if not set. <br/>Date: `2022-03-01T12:00:00Z` <br/>Time code: `5 hours ago` <br/>Entity: `input_number.example_number`  <br/>See [History options](#history-options) for full details. |
 | `history_end`          | `now`                                 | Will inherit from map config if not set. <br/>Date: `2022-03-01T12:00:00Z` <br/>Time code: `5 hours ago` <br/>Entity: `input_number.example_number`  <br/>See [History options](#history-options) for full details. |
 | `history_line_color`   | Random Color                          | Can defined as `red`, `rgb(255,0,0)`, `rgba(255,0,0,0.1)`, `#ff0000`, `var(--red-color)`      |
@@ -150,6 +151,28 @@ Source
 * `radius` - Will use the `radius` attribute from the entity.
 * `config` - Will use the `radius` set in the config.
 * `attribute` - Will use the `attribute` set in the config.
+
+### Badge options
+
+Badge is a small element displayed on a left-top corner of a marker (in RTL - in a right-top corner).
+
+All options are optional.
+
+| name         | Default | note                                                                                         |
+|--------------|---------|----------------------------------------------------------------------------------------------|
+| `entity`     |         | Entity to be processed to retrieve an icon, an image, a state or an attribute. Also defines an entity to show a `more-info` popup displayed on tapping on a badge. |
+| `display`     |         | `label`, `state`, `attribute`, `icon`, `picture`. |
+| `label`     |         | Used to display any text. Only processed if `display: label`. |
+| `attribute`     |         | Chooses an attribute. Only processed if `display: attribute`. |
+| `suffix`     |         | Sets a suffix for an attribute value. Only processed if `display: attribute`. |
+| `picture`     |         | Overrides an entity picture if `entity` is defined; or sets a picture if no `entity` defined. |
+| `icon`     |         | Overrides an entity icon if `entity` is defined; or sets an icon if no `entity` defined. |
+| `color`     |         |  Affects label & icon. |
+| `background_color`     |         | Sets a background color of a badge. |
+| `state_color`     | false | Similar to other Frontend cards. Only processed for domains which support colors. |
+| `hide_unit`     | true | Omits a suffix for compactness. Applied both to a state & attribute. |
+
+
 
 ### GeoJSON options
 
