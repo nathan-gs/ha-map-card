@@ -163,14 +163,14 @@ All options are optional.
 | `entity`     |         | Entity to be processed to retrieve an icon, an image, a state or an attribute. Also defines an entity to show a `more-info` popup displayed on tapping on a badge. |
 | `display`     |         | `label`, `state`, `attribute`, `icon`, `picture`. |
 | `label`     |         | Used to display any text. Only processed if `display: label`. |
-| `attribute`     |         | Chooses an attribute. Only processed if `display: attribute`. |
-| `suffix`     |         | Sets a suffix for an attribute value. Only processed if `display: attribute`. |
-| `picture`     |         | Overrides an entity picture if `entity` is defined; or sets a picture if no `entity` defined. |
-| `icon`     |         | Overrides an entity icon if `entity` is defined; or sets an icon if no `entity` defined. |
+| `attribute`     |         | Choose an attribute. Only processed if `display: attribute`. |
+| `suffix`     |         | Set a suffix for an attribute value. Only processed if `display: attribute`. |
+| `picture`     |         | Override an entity picture if `entity` is defined; or sets a picture if no `entity` defined. |
+| `icon`     |         | Override an entity icon if `entity` is defined; or sets an icon if no `entity` defined. |
 | `color`     |         |  Affects label & icon. |
-| `background_color`     |         | Sets a background color of a badge. |
+| `background_color`     |         | Set a background color of a badge. |
 | `state_color`     | false | Similar to other Frontend cards. Only processed for domains which support colors. |
-| `hide_unit`     | true | Omits a suffix for compactness. Applied both to a state & attribute. |
+| `hide_unit`     | true | Omit a suffix for compactness. Applied both to a state & attribute. |
 
 
 
