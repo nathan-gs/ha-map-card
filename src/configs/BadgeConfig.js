@@ -33,13 +33,13 @@ export default class BadgeConfig {
   hide_unit;
 
   constructor(config) {
-    this.entity = config.entity ? config.entity : null;
+    this.entity = config.entity;
     this.display = BADGE_DISPLAY_MODES.includes(config.display) ? config.display : null;
-    this.label = config.display === "label" ? (config.label ? config.label : null) : null;
-    this.attribute = config.display === "attribute" ? (config.attribute ? config.attribute : null) : null;
-    this.suffix = config.display === "attribute" ? (config.suffix ? config.suffix : null) : null;
-    this.icon = config.icon ? config.icon : undefined;
-    this.picture = config.picture ? config.picture : undefined;
+    this.label = config.display === "label" ? config.label : null;
+    this.attribute = config.display === "attribute" ? config.attribute : null;
+    this.suffix = config.display === "attribute" ? config.suffix : null;
+    this.icon = config.icon ?? undefined;
+    this.picture = config.picture ?? undefined;
     this.color = config.color ?? undefined;
     this.background_color = config.background_color ?? undefined;
     this.state_color = config.state_color ?? false;
