@@ -56,7 +56,7 @@ y: 3.652
 | `theme_mode`          | auto                                  | `auto`, `light` or`dark`                                                                      |
 | `focus_follow`        | none                                  | `none`, `refocus`, `contains`, reset the map focused entity's, on each update. Some people call this the `Autofit` feature.                                                              |
 | `map_options`          | {}                                                                                                                           | The `options` for the default [Leaflet Map](https://leafletjs.com/reference.html#map) |
-| `cluster_markers`      | true                                                                                                                         | Enable marker clustering to group nearby entities together. Click the group icon button to toggle clustering on/off. |
+| `cluster_markers`      | false                                                                                                                        | Enable marker clustering to group nearby entities together. Click the group icon button to toggle clustering on/off. |
 | `debug` | false                                                                                                                        | Enable debug messages in console.
 | `plugins`            | []                                                                                                                           | An array of plugin definitions, see: [Plugin Options](#plugin-options), [Available plugins](#available-plugins) and [Developing plugins](#developing-plugins)     |
 
@@ -235,12 +235,12 @@ Keep in mind that the tile layer source also has a maximum zoom level, which is 
 
 #### OSM & `tile_layer_options.referrerPolicy`
 
-OpenStreetMap tile servers may block tile requests that lack a valid `Referer` header. Setting `referrerPolicy` to `"origin-when-cross-origin"` ensures the browser sends the origin with cross-origin tile requests, which is required by OSM's [Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/):
+OpenStreetMap tile servers may block tile requests that lack a valid `Referer` header. By default, `referrerPolicy` is set to `"origin-when-cross-origin"`, which ensures the browser sends the origin with cross-origin tile requests as required by OSM's [Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/). You can override this if needed:
 
 ```
 type: custom:map-card
 tile_layer_options:
-  referrerPolicy: "origin-when-cross-origin"
+  referrerPolicy: "no-referrer"
 ```
 
 #### Advanced WMS/Tile layer options
