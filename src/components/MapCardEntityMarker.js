@@ -1,8 +1,11 @@
-import { LitElement, html, css } from "lit";
+import { LitElement, html, css, nothing } from "lit";
+import { styleMap } from "lit/directives/style-map.js";
+import "./MapCardEntityBadge";
 
 export default class MapCardEntityMarker extends LitElement {
   static get properties() {
     return {
+      'hass': {attribute: false},
       'entityId': {type: String, attribute: 'entity-id'},
       'title': {type: String, attribute: 'title'},
       'prefix': {type: String, attribute: 'prefix'},
@@ -12,22 +15,43 @@ export default class MapCardEntityMarker extends LitElement {
       'icon': {type: String, attribute: 'icon'},
       'color': {type: String, attribute: 'color'},
       'size': {type: Number},
-      'tapAction': {type: Object, attribute: 'tap-action'},
+      'tapAction': {attribute: false},
       'extraCssClasses': {type: String, attribute: 'extra-css-classes'},
+      'badge': {attribute: false},
     };
   }
 
   render() {
+    const badgeRatio = 2.5; // ratio of marker size to badge size
+    const markerSize = this.size ? Number(this.size) : 48;
+    const badgeSize = Math.floor(markerSize / badgeRatio);
+
     return html`
         <div
           class="marker ${this.picture ? "picture" : ""}  ${this.extraCssClasses ? this.extraCssClasses : ""}"
-          style="border-color: ${this.color}; height: ${this.size}px; width: ${this.size}px;"
+          style=${styleMap({
+            "border-color": this.color,
+            "height": `${this.size}px`,
+            "width": `${this.size}px`,
+          })}
           @click=${this._badgeTap}
           title="${this.tooltip}"
           >
           ${this._inner()}
         </div>
-      `;
+      ${this.badge
+        ? html`<map-card-entity-badge
+            .hass=${this.hass}
+            .badge=${this.badge}
+            .borderColor=${this.color}
+            .badgeSize=${badgeSize}
+            style=${styleMap({
+              "--marker-size": `${markerSize}px`,
+              "--badge-size": `${badgeSize}px`,
+            })}
+          ></map-card-entity-badge>`
+        : nothing}
+    `;
   };
 
   _badgeTap(ev) {
