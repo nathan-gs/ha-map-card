@@ -1,4 +1,4 @@
-import {Map, LayerGroup, LatLngBounds} from "leaflet";
+import L, {Map, LayerGroup, LatLngBounds} from "leaflet";
 import "leaflet.markercluster";
 import EntityConfig from "../../configs/EntityConfig";
 import Entity from "../../models/Entity";
