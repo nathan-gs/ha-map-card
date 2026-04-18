@@ -154,7 +154,7 @@ Source
 
 ### Badge options
 
-Badge is a small element displayed on a left-top corner of a marker (in RTL - in a right-top corner).
+Badge is a small element displayed on a right-top corner of a marker (in RTL - in a left-top corner).
 
 All options are optional.
 
