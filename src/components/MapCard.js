@@ -26,6 +26,7 @@ export default class MapCard extends LitElement {
   setupNeeded = true;
   /** @type {L.Map} */
   map;
+  /** @type {ResizeObserver} */
   resizeObserver;
   /** @type {HaHistoryService} */
   historyService;
@@ -57,10 +58,7 @@ export default class MapCard extends LitElement {
 
     // Clean up existing map instance before reinitializing (e.g. when setConfig triggers a re-setup)
     if (this.map) {
-      this.resizeObserver?.disconnect();
-      this.resizeObserver = undefined;
-      this.map.remove();
-      this.map = undefined;
+      this._teardown();
     }
 
     this.themeMode = this._config.themeMode;
@@ -129,7 +127,7 @@ export default class MapCard extends LitElement {
             <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
             <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
             <ha-card header="${this._config.title}">
-              <div id="mapContainer">
+              <div id="mapContainer" style="min-height: ${this._config.mapHeight}px">
                 <div id="map" style="min-height: ${this._config.mapHeight}px">
                   <ha-icon-button
                     label='Reset focus'
@@ -225,21 +223,25 @@ export default class MapCard extends LitElement {
     }
   }
 
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    Logger.debug("[MapCard.disconnectedCallback] called");
-    if (this.map) {
-      this.map.remove();
-      this.map = undefined;
-      this.setupNeeded = true;
-    }
-
-    this.resizeObserver?.unobserve(this);
+  _teardown() {
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = undefined;
     this.historyService?.unsubscribe();
     this.dateRangeManager?.disconnect();
     this.linkedEntityService?.disconnect();
     this.pluginsRenderService?.cleanup();
     this.geoJsonRenderService?.cleanup();
+    this.map.remove();
+    this.map = undefined;
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    Logger.debug("[MapCard.disconnectedCallback] called");
+    if (this.map) {
+      this._teardown();
+      this.setupNeeded = true;
+    }
   }
 
   _isDarkMode() {
