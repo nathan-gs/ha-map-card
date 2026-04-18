@@ -13,7 +13,7 @@ export default class LayerConfig {
 
   constructor(url, options, historyConfig, attribution = null) {
     this.url = url;
-    this.options = {...{attribution: attribution}, ...options};
+    this.options = {...{attribution: attribution, referrerPolicy: "origin-when-cross-origin"}, ...options};
 
     // history: propName
     // history:
