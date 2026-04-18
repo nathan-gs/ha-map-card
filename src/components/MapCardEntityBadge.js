@@ -175,10 +175,10 @@ export default class MapCardEntityBadge extends LitElement {
       }
 
       .badge {
-        this.display: flex;
-        /* justify-content: center; */
-        /* align-items: center; */
-        /* align-content: center; */ /* mfi:alert - ok */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
         line-height: 0;
         width: var(--badge-size);
         height: var(--badge-size);
@@ -211,9 +211,6 @@ export default class MapCardEntityBadge extends LitElement {
 
         /* --ha-font-weight-light - HA Frontend CSS variable (default "300") */
         font-weight: var(--ha-font-weight-light, 300);
-
-        text-align: center;
-        align-content: center;
 
         /* --ha-line-height-condensed - HA Frontend CSS variable (default "1.2") */
         line-height: var(--ha-line-height-condensed, 1.2);
