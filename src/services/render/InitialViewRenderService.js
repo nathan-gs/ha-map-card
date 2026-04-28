@@ -21,6 +21,31 @@ export default class InitialViewRenderService {
 
   setup() {
     Logger.debug("[InitialViewRenderService] Setting up initial view");
+    const container = this.map?.getContainer();
+
+    // If the container is already sized, apply the view immediately. Otherwise,
+    // use a one-shot ResizeObserver to wait for the browser to lay out the
+    // container, then apply the view once real dimensions are available.
+    if (container?.clientWidth > 0 && container?.clientHeight > 0) {
+      this._applyInitialView();
+    } else {
+      const observer = new ResizeObserver(() => {
+        observer.disconnect();
+        try {
+          if (this.map?.getContainer()?.isConnected) {
+            this.map.invalidateSize();
+            this._applyInitialView();
+          }
+        } catch (e) {
+          Logger.debug("[InitialViewRenderService] Map no longer available, skipping initial view", e);
+        }
+      });
+      observer.observe(container);
+    }
+  }
+
+  // Apply the configured initial view (x/y, focus_entity, or entity bounds).
+  _applyInitialView() {
     const latLng = this.getConfiguredLatLong(this.config, this.hass);
     
     if (latLng) {

@@ -285,18 +285,23 @@ export default class Entity {
         }
       }
 
-      // Update position only if it has changed significantly (configurable threshold in meters)
-      const newLatLng = this.latLng;
-      const threshold = this.config.positionUpdateThreshold;
-      if (!this._lastSetLatLng || this.map.distance(this._lastSetLatLng, newLatLng) > threshold) {
-        this.marker.setLatLng(newLatLng);
-        this._lastSetLatLng = newLatLng;
-      }
+      this.updateMarkerPosition();
     }
 
     this.historyManager.update();
     this.circle.update();
     this.geoJson.update();
+  }
+
+  updateMarkerPosition() {
+    if (!this.marker) return;
+    const newLatLng = this.latLng;
+    const threshold = this.config.positionUpdateThreshold;
+    // Update position only if it has changed significantly (configurable threshold in meters)
+    if (!this._lastSetLatLng || this.map.distance(this._lastSetLatLng, newLatLng) > threshold) {
+      this.marker.setLatLng(newLatLng);
+      this._lastSetLatLng = newLatLng;
+    }
   }
 
   /**

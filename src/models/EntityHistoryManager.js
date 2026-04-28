@@ -25,7 +25,9 @@ export default class EntityHistoryManager {
   linkedEntityService;
   /** @type {EntityHistory} */
   history;
-
+  /** @type {number|null} @private */
+  _updateTimeout;
+  
   constructor(entity, historyService, dateRangeManager, linkedEntityService) {
     this.entity = entity;
     this.historyService = historyService;
@@ -127,6 +129,8 @@ export default class EntityHistoryManager {
 
     if(this.hasHistory) {
       this.history.react(entry);
+      if (this._updateTimeout) clearTimeout(this._updateTimeout);
+      this._updateTimeout = setTimeout(() => this.update(), 100);
     }
     this.entity.react(entry);
   }
@@ -140,5 +144,6 @@ export default class EntityHistoryManager {
     this.history?.update().flat().forEach((marker) => {
       marker.addTo(this.historyLayerGroup);
     });
+    this.entity.updateMarkerPosition();
   }
 }
