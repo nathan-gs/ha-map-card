@@ -87,7 +87,6 @@ export default class MapCard extends LitElement {
       this.initialViewRenderService.setup();
 
       this.setupNeeded = false;
-      this.render();
       this.hasError = false;
     } catch (e) {
       this.hasError = true;
@@ -99,15 +98,18 @@ export default class MapCard extends LitElement {
   }
 
   firstUpdated() {
-    this.setup();
+    if (this.hass) {
+      this.setup();
+    }
   };
 
   render() {
 
+    if (this.setupNeeded && this.hass && this.shadowRoot?.querySelector('#map')) {
+      this.setup();
+    }
+
     if (this.map) {
-      if (this.setupNeeded) {
-        this.setup();
-      }
       this.pluginsRenderService.render();
       this.tileLayersService.render();
       this.geoJsonRenderService.render(this.hass);
@@ -170,7 +172,6 @@ export default class MapCard extends LitElement {
       for (let entry of entries) {
         if (entry.target === this.map?.getContainer()) {
           this.map?.invalidateSize();
-          this.initialViewRenderService?.setup();
         }
       }
     });
@@ -217,9 +218,8 @@ export default class MapCard extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     Logger.debug("[MapCard.connectedCallback] called");
-    // Reinitialize the map when the card gets reloaded but it's still in view
-    if (this.shadowRoot.querySelector('#map')) {
-      this.setup();
+    if (this.setupNeeded) {
+      this.requestUpdate();
     }
   }
 
