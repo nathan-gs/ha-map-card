@@ -14,6 +14,16 @@ describe("MapConfig", () => {
       expect(mapConfig.mapOptions.dragging).toBe(true);
     });
 
+    it("allows disabling the default tile layer", () => {
+      const mapConfig = new MapConfig({
+        x: 0.1,
+        y: 0.1,
+        tile_layer_url: "",
+      });
+
+      expect(mapConfig.tileLayer).toBeNull();
+    });
+
     it("normalizes simple CRS", () => {
       const mapConfig = new MapConfig({
         x: 0.1,

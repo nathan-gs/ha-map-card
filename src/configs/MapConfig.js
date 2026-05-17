@@ -122,12 +122,15 @@ export default class MapConfig {
       return new PluginConfig(plugin.hacs, plugin.url, plugin.name, plugin.options);
     });
 
-    this.tileLayer = new TileLayerConfig(
-      this._setConfigWithDefault(inputConfig.tile_layer_url, "https://tile.openstreetmap.org/{z}/{x}/{y}.png"),
-      this._setConfigWithDefault(inputConfig.tile_layer_options, {}),
-      null, // Default layer doesn't pass history by default.
-      this._setConfigWithDefault(inputConfig.tile_layer_attribution, '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>')
-    );
+    const tileLayerUrl = this._setConfigWithDefault(inputConfig.tile_layer_url, "https://tile.openstreetmap.org/{z}/{x}/{y}.png");
+    this.tileLayer = tileLayerUrl
+      ? new TileLayerConfig(
+          tileLayerUrl,
+          this._setConfigWithDefault(inputConfig.tile_layer_options, {}),
+          null, // Default layer doesn't pass history by default.
+          this._setConfigWithDefault(inputConfig.tile_layer_attribution, '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>')
+        )
+      : null;
     if(!(Number.isFinite(this.x) && Number.isFinite(this.y)) && this.focusEntity == null && this.entities.length == 0) {
       throw new Error("We need a map latitude & longitude; set at least [x, y], a focus_entity or have at least 1 entities defined.");
     }
