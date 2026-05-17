@@ -1,6 +1,6 @@
 # Home Assistant Map Card
 
-Take a look at the blog post [introducing the custom:map-card for Home Assistant](https://nathan.gs/2024/01/06/ha-map-card-a-new-and-alternative-leaflet-based-map/). 
+Take a look at the blog post [introducing the custom:map-card for Home Assistant](https://nathan.gs/2024/01/06/ha-map-card-a-new-and-alternative-leaflet-based-map/).
 
 ![An example of the custom:map-card](ha-map-card-pm25.png)
 
@@ -30,9 +30,9 @@ y: 3.652
 #### More advanced
 
 > ##### TIP
-> 
+>
 > Take a look at:
-> https://nathan.gs/2024/01/06/ha-map-card-a-new-and-alternative-leaflet-based-map/#a-more-advanced-example-measuring-pm25-air-quality-for-my-home 
+> https://nathan.gs/2024/01/06/ha-map-card-a-new-and-alternative-leaflet-based-map/#a-more-advanced-example-measuring-pm25-air-quality-for-my-home
 
 ### Options
 
@@ -59,6 +59,25 @@ y: 3.652
 | `cluster_markers`      | false                                                                                                                        | Enable marker clustering to group nearby entities together. Click the group icon button to toggle clustering on/off. |
 | `debug` | false                                                                                                                        | Enable debug messages in console.
 | `plugins`            | []                                                                                                                           | An array of plugin definitions, see: [Plugin Options](#plugin-options), [Available plugins](#available-plugins) and [Developing plugins](#developing-plugins)     |
+
+For non-geographic maps, set `map_options.crs` to `simple`. The card will translate that into Leaflet's `L.CRS.Simple`, so you can use image/floor-plan style coordinates and pair them with entity `fixed_x` / `fixed_y` values.
+
+```yaml
+type: custom:map-card
+x: 0
+y: 0
+zoom: 0
+map_options:
+  crs: simple
+  minZoom: -5
+tile_layer_url: /local/floorplan/{z}/{x}/{y}.png
+tile_layer_options:
+  noWrap: true
+entities:
+  - entity: sensor.room_temperature
+    fixed_x: 320
+    fixed_y: 180
+```
 
 
 If `x` & `y` or `focus_entity` is not set it will take the lat/long from the __first entity__.
@@ -115,10 +134,10 @@ If `history_date_selection:true`, any entities that do not define their own `his
 
 This can be added via the "Add Card" dialog by selecting Manual and entering the text `type: energy-date-selection`.
 
-Alternatively `history_start` and `history_end` can be set to 
+Alternatively `history_start` and `history_end` can be set to
 * A specific date such as  `2022-03-01T12:00:00Z`
 * A time code such as `10 days ago` `4 hours ago` `1 week ago` etc.
-* An entity that will provide either a `date` or `number` (which will be used as the amount of hours ago to show). e.g. `input_number.example_number_value` 
+* An entity that will provide either a `date` or `number` (which will be used as the amount of hours ago to show). e.g. `input_number.example_number_value`
 
 If you want to specify your own unit, configure the `history_start`/`history_end` as the below.
 ```
@@ -291,8 +310,8 @@ plugins:
 #### Available Plugins
 | name      | description                                                                                         |
 |-----------|-----------------------------------------------------------------------------------------------------|
-| [`bom-radar`](https://github.com/bezmi/ha-map-card-plugin-bom-radar) | Displays the Australian BoM rainfall radar for the past 90 minutes and the radar forecast for the next 90 minutes as an overlay on the map. | 
-| [`buienradar`](https://github.com/Kevinjil/ha-map-card-buienradar) | Displays `buienradar.nl` as an overlay on the map | 
+| [`bom-radar`](https://github.com/bezmi/ha-map-card-plugin-bom-radar) | Displays the Australian BoM rainfall radar for the past 90 minutes and the radar forecast for the next 90 minutes as an overlay on the map. |
+| [`buienradar`](https://github.com/Kevinjil/ha-map-card-buienradar) | Displays `buienradar.nl` as an overlay on the map |
 
 You can find more plugins using the [ha-map-card-plugin](https://github.com/topics/ha-map-card-plugin) topic.
 
@@ -325,7 +344,7 @@ Tag your Github repo with [ha-map-card-plugin](https://github.com/topics/ha-map-
 
 ## Mentions & Discussions
 
-* [home-assistant community: map-card: a slightly improved map-card](https://community.home-assistant.io/t/map-card-a-slightly-improved-map-card/693088), this topic should be used for general discussions. 
+* [home-assistant community: map-card: a slightly improved map-card](https://community.home-assistant.io/t/map-card-a-slightly-improved-map-card/693088), this topic should be used for general discussions.
 * [nathan.gs: Map Card, a new leaflet based map with WMS and other advanced features](https://nathan.gs/2024/01/06/ha-map-card-a-new-and-alternative-leaflet-based-map/)
 * [nathan.gs: Map Card, displaying Weather and Other Tile Layers](https://nathan.gs/2024/02/25/ha-map-card-displaying-weather-and-other-tilelayers/)
 * [userbag.co.uk: Home Assistant Exploring location history](https://userbag.co.uk/development/home-assistant-exploring-location-history/)
