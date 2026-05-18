@@ -70,9 +70,7 @@ zoom: 0
 map_options:
   crs: simple
   minZoom: -5
-tile_layer_url: /local/floorplan/{z}/{x}/{y}.png
-tile_layer_options:
-  noWrap: true
+tile_layer_url: ""
 entities:
   - entity: sensor.room_temperature
     fixed_x: 320
