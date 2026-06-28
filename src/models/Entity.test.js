@@ -230,3 +230,54 @@ describe('Entity class', () => {
   });
 
 });
+
+describe('Entity place pill (display: pill)', () => {
+  const map = { addTo: jest.fn() };
+  const noop = jest.fn();
+  const zones = {
+    'zone.home': { state: 'zoning', attributes: { friendly_name: 'Home', icon: 'mdi:home' } },
+    'zone.extended_family': { state: 'zoning', attributes: { friendly_name: 'Extended Family', icon: 'mdi:account-group' } },
+  };
+
+  const makeEntity = (display, state) => {
+    const hass = {
+      states: {
+        ...zones,
+        'device_tracker.mom_location': { state, attributes: { friendly_name: 'Mom Location', latitude: 1, longitude: 2 } },
+      },
+      formatEntityState: jest.fn(s => (s ? s.state : '')),
+      hassUrl: jest.fn(u => u),
+    };
+    const config = {
+      id: 'device_tracker.mom_location', display, attribute: '', prefix: '', suffix: '',
+      label: null, size: 48, color: 'red', zIndexOffset: 0, tapAction: {}, css: '',
+      circleConfig: {}, geoJsonConfig: {}, pillCalloutMinZoom: 15,
+    };
+    return new Entity(config, hass, map, noop, noop, noop, false);
+  };
+
+  it('placeIcon returns the zone icon when in a named zone', () => {
+    expect(makeEntity('pill', 'Extended Family').placeIcon).toBe('mdi:account-group');
+  });
+  it('placeIcon resolves the Home zone from state "home"', () => {
+    expect(makeEntity('pill', 'home').placeIcon).toBe('mdi:home');
+  });
+  it('placeIcon is null when the entity is not in a zone', () => {
+    expect(makeEntity('pill', 'not_home').placeIcon).toBeNull();
+  });
+  it('placeIcon is null when display is not pill, even inside a zone', () => {
+    expect(makeEntity('marker', 'Extended Family').placeIcon).toBeNull();
+  });
+  it('placeName returns the zone friendly name', () => {
+    expect(makeEntity('pill', 'Extended Family').placeName).toBe('Extended Family');
+  });
+  it('tooltip reads "<person> is at <place>" and strips a tracker suffix', () => {
+    expect(makeEntity('pill', 'Extended Family').tooltip).toBe('Mom is at Extended Family');
+  });
+  it('tooltip falls back to the friendly name when not in a zone', () => {
+    expect(makeEntity('pill', 'not_home').tooltip).toBe('Mom Location');
+  });
+  it('tooltip is the friendly name when display is not pill', () => {
+    expect(makeEntity('marker', 'Extended Family').tooltip).toBe('Mom Location');
+  });
+});
