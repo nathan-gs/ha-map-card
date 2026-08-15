@@ -203,9 +203,70 @@ export default class MapCard extends LitElement {
 
 
   setConfig(config) {
+    const previousConfig = this.config;
+    const newMapConfig = new MapConfig(config);
+
+    const entitiesOnlyChanged =
+      previousConfig &&
+      this.map &&
+      this.entitiesRenderService &&
+      this._sameConfigExceptEntities(previousConfig, config);
+
     this.config = config;
-    this._config = new MapConfig(config);
+    this._config = newMapConfig;
+
+    if (entitiesOnlyChanged) {
+      const changedEntityIds = this._getChangedEntityIds(
+        previousConfig.entities ?? [],
+        config.entities ?? []
+      );
+
+      this.entitiesRenderService.reconfigure(
+        newMapConfig.entities,
+        this.hass,
+        changedEntityIds
+      );
+
+      this.setupNeeded = false;
+      return;
+    }
+
     this.setupNeeded = true;
+  }
+
+  _sameConfigExceptEntities(oldConfig, newConfig) {
+    const { entities: oldEntities, ...oldMapConfig } = oldConfig;
+    const { entities: newEntities, ...newMapConfig } = newConfig;
+
+    oldEntities;
+    newEntities;
+
+    return JSON.stringify(oldMapConfig) === JSON.stringify(newMapConfig);
+  }
+
+  _getChangedEntityIds(oldEntities, newEntities) {
+    const oldById = new Map(
+      oldEntities.map((entity) => [this._getEntityId(entity), entity])
+    );
+
+    const newById = new Map(
+      newEntities.map((entity) => [this._getEntityId(entity), entity])
+    );
+
+    const allIds = new Set([
+      ...oldById.keys(),
+      ...newById.keys()
+    ]);
+
+    return new Set(
+      [...allIds].filter((id) => {
+        return JSON.stringify(oldById.get(id)) !== JSON.stringify(newById.get(id));
+      })
+    );
+  }
+
+  _getEntityId(entity) {
+    return typeof entity === "string" ? entity : entity.entity;
   }
 
   // The height of your card. Home Assistant uses this to automatically

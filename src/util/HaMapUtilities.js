@@ -1,4 +1,5 @@
 import L from 'leaflet';
+const warningControls = new WeakMap();
 
 /**
  * Shared utility methods for HaMapCard
@@ -52,11 +53,46 @@ export default class HaMapUtilities {
 
   // Show error message
   static renderWarningOnMap(map, message) {
-    L.control.attribution({prefix:'⚠️'}).addAttribution(message).addTo(map);
+    let warningState = warningControls.get(map);
+
+    if (!warningState) {
+      const control = L.control.attribution({
+        prefix: '⚠️'
+      }).addTo(map);
+
+      warningState = {
+        control,
+        messages: new Set()
+      };
+
+      warningControls.set(map, warningState);
+    }
+
+    // Don't add the same warning more than once.
+    if (warningState.messages.has(message)) {
+      return;
+    }
+
+    warningState.control.addAttribution(message);
+    warningState.messages.add(message);
   }
+
   // Hide error message
   static removeWarningOnMap(map, message) {
-    L.control.attribution({prefix:'⚠️'}).removeAttribution(message).addTo(map);
+    const warningState = warningControls.get(map);
+
+    if (!warningState || !warningState.messages.has(message)) {
+      return;
+    }
+
+    warningState.control.removeAttribution(message);
+    warningState.messages.delete(message);
+
+    // If there are no warnings left, remove the warning control entirely.
+    if (warningState.messages.size === 0) {
+      map.removeControl(warningState.control);
+      warningControls.delete(map);
+    }
   }
 
   // Get Lat/Lng of entity. Some entities such as "person" define device_trackers allowing
