@@ -34,6 +34,12 @@ export default class EntitiesRenderService {
   markerClusterGroup;
   /** @type {boolean} */
   clusterMarkers;
+  /** @type {boolean} */
+  isFollowPaused = false;
+  /** @type {number|null} */
+  _followPauseTimer = null;
+  /** @type {boolean} */
+  _isAutoFitting = false;
 
   constructor(map, hass, focusFollowConfig, entityConfigs, linkedEntityService, dateRangeManager, historyService, isDarkMode, clusterMarkers = true) {
     this.map = map;
@@ -74,6 +80,46 @@ export default class EntitiesRenderService {
     // Remove skipped entities.
     .filter(v => v);
 
+    if (!this.focusFollowConfig.isNone && this.focusFollowConfig.hasPause) {
+      this._setupFollowPauseListeners();
+    }
+  }
+
+  _setupFollowPauseListeners() {
+    const pauseFollow = () => {
+      if (this._isAutoFitting) { return; }
+      this.isFollowPaused = true;
+      if (this._followPauseTimer) {
+        clearTimeout(this._followPauseTimer);
+        this._followPauseTimer = null;
+      }
+    };
+
+    const scheduleResume = () => {
+      if (this._isAutoFitting) { return; }
+      if (this._followPauseTimer) {
+        clearTimeout(this._followPauseTimer);
+      }
+      this._followPauseTimer = setTimeout(() => {
+        this.isFollowPaused = false;
+        this._followPauseTimer = null;
+        this.updateInitialView();
+      }, this.focusFollowConfig.pauseMilliseconds);
+    };
+
+    this.map.on('mousedown', pauseFollow);
+    this.map.on('dragstart', pauseFollow);
+    this.map.on('zoomstart', pauseFollow);
+    this.map.on('mouseup', scheduleResume);
+    this.map.on('dragend', scheduleResume);
+    this.map.on('zoomend', scheduleResume);
+  }
+
+  cleanup() {
+    if (this._followPauseTimer) {
+      clearTimeout(this._followPauseTimer);
+      this._followPauseTimer = null;
+    }
   }
 
   async render() {
@@ -122,6 +168,9 @@ export default class EntitiesRenderService {
     if(this.focusFollowConfig.isNone) {
       return;
     }
+    if(this.isFollowPaused) {
+      return;
+    }
     const points = this.entities.filter(e => e.config.focusOnFit).map((e) => e.latLng);
     if(points.length === 0) {
       return;
@@ -133,7 +182,9 @@ export default class EntitiesRenderService {
         return;
       }
     }
+    this._isAutoFitting = true;
     this.map.fitBounds(bounds);
+    this._isAutoFitting = false;
     Logger.debug("[EntitiesRenderService.updateInitialView]: Updating bounds to: " + points.join(","));
   }
 
@@ -143,8 +194,10 @@ export default class EntitiesRenderService {
       return;
     }
     // If not, get bounds of all markers rendered
-    const bounds = (new LatLngBounds(points)).pad(0.1);    
+    const bounds = (new LatLngBounds(points)).pad(0.1);
+    this._isAutoFitting = true;
     this.map.fitBounds(bounds);
+    this._isAutoFitting = false;
     Logger.debug("[EntitiesRenderService.setInitialView]: Setting initial view to: " + points.join(","));
   }
 }
