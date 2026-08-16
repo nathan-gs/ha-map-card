@@ -1,3 +1,4 @@
+import L from 'leaflet';
 import EntityConfig from "./EntityConfig.js";
 import PluginConfig from "./PluginConfig.js";
 import TileLayerConfig from "./TileLayerConfig.js";
@@ -58,7 +59,7 @@ export default class MapConfig {
     this.y = inputConfig.y;
     this.zoom = this._setConfigWithDefault(inputConfig.zoom, 12);
     this.cardSize = this._setConfigWithDefault(inputConfig.card_size, 5);
-    this.mapOptions = this._setConfigWithDefault(inputConfig.map_options, {});
+    this.mapOptions = this._normalizeMapOptions(this._setConfigWithDefault(inputConfig.map_options, {}));
 
     // Get theme mode.
     this.themeMode = ['dark', 'light', 'auto'].includes(inputConfig.theme_mode) ? inputConfig.theme_mode : 'auto';
@@ -66,7 +67,7 @@ export default class MapConfig {
     // Enable marker clustering (default: false)
     this.clusterMarkers = this._setConfigWithDefault(inputConfig.cluster_markers, false);
 
-    // Enable debug messaging. 
+    // Enable debug messaging.
     // Card is quite chatty with this enabled.
     if (inputConfig.debug){
       Logger.enableDebug();
@@ -74,7 +75,7 @@ export default class MapConfig {
 
     // Default historyStart/historyEnd can be set at the top level.
     // Entities can override these dates on an individual basis.
-    // 
+    //
     // If historyDateSelection is true, this replaces top level date functionality (and any entities that don't provide their own dates will also use this)
     this.historyDateSelection = inputConfig.history_date_selection ? true : false;
     if (this.historyDateSelection) {
@@ -121,12 +122,15 @@ export default class MapConfig {
       return new PluginConfig(plugin.hacs, plugin.url, plugin.name, plugin.options);
     });
 
-    this.tileLayer = new TileLayerConfig(
-      this._setConfigWithDefault(inputConfig.tile_layer_url, "https://tile.openstreetmap.org/{z}/{x}/{y}.png"),
-      this._setConfigWithDefault(inputConfig.tile_layer_options, {}),
-      null, // Default layer doesn't pass history by default.
-      this._setConfigWithDefault(inputConfig.tile_layer_attribution, '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>')
-    );
+    const tileLayerUrl = this._setConfigWithDefault(inputConfig.tile_layer_url, "https://tile.openstreetmap.org/{z}/{x}/{y}.png");
+    this.tileLayer = tileLayerUrl
+      ? new TileLayerConfig(
+          tileLayerUrl,
+          this._setConfigWithDefault(inputConfig.tile_layer_options, {}),
+          null, // Default layer doesn't pass history by default.
+          this._setConfigWithDefault(inputConfig.tile_layer_attribution, '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>')
+        )
+      : null;
     if(!(Number.isFinite(this.x) && Number.isFinite(this.y)) && this.focusEntity == null && this.entities.length == 0) {
       throw new Error("We need a map latitude & longitude; set at least [x, y], a focus_entity or have at least 1 entities defined.");
     }
@@ -144,6 +148,17 @@ export default class MapConfig {
     }
   }
 
+  _normalizeMapOptions(mapOptions) {
+    if (mapOptions?.crs === 'simple') {
+      return {
+        ...mapOptions,
+        crs: L.CRS.Simple,
+      };
+    }
+
+    return mapOptions;
+  }
+
   /** @returns {boolean} if there is a title */
   get hasTitle() {
     return this.title != null;
@@ -157,7 +172,7 @@ export default class MapConfig {
       return (this.cardSize * 50) + 20;
     }
   }
-  
+
   /** @returns {[EntityConfig]} */
   get entitiesWithShowPath() {
     return this.entities.filter((ent) => ent.showPath);
