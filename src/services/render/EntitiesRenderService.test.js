@@ -20,10 +20,11 @@ describe("EntitiesRenderService", () => {
       const map = {
         setView: jest.fn(),
         fitBounds: jest.fn(),
+        once: jest.fn(),
       };
       const hass = {};
       const entitiesRenderService = new EntitiesRenderService(map, [], hass, {}, {}, {}, true);
-      
+
       // Test data
       const testData = [
         [1.1, 2.1],
@@ -109,6 +110,7 @@ describe("EntitiesRenderService", () => {
       setView: jest.fn(),
       fitBounds: jest.fn(),
       getBounds: jest.fn().mockReturnValue({contains: jest.fn().mockReturnValue(false)}),
+      once: jest.fn(),
     };
     const focusFollow = new FocusFollowConfig("contains");
     const hass = {};
@@ -131,6 +133,7 @@ describe("EntitiesRenderService", () => {
       setView: jest.fn(),
       fitBounds: jest.fn(),
       getBounds: jest.fn().mockReturnValue({contains: jest.fn().mockReturnValue(true)}),
+      once: jest.fn(),
     };
     const focusFollow = new FocusFollowConfig("refocus");
     const hass = {};
@@ -151,13 +154,16 @@ describe("EntitiesRenderService", () => {
   describe("follow pause", () => {
     function createMapWithListeners() {
       const handlers = {};
+      const onceHandlers = {};
       const map = {
         setView: jest.fn(),
         fitBounds: jest.fn(),
         getBounds: jest.fn().mockReturnValue({ contains: jest.fn().mockReturnValue(true) }),
         on: jest.fn((event, handler) => { handlers[event] = handler; }),
+        once: jest.fn((event, handler) => { onceHandlers[event] = handler; }),
+        off: jest.fn(),
       };
-      return { map, handlers };
+      return { map, handlers, onceHandlers };
     }
 
     beforeEach(() => {
@@ -300,6 +306,54 @@ describe("EntitiesRenderService", () => {
 
       jest.advanceTimersByTime(5000);
       expect(entitiesRenderService.isFollowPaused).toBe(true);
+    });
+
+    it("removes the pause/resume listeners on cleanup", () => {
+      const { map } = createMapWithListeners();
+      const focusFollow = new FocusFollowConfig("refocus", 5);
+      const entitiesRenderService = new EntitiesRenderService(map, {}, focusFollow, [], {}, {}, {}, true, false);
+      entitiesRenderService.setup();
+
+      entitiesRenderService.cleanup();
+
+      expect(map.off).toBeCalledWith('mousedown', expect.any(Function));
+      expect(map.off).toBeCalledWith('dragstart', expect.any(Function));
+      expect(map.off).toBeCalledWith('zoomstart', expect.any(Function));
+      expect(map.off).toBeCalledWith('mouseup', expect.any(Function));
+      expect(map.off).toBeCalledWith('dragend', expect.any(Function));
+      expect(map.off).toBeCalledWith('zoomend', expect.any(Function));
+    });
+
+    it("does not treat its own animated auto-fit as a user interaction until the animation settles", () => {
+      const { map, handlers, onceHandlers } = createMapWithListeners();
+      const focusFollow = new FocusFollowConfig("refocus", 5);
+      const entitiesRenderService = new EntitiesRenderService(map, {}, focusFollow, [], {}, {}, {}, true, false);
+      entitiesRenderService.setup();
+      entitiesRenderService.entities = testDataToMarker([
+        [1.1, 2.1],
+        [2.1, 3.1],
+      ]);
+
+      // Programmatic refocus: fitBounds animates, so zoomend fires asynchronously
+      // well after this call returns, while _isAutoFitting is still true.
+      entitiesRenderService.updateInitialView();
+      expect(map.fitBounds).toBeCalledTimes(1);
+      expect(entitiesRenderService._isAutoFitting).toBe(true);
+
+      // zoomstart/zoomend caused by our own animation must be ignored.
+      handlers.zoomstart();
+      handlers.zoomend();
+      expect(entitiesRenderService.isFollowPaused).toBe(false);
+      expect(entitiesRenderService._followPauseTimer).toBeNull();
+
+      // Only once the animation actually completes (moveend) do we stop guarding.
+      onceHandlers.moveend();
+      expect(entitiesRenderService._isAutoFitting).toBe(false);
+
+      // A genuine user-triggered zoom afterwards is tracked normally and does
+      // not cause a self-triggered refocus loop.
+      handlers.zoomend();
+      expect(entitiesRenderService._followPauseTimer).not.toBeNull();
     });
   });
 });

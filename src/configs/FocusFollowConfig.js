@@ -16,7 +16,8 @@ export default class FocusFollowConfig {
 
   constructor(config, pauseSeconds) {
     this.selection = ['refocus', 'contains', 'none' ].includes(config) ? config : "none";
-    this.pauseSeconds = (typeof pauseSeconds === 'number' && pauseSeconds > 0) ? pauseSeconds : 0;
+    const parsedPauseSeconds = Number(pauseSeconds);
+    this.pauseSeconds = (!isNaN(parsedPauseSeconds) && parsedPauseSeconds > 0) ? parsedPauseSeconds : 0;
     Logger.debug(`[FocusFollowConfig]: Setting up focus follow config with selection ${this.selection}, pauseSeconds ${this.pauseSeconds}`);
   }
 

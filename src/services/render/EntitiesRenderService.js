@@ -86,7 +86,7 @@ export default class EntitiesRenderService {
   }
 
   _setupFollowPauseListeners() {
-    const pauseFollow = () => {
+    this._pauseFollow = () => {
       if (this._isAutoFitting) { return; }
       this.isFollowPaused = true;
       if (this._followPauseTimer) {
@@ -95,7 +95,7 @@ export default class EntitiesRenderService {
       }
     };
 
-    const scheduleResume = () => {
+    this._scheduleResume = () => {
       if (this._isAutoFitting) { return; }
       if (this._followPauseTimer) {
         clearTimeout(this._followPauseTimer);
@@ -107,18 +107,28 @@ export default class EntitiesRenderService {
       }, this.focusFollowConfig.pauseMilliseconds);
     };
 
-    this.map.on('mousedown', pauseFollow);
-    this.map.on('dragstart', pauseFollow);
-    this.map.on('zoomstart', pauseFollow);
-    this.map.on('mouseup', scheduleResume);
-    this.map.on('dragend', scheduleResume);
-    this.map.on('zoomend', scheduleResume);
+    this.map.on('mousedown', this._pauseFollow);
+    this.map.on('dragstart', this._pauseFollow);
+    this.map.on('zoomstart', this._pauseFollow);
+    this.map.on('mouseup', this._scheduleResume);
+    this.map.on('dragend', this._scheduleResume);
+    this.map.on('zoomend', this._scheduleResume);
   }
 
   cleanup() {
     if (this._followPauseTimer) {
       clearTimeout(this._followPauseTimer);
       this._followPauseTimer = null;
+    }
+    if (this._pauseFollow) {
+      this.map.off('mousedown', this._pauseFollow);
+      this.map.off('dragstart', this._pauseFollow);
+      this.map.off('zoomstart', this._pauseFollow);
+    }
+    if (this._scheduleResume) {
+      this.map.off('mouseup', this._scheduleResume);
+      this.map.off('dragend', this._scheduleResume);
+      this.map.off('zoomend', this._scheduleResume);
     }
   }
 
@@ -183,8 +193,10 @@ export default class EntitiesRenderService {
       }
     }
     this._isAutoFitting = true;
+    this.map.once('moveend', () => {
+      this._isAutoFitting = false;
+    });
     this.map.fitBounds(bounds);
-    this._isAutoFitting = false;
     Logger.debug("[EntitiesRenderService.updateInitialView]: Updating bounds to: " + points.join(","));
   }
 
@@ -196,8 +208,10 @@ export default class EntitiesRenderService {
     // If not, get bounds of all markers rendered
     const bounds = (new LatLngBounds(points)).pad(0.1);
     this._isAutoFitting = true;
+    this.map.once('moveend', () => {
+      this._isAutoFitting = false;
+    });
     this.map.fitBounds(bounds);
-    this._isAutoFitting = false;
     Logger.debug("[EntitiesRenderService.setInitialView]: Setting initial view to: " + points.join(","));
   }
 }

@@ -75,11 +75,18 @@ describe('FocusFollowConfig', () => {
       expect(focusFollowConfig.pauseMilliseconds).toBe(0);
     });
 
-    it('should default to no pause with a non-number value', () => {
-      const focusFollowConfig = new FocusFollowConfig("refocus", "5");
+    it('should default to no pause with a non-numeric string', () => {
+      const focusFollowConfig = new FocusFollowConfig("refocus", "abc");
 
       expect(focusFollowConfig.hasPause).toBe(false);
       expect(focusFollowConfig.pauseMilliseconds).toBe(0);
+    });
+
+    it('should accept a numeric string for template-provided values', () => {
+      const focusFollowConfig = new FocusFollowConfig("refocus", "5");
+
+      expect(focusFollowConfig.hasPause).toBe(true);
+      expect(focusFollowConfig.pauseMilliseconds).toBe(5000);
     });
 
     it('should store a valid pause duration in seconds and expose it in milliseconds', () => {
