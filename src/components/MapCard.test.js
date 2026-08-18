@@ -1,4 +1,5 @@
 import { jest, describe, beforeEach, it, expect } from '@jest/globals';
+import MapCard from './MapCard.js';
 
 jest.mock('leaflet');
 jest.mock('lit', () => ({
@@ -12,8 +13,6 @@ jest.mock('lit', () => ({
   css: (strings) => strings.join('')
 }));
 jest.mock('../util/Logger.js');
-
-import MapCard from './MapCard.js';
 
 describe('MapCard', () => {
   let card;
