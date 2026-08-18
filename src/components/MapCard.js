@@ -172,6 +172,7 @@ export default class MapCard extends LitElement {
       for (let entry of entries) {
         if (entry.target === this.map?.getContainer()) {
           this.map?.invalidateSize();
+          this.initialViewRenderService?.setup();
         }
       }
     });
