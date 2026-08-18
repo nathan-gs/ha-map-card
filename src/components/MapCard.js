@@ -195,10 +195,12 @@ export default class MapCard extends LitElement {
     // Add dark class if darkmode
     this._isDarkMode() ? mapEl.classList.add('dark') : mapEl.classList.add('light');
 
-    let tileUrl = this.urlResolver.resolveUrl(this._config.tileLayer.url);
-    let layer = new TileLayer(tileUrl, this._config.tileLayer.options);
-    map.addLayer(layer);
-    this.urlResolver.registerLayer(layer, this._config.tileLayer.url);
+    if (this._config.tileLayer) {
+      let tileUrl = this.urlResolver.resolveUrl(this._config.tileLayer.url);
+      let layer = new TileLayer(tileUrl, this._config.tileLayer.options);
+      map.addLayer(layer);
+      this.urlResolver.registerLayer(layer, this._config.tileLayer.url);
+    }
     return map;
   }
 
