@@ -89,12 +89,20 @@ export default class EntityHistoryManager {
       this.currentHistoryEnd = this.entity.config.historyEnd;
     }
 
+    // Only open history/stream when the user actually configured history.
+    // A 10s-ago fallback used to be sent for live marker updates; HA 2026.7+
+    // rejects that start_time, the subscribe fails, and the marker never moves
+    // (see #217). Live position now comes from hass.states on each render.
+    if (!this.hasHistory) {
+      Logger.debug(`[EntityHistoryManager] No history configured for ${this.entity.id}, skipping subscription`);
+      return;
+    }
+
     // Skip the initial subscription when dates will be provided dynamically.
     // The date range manager or linked entity callbacks will call refreshHistory()
     // with the proper dates shortly after init.
     if (!this.entity.config.usingDateRangeManager && !this.entity.config.historyStartEntity) {
-      const historyStart = this.entity.config.historyStart ?? new Date(Date.now() - 10 * 1000);
-      this.subscribeHistory(historyStart, this.entity.config.historyEnd);
+      this.subscribeHistory(this.currentHistoryStart, this.currentHistoryEnd);
     } else {
       Logger.debug(`[EntityHistoryManager] Skipping initial subscription for ${this.entity.id}, waiting for dynamic dates`);
     }
@@ -107,15 +115,20 @@ export default class EntityHistoryManager {
   }
 
   refreshHistory() {
+    if (!this.hasHistory) {
+      return;
+    }
     Logger.debug(`[EntityHistoryManager] Refreshing history for ${this.entity.id}: ${this.currentHistoryStart} -> ${this.currentHistoryEnd}`);
-    this.historyLayerGroup.clearLayers();
+    this.historyLayerGroup?.clearLayers();
     this.subscribeHistory(this.currentHistoryStart, this.currentHistoryEnd);
   }
 
   subscribeHistory(start, end) {
-    if(this.hasHistory) {
-      this.history = new EntityHistory(this.entity.id, this.entity.tooltip, this.entity.config.historyLineColor, this.entity.config.gradualOpacity, this.entity.config.historyShowDots, this.entity.config.historyShowLines);
+    if (!this.hasHistory) {
+      Logger.debug(`[EntityHistoryManager] Skipping history subscription for ${this.entity.id}; no history configured`);
+      return;
     }
+    this.history = new EntityHistory(this.entity.id, this.entity.tooltip, this.entity.config.historyLineColor, this.entity.config.gradualOpacity, this.entity.config.historyShowDots, this.entity.config.historyShowLines);
     this.historyService.subscribe(this.entity.id, start, end, this.react.bind(this), this.entity.config.useBaseEntityOnly);
   }
 
