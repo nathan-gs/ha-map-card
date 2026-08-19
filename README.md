@@ -101,7 +101,7 @@ Either the name of the `entity` or:
 | `display`              | `marker`                              | `icon`, `state`, `attribute` or `marker`. <br/>`marker` will display the picture if available. <br/>`icon` will display the icon if available, otherwise a label composed of first letters of the entity's name |
 | `picture`              |                                       | Set a custom picture to use on the marker.                                                    |
 | `icon`                 |                                       | Set a custom icon to use if `display` is set to `icon`. e.g. `mdi:cake`                           |
-| `label`                |                                       | Set a custom text label to display on the marker (overrides auto-generated initials). Works with picture overlays.                |
+| `label`                |                                       | Set a custom text label to display on the marker (overrides auto-generated initials). On picture markers, `label` / `prefix` / `suffix` overlay the photo; auto-generated initials do not. |
 | `attribute`            |                                       | Set an attribute to use if `display` is set to `attribute`. e.g. `speed`                |
 | `prefix`            |                                       | Optional prefix for a value if `display` is set to `attribute`                |
 | `suffix`            |                                       | Optional suffix for a value if `display` is set to `attribute`                |
