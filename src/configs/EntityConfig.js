@@ -1,5 +1,6 @@
 import HaMapUtilities from "../util/HaMapUtilities.js"
 import Logger from "../util/Logger.js";
+import BadgeConfig from "./BadgeConfig.js";
 import CircleConfig from "./CircleConfig.js";
 import GeoJsonConfig from "./GeoJsonConfig.js";
 
@@ -78,6 +79,9 @@ export default class EntityConfig {
   /** @type {GeoJsonConfig} */
   geoJsonConfig;
 
+  /** @type {object} */
+  badge;
+
   constructor(config, defaults) {
     this.id = (typeof config === 'string' || config instanceof String) ? config : config.entity;
     this.display = config.display ? config.display : "marker";
@@ -140,8 +144,11 @@ export default class EntityConfig {
     this.distanceEntity = config.distance_entity ?? null;
     this.distanceUnit = config.distance_unit ?? 'auto';
 
+    // Badge configuration
+    this.badge = config.badge ? new BadgeConfig(config.badge) : null;
+
     Logger.debug(
-      `[EntityConfig]: created with id: ${this.id}, display: ${this.display}, attribute: ${this.attribute}, prefix: ${this.prefix}, suffix: ${this.suffix}, size: ${this.size}, historyStart: ${this.historyStart}, historyEnd: ${this.historyEnd}, historyStartEntity: ${this.historyStartEntity}, historyEndEntity: ${this.historyEndEntity}, historyLineColor: ${this.historyLineColor}, historyShowDots: ${this.historyShowDots}, historyShowLines: ${this.historyShowLines}, fixedX: ${this.fixedX}, fixedY: ${this.fixedY}, fallbackX: ${this.fallbackX}, fallbackY: ${this.fallbackY}, css: ${this.css}, picture: ${this.picture}, icon: ${this.icon}, color: ${this.color}, gradualOpacity: ${this.gradualOpacity}, tapAction: ${this.tapAction}, focusOnFit: ${this.focusOnFit}, zIndexOffset: ${this.zIndexOffset}, useBaseEntityOnly: ${this.useBaseEntityOnly}, circleConfig: ${this.circleConfig}, geoJsonConfig: ${this.geoJsonConfig}`
+      `[EntityConfig]: created with id: ${this.id}, display: ${this.display}, attribute: ${this.attribute}, prefix: ${this.prefix}, suffix: ${this.suffix}, size: ${this.size}, historyStart: ${this.historyStart}, historyEnd: ${this.historyEnd}, historyStartEntity: ${this.historyStartEntity}, historyEndEntity: ${this.historyEndEntity}, historyLineColor: ${this.historyLineColor}, historyShowDots: ${this.historyShowDots}, historyShowLines: ${this.historyShowLines}, fixedX: ${this.fixedX}, fixedY: ${this.fixedY}, fallbackX: ${this.fallbackX}, fallbackY: ${this.fallbackY}, css: ${this.css}, picture: ${this.picture}, icon: ${this.icon}, color: ${this.color}, gradualOpacity: ${this.gradualOpacity}, tapAction: ${this.tapAction}, focusOnFit: ${this.focusOnFit}, zIndexOffset: ${this.zIndexOffset}, useBaseEntityOnly: ${this.useBaseEntityOnly}, circleConfig: ${this.circleConfig}, geoJsonConfig: ${this.geoJsonConfig}, badge: ${this.badge}`
     );
   }
 
