@@ -4,7 +4,7 @@ import Entity from './Entity';
 import HaHistoryService from '../services/HaHistoryService';
 import HaDateRangeService from '../services/HaDateRangeService';
 import HaLinkedEntityService from '../services/HaLinkedEntityService';
-import { jest, describe, it, expect, beforeEach } from '@jest/globals';
+import { jest, describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 
 jest.mock('../util/Logger');
 jest.mock('../util/HaMapUtilities');
@@ -141,6 +141,45 @@ describe('EntityHistoryManager', () => {
       entityHistoryManager.history = { update: jest.fn(() => [[{ addTo: jest.fn() }]])};
       entityHistoryManager.update();
       expect(entityHistoryManager.history.update).toHaveBeenCalled();
+    });
+  });
+
+  describe('react', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+      entityHistoryManager.history = { react: jest.fn() };
+      entityHistoryManager.update = jest.fn();
+      entity.react = jest.fn();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('should debounce update() with a 100ms delay', () => {
+      const entry = { originalEntityId: entity.id };
+
+      entityHistoryManager.react(entry);
+      expect(entityHistoryManager.update).not.toHaveBeenCalled();
+
+      jest.advanceTimersByTime(99);
+      expect(entityHistoryManager.update).not.toHaveBeenCalled();
+
+      jest.advanceTimersByTime(1);
+      expect(entityHistoryManager.update).toHaveBeenCalledTimes(1);
+    });
+
+    it('should debounce rapid react() calls into a single update()', () => {
+      const entry = { originalEntityId: entity.id };
+
+      entityHistoryManager.react(entry);
+      jest.advanceTimersByTime(50);
+      entityHistoryManager.react(entry);
+      jest.advanceTimersByTime(50);
+      entityHistoryManager.react(entry);
+      jest.advanceTimersByTime(101);
+
+      expect(entityHistoryManager.update).toHaveBeenCalledTimes(1);
     });
   });
 });
