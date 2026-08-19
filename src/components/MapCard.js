@@ -170,7 +170,6 @@ export default class MapCard extends LitElement {
       for (let entry of entries) {
         if (entry.target === this.map?.getContainer()) {
           this.map?.invalidateSize();
-          this.initialViewRenderService?.setup();
         }
       }
     });
@@ -233,6 +232,7 @@ export default class MapCard extends LitElement {
     this.linkedEntityService?.disconnect();
     this.pluginsRenderService?.cleanup();
     this.geoJsonRenderService?.cleanup();
+    this.entitiesRenderService?.cleanup();
     this.map.remove();
     this.map = undefined;
   }
