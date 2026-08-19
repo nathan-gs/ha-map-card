@@ -7,6 +7,25 @@ describe("EntitiesRenderService", () => {
     it("should have a method", () => {
       expect(new EntitiesRenderService().render).toBeDefined();
     });
+
+    it("pushes the latest hass onto each entity before update", async () => {
+      const focusFollow = new FocusFollowConfig("none");
+      const service = new EntitiesRenderService({}, {}, focusFollow, [], {}, {}, {}, false, false);
+      const firstHass = { id: "old" };
+      const nextHass = { id: "new" };
+      const entity = {
+        hass: firstHass,
+        update: jest.fn(),
+        config: { focusOnFit: false },
+      };
+      service.entities = [entity];
+
+      await service.render(nextHass);
+
+      expect(service.hass).toBe(nextHass);
+      expect(entity.hass).toBe(nextHass);
+      expect(entity.update).toHaveBeenCalled();
+    });
   });
 
   describe("setup", () => {

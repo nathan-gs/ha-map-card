@@ -56,6 +56,41 @@ describe('EntityHistoryManager', () => {
       
       expect(mockOnStateChange).toHaveBeenCalledTimes(2);
     });
+
+    it('should not subscribe to history when history is not configured', () => {
+      const spySubscribe = jest.spyOn(entityHistoryManager.historyService, 'subscribe');
+      entityHistoryManager.entity.config.hasHistory = false;
+      entityHistoryManager.entity.config.usingDateRangeManager = false;
+      entityHistoryManager.entity.config.historyStart = null;
+      entityHistoryManager.entity.config.historyStartEntity = undefined;
+
+      entityHistoryManager.setupListeners();
+
+      expect(spySubscribe).not.toHaveBeenCalled();
+      spySubscribe.mockRestore();
+    });
+
+    it('should subscribe with the configured start, not a 10s fallback, when history is set', () => {
+      const spySubscribe = jest.spyOn(entityHistoryManager.historyService, 'subscribe');
+      const start = new Date('2026-01-01T00:00:00Z');
+      const end = new Date('2026-01-01T01:00:00Z');
+      entityHistoryManager.entity.config.hasHistory = true;
+      entityHistoryManager.entity.config.usingDateRangeManager = false;
+      entityHistoryManager.entity.config.historyStart = start;
+      entityHistoryManager.entity.config.historyEnd = end;
+      entityHistoryManager.entity.config.historyStartEntity = undefined;
+
+      entityHistoryManager.setupListeners();
+
+      expect(spySubscribe).toHaveBeenCalledWith(
+        entity.id,
+        start,
+        end,
+        expect.any(Function),
+        undefined
+      );
+      spySubscribe.mockRestore();
+    });
   });
 
   describe('setHistoryDates', () => {
@@ -88,6 +123,14 @@ describe('EntityHistoryManager', () => {
       const spySubscribe = jest.spyOn(entityHistoryManager.historyService, 'subscribe');
       entityHistoryManager.subscribeHistory(new Date(), new Date());
       expect(spySubscribe).toHaveBeenCalledWith(entity.id, expect.any(Date), expect.any(Date), expect.any(Function), undefined);
+      spySubscribe.mockRestore();
+    });
+
+    it('should not call historyService when history is not configured', () => {
+      const spySubscribe = jest.spyOn(entityHistoryManager.historyService, 'subscribe');
+      entityHistoryManager.entity.config.hasHistory = false;
+      entityHistoryManager.subscribeHistory(new Date(), new Date());
+      expect(spySubscribe).not.toHaveBeenCalled();
       spySubscribe.mockRestore();
     });
   });

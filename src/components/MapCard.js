@@ -111,7 +111,7 @@ export default class MapCard extends LitElement {
       this.pluginsRenderService.render();
       this.tileLayersService.render();
       this.geoJsonRenderService.render(this.hass);
-      this.entitiesRenderService.render();
+      this.entitiesRenderService.render(this.hass);
       this.initialViewRenderService.render();
 
       if (!this.hasError && this.hadError) {

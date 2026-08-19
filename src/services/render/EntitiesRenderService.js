@@ -132,8 +132,17 @@ export default class EntitiesRenderService {
     }
   }
 
-  async render() {
+  async render(hass) {
+    if (hass) {
+      this.hass = hass;
+    }
     this.entities.forEach((ent) => {
+      // Entity keeps the hass object from setup(); Lovelace replaces hass on
+      // every state change, so without this the marker reads a stale snapshot
+      // and never moves (#217).
+      if (this.hass) {
+        ent.hass = this.hass;
+      }
       ent.update(this.markerClusterGroup);
     });
     this.updateInitialView();

@@ -211,7 +211,32 @@ describe('Entity class', () => {
       entityConfig.fixedX = 30;
       entityConfig.fixedY = 40;
       expect(entity.latLng).toEqual({ lat: 30, lng: 40 });
-    });    
+    });
+
+    it('follows live hass state after hass is replaced', () => {
+      entityConfig.fixedX = null;
+      entityConfig.fixedY = null;
+      const entity = new Entity(entityConfig, hass, jest.fn(), jest.fn(), jest.fn(), jest.fn(), false);
+
+      expect(entity.latLng.lat).toBe(40.7128);
+      expect(entity.latLng.lng).toBe(-74.0060);
+
+      entity.hass = {
+        ...hass,
+        states: {
+          'test-entity': {
+            attributes: {
+              friendly_name: 'Test Entity',
+              latitude: 51.5074,
+              longitude: -0.1278
+            }
+          }
+        }
+      };
+
+      expect(entity.latLng.lat).toBe(51.5074);
+      expect(entity.latLng.lng).toBe(-0.1278);
+    });
   })
 
   describe('react', () => {
