@@ -190,13 +190,35 @@ describe('Entity class', () => {
       expect(entity.latLng.lng).toBe(1);
     });
   
-    it('throws an error if no coordinates can be found', () => {
+    it('returns null if no coordinates can be found, instead of throwing', () => {
       entityConfig.fallbackX = null;
       entityConfig.fallbackY = null;
       hass.states['test-entity'].attributes = {};
 
       const entity = new Entity(entityConfig, hass, jest.fn(), jest.fn(), jest.fn(), jest.fn(), false);
-      expect(() => entity.latLng).toThrow("Entity: test-entity has no latitude & longitude and no fallback configured");
+      expect(entity.latLng).toBeNull();
+    });
+
+    it('keeps the last drawn position when the entity becomes unknown', () => {
+      entityConfig.fallbackX = null;
+      entityConfig.fallbackY = null;
+      hass.states['test-entity'].attributes = { latitude: 30, longitude: 40 };
+      const entity = new Entity(entityConfig, hass, jest.fn(), jest.fn(), jest.fn(), jest.fn(), false);
+      entity._lastSetLatLng = entity.latLng;
+
+      hass.states['test-entity'].attributes = {};
+      expect(entity.latLng.lat).toBe(30);
+      expect(entity.latLng.lng).toBe(40);
+    });
+
+    it('tolerates a missing linked device_tracker', () => {
+      entityConfig.fallbackX = null;
+      entityConfig.fallbackY = null;
+      hass.states['test-entity'].attributes = {
+        device_trackers: ['device_tracker.gone']
+      };
+      const entity = new Entity(entityConfig, hass, jest.fn(), jest.fn(), jest.fn(), jest.fn(), false);
+      expect(entity.latLng).toBeNull();
     });    
 
     it('returns the current latLng if set', () => {
