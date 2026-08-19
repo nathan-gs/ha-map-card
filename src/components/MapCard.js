@@ -232,6 +232,7 @@ export default class MapCard extends LitElement {
     this.linkedEntityService?.disconnect();
     this.pluginsRenderService?.cleanup();
     this.geoJsonRenderService?.cleanup();
+    this.entitiesRenderService?.cleanup();
     this.map.remove();
     this.map = undefined;
   }
