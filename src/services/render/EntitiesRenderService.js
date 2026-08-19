@@ -140,10 +140,14 @@ export default class EntitiesRenderService {
       // Entity keeps the hass object from setup(); Lovelace replaces hass on
       // every state change, so without this the marker reads a stale snapshot
       // and never moves (#217).
-      if (this.hass) {
-        ent.hass = this.hass;
+      try {
+        if (this.hass) {
+          ent.hass = this.hass;
+        }
+        ent.update(this.markerClusterGroup);
+      } catch (e) {
+        Logger.error("Entity: " + ent.id + " failed to update", e);
       }
-      ent.update(this.markerClusterGroup);
     });
     this.updateInitialView();
   }

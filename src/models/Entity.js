@@ -97,7 +97,7 @@ export default class Entity {
 
   /** @returns {{[key: string]: object}} */
   get attributes() {
-    return this.currentTimelineEntry?.state.a ?? this.hass.states[this.id].attributes;
+    return this.currentTimelineEntry?.state.a ?? this.hass.states[this.id]?.attributes ?? {};
   }
 
   /** 
@@ -133,22 +133,28 @@ export default class Entity {
     let subTrackerIds = this.attributes.device_trackers ?? []
     for (let t = 0; t < subTrackerIds.length; t++) {
       const entity = this.hass.states[subTrackerIds[t]];
-      if (entity.attributes.latitude && entity.attributes.longitude) {
+      if (entity?.attributes?.latitude && entity.attributes.longitude) {
         return new LatLng(entity.attributes.latitude, entity.attributes.longitude);
       }
     }
 
-    Logger.warn("Entity: " + this.id + " has no latitude & longitude");
+    if (this._lastSetLatLng) {
+      return this._lastSetLatLng;
+    }
+
     if (this.config.fallbackX && this.config.fallbackY) {
       return new LatLng(this.config.fallbackX, this.config.fallbackY);
     }
-    Logger.error("Entity: " + this.id + " has no fallback latitude & longitude");
-    throw Error("Entity: " + this.id + " has no latitude & longitude and no fallback configured")
+
+    Logger.warn("Entity: " + this.id + " has no latitude & longitude; skipping marker");
+    return null;
   }
 
   setup(clusterGroup = null) {
-    // Only add marker if GeoJSON is not configured to hide it
-    if (!this.config.geoJsonConfig.hideMarker) {
+    // Only add marker if GeoJSON is not configured to hide it and we have a
+    // position. Missing/unknown coords used to throw here and abort the rest
+    // of the card (#91, #173).
+    if (!this.config.geoJsonConfig?.hideMarker && this.latLng) {
       this.marker = this.createMapMarker();
 
       // Bind distance tooltip if configured
@@ -348,6 +354,18 @@ export default class Entity {
   }
 
   async update(clusterGroup = null) {
+    // Entity recovered a position after being unknown/unavailable.
+    if (!this.marker && !this.config.geoJsonConfig?.hideMarker && this.latLng) {
+      this.marker = this.createMapMarker();
+      if (clusterGroup) {
+        clusterGroup.addLayer(this.marker);
+      } else {
+        this.marker.addTo(this.map);
+      }
+      this._lastSetLatLng = this.latLng;
+      this._currentPlaceIcon = this.placeIcon;
+    }
+
     // Only update marker if it exists (not hidden by GeoJSON config)
     if (this.marker) {
       // Recreate the marker when the display title changes (state/attribute
@@ -382,6 +400,7 @@ export default class Entity {
   updateMarkerPosition() {
     if (!this.marker) return;
     const newLatLng = this.latLng;
+    if (!newLatLng) return;
     const threshold = this.config.positionUpdateThreshold;
     // Update position only if it has changed significantly (configurable threshold in meters)
     if (!this._lastSetLatLng || this.map.distance(this._lastSetLatLng, newLatLng) > threshold) {

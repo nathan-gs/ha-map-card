@@ -119,7 +119,8 @@ describe('EntityHistory', () => {
       expect(spyPolyline).toHaveBeenCalledWith([ [51.5, -0.1], [51.6, -0.2] ], expect.objectContaining({
         color: 'red',
         opacity: 0.5,
-        interactive: false
+        interactive: false,
+        lineCap: 'butt',
       }));
 
       spyPolyline.mockRestore();
@@ -143,7 +144,8 @@ describe('EntityHistory', () => {
       expect(spyPolyline).toHaveBeenCalledWith([ [51.5, -0.1], [51.6, -0.2] ], expect.objectContaining({
         color: 'red',
         opacity: 1,
-        interactive: false
+        interactive: false,
+        lineCap: 'butt',
       }));
 
       spyPolyline.mockRestore();
