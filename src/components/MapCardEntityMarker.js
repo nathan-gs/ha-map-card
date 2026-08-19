@@ -1,10 +1,23 @@
 import { LitElement, html, css } from "lit";
 
+/**
+ * Picture markers only get a text overlay when the user asked for one.
+ * Auto-generated initials (title) must not cover entity pictures (#197).
+ * @param {string} prefix
+ * @param {string} suffix
+ * @param {string} label
+ * @returns {boolean}
+ */
+export function shouldOverlayPictureLabel(prefix, suffix, label) {
+  return Boolean(prefix || suffix || (label && String(label).trim()));
+}
+
 export default class MapCardEntityMarker extends LitElement {
   static get properties() {
     return {
       'entityId': {type: String, attribute: 'entity-id'},
       'title': {type: String, attribute: 'title'},
+      'label': {type: String, attribute: 'label'},
       'prefix': {type: String, attribute: 'prefix'},
       'suffix': {type: String, attribute: 'suffix'},
       'tooltip': {type: String, attribute: 'tooltip'},
@@ -94,8 +107,7 @@ export default class MapCardEntityMarker extends LitElement {
 
   _inner() {
     if(this.picture) {
-      // Show picture with optional label overlay
-      const hasLabel = this.title && (this.prefix || this.suffix || this.title.trim());
+      const hasLabel = shouldOverlayPictureLabel(this.prefix, this.suffix, this.label);
       return html`
         <div class="entity-picture" style="background-image: url(${this.picture})"></div>
         ${hasLabel ? html`
