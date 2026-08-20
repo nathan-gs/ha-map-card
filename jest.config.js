@@ -3,7 +3,7 @@ module.exports = {
       '^.+\\.js$': 'babel-jest',
     },
     transformIgnorePatterns: [
-      "/node_modules/(?!(@open-wc|lit|@esm-bundle)).+\\.js$"
+      "/node_modules/(?!(@open-wc|@lit|lit|@esm-bundle)).+\\.js$"
     ],
     moduleFileExtensions: ['js', 'json'],
     testEnvironment: 'jsdom',
