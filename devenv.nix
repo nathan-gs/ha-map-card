@@ -14,6 +14,8 @@
 
   scripts.copy-to-ha.exec = ''
     npm run build
+    VERSION=$(get-version)
+    sed -i "s/HA_MAP_CARD_VERSION/$VERSION/" dist/map-card.js
     sudo cp dist/map-card.js /var/lib/hass/www
   '';
 

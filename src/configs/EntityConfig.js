@@ -67,6 +67,11 @@ export default class EntityConfig {
   useBaseEntityOnly;
   /** @type {number} */
   positionUpdateThreshold;
+  /**
+   * @type {number} Min map zoom at which a `display: pill` marker shows the
+   * offset callout + leader line; below it the pill centers on the point.
+   */
+  pillCalloutMinZoom;
 
   /** @type {CircleConfig} */
   circleConfig;
@@ -132,6 +137,7 @@ export default class EntityConfig {
 
     this.useBaseEntityOnly = config.use_base_entity_only ?? false;
     this.positionUpdateThreshold = config.position_update_threshold ?? 10;
+    this.pillCalloutMinZoom = config.pill_callout_min_zoom ?? 15;
 
     this.circleConfig = new CircleConfig(config.circle, this.color);
     this.geoJsonConfig = new GeoJsonConfig(config.geojson, this.color);

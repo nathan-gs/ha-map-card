@@ -86,6 +86,9 @@ export default class EntityHistory {
             color: this.color,
             opacity,
             interactive: false,
+            // Round caps from adjacent segments stack on the shared vertex
+            // and make joints darker than the segments (#164).
+            lineCap: 'butt',
           })
         );
       }

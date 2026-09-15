@@ -8,6 +8,18 @@ describe("EntityConfig", () => {
     historyEnd: null
   };
 
+  describe("pillCalloutMinZoom", () => {
+    it("defaults to 15", () => {
+      const entityConfig = new EntityConfig({ entity: "device_tracker.mom" }, defaults);
+      expect(entityConfig.pillCalloutMinZoom).toBe(15);
+    });
+
+    it("can be overridden via pill_callout_min_zoom", () => {
+      const entityConfig = new EntityConfig({ entity: "device_tracker.mom", pill_callout_min_zoom: 12 }, defaults);
+      expect(entityConfig.pillCalloutMinZoom).toBe(12);
+    });
+  });
+
   describe("_generateRandomColor", () => {
     it("should generate a random color", () => {
       const entityConfig = new EntityConfig("sensor.random_entity", defaults);

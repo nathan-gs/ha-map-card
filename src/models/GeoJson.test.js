@@ -190,6 +190,30 @@ describe('GeoJson', () => {
 
       expect(L.geoJSON).not.toHaveBeenCalled();
     });
+
+    it('reads GeoJSON from live hass state even when history attributes have no geometry', () => {
+      const geoJsonData = {
+        type: 'Polygon',
+        coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]]
+      };
+
+      mockEntity.attributes = { latitude: 1, longitude: 2 };
+      mockEntity.id = 'zone.home';
+      mockEntity.hass = {
+        states: {
+          'zone.home': {
+            attributes: { zone_data: geoJsonData }
+          }
+        }
+      };
+
+      const config = new GeoJsonConfig('zone_data', '#ff0000');
+      const geoJson = new GeoJson(config, mockEntity);
+
+      geoJson.setup();
+
+      expect(L.geoJSON).toHaveBeenCalledWith(geoJsonData, expect.any(Object));
+    });
   });
 
   describe('_createTooltipContent', () => {

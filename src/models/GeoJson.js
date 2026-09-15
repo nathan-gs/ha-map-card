@@ -62,7 +62,13 @@ export default class GeoJson {
    * @returns {object|null}
    */
   _getGeoJsonData() {
-    const attributeValue = this.entity.attributes[this.config.attribute];
+    // Always read live hass state. Entity.attributes prefers the latest
+    // history timeline entry, which typically only has lat/lng — so once
+    // history loads the GeoJSON attribute disappears and the layer is
+    // cleared (#204).
+    const liveAttrs = this.entity.hass?.states?.[this.entity.id]?.attributes;
+    const attrs = liveAttrs ?? this.entity.attributes ?? {};
+    const attributeValue = attrs[this.config.attribute];
 
     if (!attributeValue) {
       Logger.debug(`[GeoJson]: No data found in attribute '${this.config.attribute}' for ${this.entity.id}`);
