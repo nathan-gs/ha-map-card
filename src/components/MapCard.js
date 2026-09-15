@@ -111,7 +111,7 @@ export default class MapCard extends LitElement {
       this.pluginsRenderService.render();
       this.tileLayersService.render();
       this.geoJsonRenderService.render(this.hass);
-      this.entitiesRenderService.render();
+      this.entitiesRenderService.render(this.hass);
       this.initialViewRenderService.render();
 
       if (!this.hasError && this.hadError) {
@@ -208,6 +208,7 @@ export default class MapCard extends LitElement {
 
     const entitiesOnlyChanged =
       previousConfig &&
+      !this.setupNeeded &&
       this.map &&
       this.entitiesRenderService &&
       this._sameConfigExceptEntities(previousConfig, config);
@@ -235,13 +236,12 @@ export default class MapCard extends LitElement {
   }
 
   _sameConfigExceptEntities(oldConfig, newConfig) {
-    const { entities: oldEntities, ...oldMapConfig } = oldConfig;
-    const { entities: newEntities, ...newMapConfig } = newConfig;
+    const oldMapConfig = { ...oldConfig };
+    const newMapConfig = { ...newConfig };
+    delete oldMapConfig.entities;
+    delete newMapConfig.entities;
 
-    oldEntities;
-    newEntities;
-
-    return JSON.stringify(oldMapConfig) === JSON.stringify(newMapConfig);
+    return this._serializeConfig(oldMapConfig) === this._serializeConfig(newMapConfig);
   }
 
   _getChangedEntityIds(oldEntities, newEntities) {
@@ -260,9 +260,21 @@ export default class MapCard extends LitElement {
 
     return new Set(
       [...allIds].filter((id) => {
-        return JSON.stringify(oldById.get(id)) !== JSON.stringify(newById.get(id));
+        return this._serializeConfig(oldById.get(id)) !== this._serializeConfig(newById.get(id));
       })
     );
+  }
+
+  _serializeConfig(config) {
+    // Sort object keys recursively; array order still matters in card configuration.
+    return JSON.stringify(config, (key, value) => {
+      if (value && typeof value === "object" && !Array.isArray(value)) {
+        return Object.fromEntries(
+          Object.keys(value).sort().map((key) => [key, value[key]])
+        );
+      }
+      return value;
+    });
   }
 
   _getEntityId(entity) {

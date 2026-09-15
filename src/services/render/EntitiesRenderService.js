@@ -137,8 +137,10 @@ export default class EntitiesRenderService {
     this.entities = nextEntities;
   }
 
-  async render() {
+  async render(hass = this.hass) {
+    this.hass = hass;
     this.entities.forEach((ent) => {
+      ent.hass = hass;
       ent.update(this.markerClusterGroup);
     });
     this.updateInitialView();
