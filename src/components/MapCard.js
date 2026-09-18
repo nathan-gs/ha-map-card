@@ -76,7 +76,7 @@ export default class MapCard extends LitElement {
     this.entitiesRenderService = new EntitiesRenderService(this.map, this.hass, this._config.focusFollow, this._config.entities, this.linkedEntityService, this.dateRangeManager, this.historyService, this._isDarkMode(), this._config.clusterMarkers);
     this.initialViewRenderService = new InitialViewRenderService(this.map, this._config, this.hass, this.entitiesRenderService);
 
-    this.pluginsRenderService = new PluginsRenderService(this.map, this._config.plugins);
+    this.pluginsRenderService = new PluginsRenderService(this.map, this.hass, this._config.plugins);
     this.geoJsonRenderService = new GeoJsonRenderService(this.map, this.hass, this._config.geojson);
 
     try {
@@ -110,7 +110,7 @@ export default class MapCard extends LitElement {
     }
 
     if (this.map) {
-      this.pluginsRenderService.render();
+      this.pluginsRenderService.render(this.hass);
       this.tileLayersService.render();
       this.geoJsonRenderService.render(this.hass);
       this.entitiesRenderService.render(this.hass);

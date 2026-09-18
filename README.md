@@ -421,6 +421,7 @@ This project uses [devenv.sh](https://devenv.sh/).
 
 ### Developing Plugins
 * All plugins should implement the `Plugin` class. See [`Plugin.js`](./src/models/Plugin.js) and [`Plugin.d.ts`](./src/models/Plugin.d.ts).
+* The Home Assistant `hass` object is available as `this.hass`. It is set before `init()` and refreshed before every `update()`, which runs whenever the card receives new state.
 * For a concrete example, see [`CircleTestPlugin.js`](./plugins/CircleTestPlugin.js).
 * Typescript example: see [bezmi/ha-map-card-plugin-bom-radar](https://github.com/bezmi/ha-map-card-plugin-bom-radar).
 * For an example HACS plugin installation: see [`buienradar`](https://github.com/Kevinjil/ha-map-card-buienradar).
