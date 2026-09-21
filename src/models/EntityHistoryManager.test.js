@@ -138,9 +138,18 @@ describe('EntityHistoryManager', () => {
   describe('update', () => {
     it('should update markers if history exists', () => {
       entityHistoryManager.historyLayerGroup.clearLayers = jest.fn();
-      entityHistoryManager.history = { update: jest.fn(() => [[{ addTo: jest.fn() }]])};
+      entityHistoryManager.history = { needRerender: true, mapPaths: [{ remove: jest.fn() }], update: jest.fn(() => [[{ addTo: jest.fn() }]])};
       entityHistoryManager.update();
       expect(entityHistoryManager.history.update).toHaveBeenCalled();
+      expect(entityHistoryManager.historyLayerGroup.clearLayers).toHaveBeenCalled();
+      expect(entityHistoryManager.history.mapPaths).toEqual([]);
+    });
+
+    it('does not clear the layer group when history has no new entries', () => {
+      entityHistoryManager.historyLayerGroup.clearLayers = jest.fn();
+      entityHistoryManager.history = { needRerender: false, mapPaths: [], update: jest.fn(() => [])};
+      entityHistoryManager.update();
+      expect(entityHistoryManager.historyLayerGroup.clearLayers).not.toHaveBeenCalled();
     });
   });
 
