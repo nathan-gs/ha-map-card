@@ -154,6 +154,13 @@ export default class EntityHistoryManager {
     if(!this.hasHistory) {
       return;
     }
+    // EntityHistory recreates all path layers when new entries arrive. Clear
+    // the owning LayerGroup first so removed paths do not remain registered
+    // in its layer index and accumulate across refreshes.
+    if (this.history?.needRerender) {
+      this.historyLayerGroup?.clearLayers();
+      this.history.mapPaths = [];
+    }
     this.history?.update().flat().forEach((marker) => {
       marker.addTo(this.historyLayerGroup);
     });
