@@ -98,14 +98,21 @@ export default class MapCard extends LitElement {
   }
 
   firstUpdated() {
-    if (this.hass) {
+    if (this.hass && this.isConnected) {
       this.setup();
     }
   };
 
   render() {
 
-    if (this.setupNeeded && this.hass && this.shadowRoot?.querySelector('#map')) {
+    // Never build a map on a card that is not in the page. Home Assistant can
+    // still call setConfig on a card it has just replaced (a websocket
+    // reconnect does this); building then gives a map whose one-shot initial
+    // view is skipped, which stays blank if the card is attached again and is
+    // otherwise never removed - a window listener keeps it alive.
+    // connectedCallback requests an update while a setup is pending, so the
+    // build simply happens on attach.
+    if (this.setupNeeded && this.hass && this.isConnected && this.shadowRoot?.querySelector('#map')) {
       this.setup();
     }
 
