@@ -87,7 +87,7 @@ export default class MapConfig {
         this.historyEnd = inputConfig.history_end ?? "now";
     }
 
-    this.entities = (inputConfig["entities"] ? inputConfig.entities : []).map((ent) => {
+    this.entities = MapConfig.firstPerEntity(inputConfig["entities"] ? inputConfig.entities : []).map((ent) => {
       // Pass historyStart/ historyEnd defaults down to entity
       return new EntityConfig(ent, {
           historyStart: this.historyStart,
@@ -176,6 +176,31 @@ export default class MapConfig {
   /** @returns {[EntityConfig]} */
   get entitiesWithShowPath() {
     return this.entities.filter((ent) => ent.showPath);
+  }
+
+  /**
+   * One entry per entity: the FIRST entry for an entity id wins, later ones
+   * are dropped.
+   *
+   * An entity listed more than once would otherwise become one marker per
+   * entry, all at the same point: a permanent cluster, with each entry's
+   * options (a colour, say) drawn on its own copy. auto-entities makes this
+   * easy to hit, because it does not deduplicate by default: an entity
+   * matching several include rules arrives once per rule. Rule order is how a
+   * dashboard says which options apply, so the first entry is kept. Entries
+   * without an entity id are passed through untouched.
+   * @param {Array} entries entity entries as written
+   * @returns {Array}
+   */
+  static firstPerEntity(entries) {
+    const seen = new Set();
+    return entries.filter((ent) => {
+      const id = (typeof ent === "string" || ent instanceof String) ? String(ent) : ent?.entity;
+      if (typeof id !== "string" || id === "") return true;
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
   }
 
 }
