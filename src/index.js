@@ -10,7 +10,11 @@ if (!customElements.get("map-card")) {
   )
 }
 
-// Register card so that it appears in the "Card Picker"
+// Register card so that it appears in the "Card Picker". Create the list
+// when no card loaded before this one has: pushing to an undefined list
+// throws after the elements are defined, so the card works but is missing
+// from the picker.
+window.customCards = window.customCards || [];
 window.customCards.push({
     name: 'Map Card',
     description: 'A more powerful Map Card for Home Assistant',
