@@ -19,6 +19,8 @@ describe('MapCard', () => {
 
   beforeEach(() => {
     card = new MapCard();
+    // The mocked LitElement is not a DOM node; these cases are an attached card.
+    card.isConnected = true;
     card.setup = jest.fn();
     card.requestUpdate = jest.fn();
     card.shadowRoot = {
