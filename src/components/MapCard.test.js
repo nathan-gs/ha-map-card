@@ -277,4 +277,18 @@ describe('MapCard', () => {
     card.render();
     expect(card.entitiesRenderService.render).toHaveBeenLastCalledWith(card.hass);
   });
+
+  describe('_hasZoomControl', () => {
+    it('is on by default', () => {
+      card._config = { mapOptions: {} };
+
+      expect(card._hasZoomControl()).toBe(true);
+    });
+
+    it('is off when map_options turns it off', () => {
+      card._config = { mapOptions: { zoomControl: false } };
+
+      expect(card._hasZoomControl()).toBe(false);
+    });
+  });
 });

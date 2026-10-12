@@ -1,4 +1,7 @@
 export default class Plugin {
+  // The Home Assistant `hass` object. Set before init() is called and
+  // refreshed before every update(), so it always holds the current state.
+  hass;
 
   // can be overwritten if necessary
   constructor(map, name, options = {}) {
@@ -19,7 +22,7 @@ export default class Plugin {
 
   async update() {
     // Optional, called by the PluginsRenderService.render method
-    // useful if plugin needs to respond to HA state.
+    // useful if plugin needs to respond to HA state (read it from this.hass).
   }
 
   destroy() {

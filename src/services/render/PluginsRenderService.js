@@ -6,13 +6,16 @@ import L from "leaflet";
 export default class PluginsRenderService {
   /** @type {L.Map} */
   map;
+  /** @type {object} */
+  hass;
   /** @type {[PluginConfig]} */
   pluginsConfig;
   /** @type {Map} */
   plugins;
 
-  constructor(map, pluginsConfig) {
+  constructor(map, hass, pluginsConfig) {
     this.map = map;
+    this.hass = hass;
     this.pluginsConfig = pluginsConfig;
     this.plugins = new Map();
   }
@@ -78,6 +81,7 @@ export default class PluginsRenderService {
       // Create a new instance of the plugin with provided options
       const PluginClass = pluginFactory(L, Plugin, Logger);
       const pluginInstance = new PluginClass(this.map, config.name, config.options)
+      pluginInstance.hass = this.hass;
 
       if (pluginInstance.destroy === Plugin.prototype.destroy) {
         throw new Error(`Plugin ${config.name} does not implement a destroy() method!`, { cause: 'NotImplemented' });
@@ -97,12 +101,14 @@ export default class PluginsRenderService {
     }
   }
 
-  async render() {
+  async render(hass) {
+    this.hass = hass;
     try {
       const renderPromises = [];
       this.plugins.forEach((pluginInstance, pluginName) => {
         const wrappedPromise = (async () => {
           try {
+            pluginInstance.hass = hass;
             await pluginInstance.update();
           } catch (error) {
             Logger.error(`[PluginsRenderService] call to update() for plugin ${pluginName} failed:`, error);

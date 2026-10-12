@@ -76,7 +76,7 @@ export default class MapCard extends LitElement {
     this.entitiesRenderService = new EntitiesRenderService(this.map, this.hass, this._config.focusFollow, this._config.entities, this.linkedEntityService, this.dateRangeManager, this.historyService, this._isDarkMode(), this._config.clusterMarkers);
     this.initialViewRenderService = new InitialViewRenderService(this.map, this._config, this.hass, this.entitiesRenderService);
 
-    this.pluginsRenderService = new PluginsRenderService(this.map, this._config.plugins);
+    this.pluginsRenderService = new PluginsRenderService(this.map, this.hass, this._config.plugins);
     this.geoJsonRenderService = new GeoJsonRenderService(this.map, this.hass, this._config.geojson);
 
     try {
@@ -110,7 +110,7 @@ export default class MapCard extends LitElement {
     }
 
     if (this.map) {
-      this.pluginsRenderService.render();
+      this.pluginsRenderService.render(this.hass);
       this.tileLayersService.render();
       this.geoJsonRenderService.render(this.hass);
       this.entitiesRenderService.render(this.hass);
@@ -133,7 +133,7 @@ export default class MapCard extends LitElement {
                 <div id="map" style="min-height: ${this._config.mapHeight}px">
                   <ha-icon-button
                     label='Reset focus'
-                    style='${this._isDarkMode() ? "color:#ffffff;" : "color:#000000;"} position: absolute; top: 75px; left: 3px; z-index: 1;'
+                    style='${this._isDarkMode() ? "color:#ffffff;" : "color:#000000;"} position: absolute; top: ${this._hasZoomControl() ? 75 : 11}px; left: 3px; z-index: 1;'
                     @click=${this._fitMap}
                     tabindex="0"
                   >
@@ -142,7 +142,7 @@ export default class MapCard extends LitElement {
                   ${this._config.clusterMarkers ? html`
                     <ha-icon-button
                       label='Toggle grouping'
-                      style='${this._isDarkMode() ? "color:#ffffff;" : "color:#000000;"} position: absolute; top: 115px; left: 3px; z-index: 1;'
+                      style='${this._isDarkMode() ? "color:#ffffff;" : "color:#000000;"} position: absolute; top: ${this._hasZoomControl() ? 115 : 51}px; left: 3px; z-index: 1;'
                       @click=${this._toggleClustering}
                       tabindex="0"
                     >
@@ -153,6 +153,12 @@ export default class MapCard extends LitElement {
               </div>
             </ha-card>
         `;
+  }
+
+  // Leaflet shows its zoom control unless map_options.zoomControl turns it off.
+  // The card's buttons sit below it, or move up into its place.
+  _hasZoomControl() {
+    return this._config.mapOptions?.zoomControl ?? true;
   }
 
   _fitMap() {
