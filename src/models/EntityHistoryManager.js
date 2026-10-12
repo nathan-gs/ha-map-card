@@ -159,4 +159,16 @@ export default class EntityHistoryManager {
     });
     this.entity.updateMarkerPosition();
   }
+
+  cleanup() {
+    this.historyService.unsubscribeEntity(this.entity.id);
+
+    if (this.historyLayerGroup) {
+      this.historyLayerGroup.remove();
+      this.historyLayerGroup = null;
+    }
+
+    this.history = null;
+  }
+
 }

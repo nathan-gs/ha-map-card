@@ -484,4 +484,28 @@ export default class Entity {
     }
     return marker;
   }
+
+  cleanup(clusterGroup = null) {
+    this.historyManager.cleanup();
+
+    if (this.marker) {
+      if (clusterGroup && clusterGroup.hasLayer(this.marker)) {
+        clusterGroup.removeLayer(this.marker);
+      } else {
+        this.marker.remove();
+      }
+
+      this.marker = null;
+    }
+
+    if (this.circle?.circle) {
+      this.circle.circle.remove();
+      this.circle.circle = null;
+    }
+
+    if (this.geoJson?.geoJsonLayer) {
+      this.geoJson.geoJsonLayer.remove();
+      this.geoJson.geoJsonLayer = null;
+    }
+  }
 }

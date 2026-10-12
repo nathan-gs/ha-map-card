@@ -1,4 +1,4 @@
-import L, {Map, LayerGroup, LatLngBounds} from "leaflet";
+import L, {LayerGroup, LatLngBounds} from "leaflet";
 import "leaflet.markercluster";
 import EntityConfig from "../../configs/EntityConfig";
 import Entity from "../../models/Entity";
@@ -65,24 +65,82 @@ export default class EntitiesRenderService {
       Logger.debug("[EntitiesRenderService] Marker cluster group created and added to map");
     }
 
-    this.entities = this.entityConfigs.map((configEntity) => {
-      // Attempt to setup entity. Skip on fail, so one bad entity does not affect others.
-      try {
-        const entity = new Entity(configEntity, this.hass, this.map, this.historyService, this.dateRangeManager, this.linkedEntityService, this.isDarkMode);
-        entity.setup(this.markerClusterGroup);
-        return entity;
-      } catch (e){
-        Logger.error("Entity: " + configEntity.id + " skipped due to missing data", e);
-        HaMapUtilities.renderWarningOnMap(this.map, "Entity: " + configEntity.id + " could not be loaded. See console for details.");
-        return null;
-      }
-    })
-    // Remove skipped entities.
-    .filter(v => v);
+    this.entities = this.entityConfigs
+      .map((configEntity) => this._createEntity(configEntity))
+      .filter((entity) => entity);
 
     if (!this.focusFollowConfig.isNone && this.focusFollowConfig.hasPause) {
       this._setupFollowPauseListeners();
     }
+  }
+
+  _createEntity(configEntity) {
+    try {
+      const entity = new Entity(
+        configEntity,
+        this.hass,
+        this.map,
+        this.historyService,
+        this.dateRangeManager,
+        this.linkedEntityService,
+        this.isDarkMode
+      );
+
+      entity.setup(this.markerClusterGroup);
+
+      return entity;
+    } catch (e) {
+      Logger.error(
+        "Entity: " + configEntity.id + " skipped due to missing data",
+        e
+      );
+
+      HaMapUtilities.renderWarningOnMap(
+        this.map,
+        "Entity: " + configEntity.id + " could not be loaded. See console for details."
+      );
+
+      return null;
+    }
+  }
+
+  reconfigure(entityConfigs, hass, changedEntityIds = new Set()) {
+    this.hass = hass;
+
+    const existingEntities = new Map(
+      this.entities.map((entity) => [entity.id, entity])
+    );
+
+    const nextEntities = [];
+
+    entityConfigs.forEach((configEntity) => {
+      const existingEntity = existingEntities.get(configEntity.id);
+
+      if (existingEntity && !changedEntityIds.has(configEntity.id)) {
+        existingEntity.hass = hass;
+        nextEntities.push(existingEntity);
+        existingEntities.delete(configEntity.id);
+        return;
+      }
+
+      if (existingEntity) {
+        existingEntity.cleanup(this.markerClusterGroup);
+        existingEntities.delete(configEntity.id);
+      }
+
+      const newEntity = this._createEntity(configEntity);
+
+      if (newEntity) {
+        nextEntities.push(newEntity);
+      }
+    });
+
+    existingEntities.forEach((entity) => {
+      entity.cleanup(this.markerClusterGroup);
+    });
+
+    this.entityConfigs = entityConfigs;
+    this.entities = nextEntities;
   }
 
   _setupFollowPauseListeners() {
@@ -132,10 +190,8 @@ export default class EntitiesRenderService {
     }
   }
 
-  async render(hass) {
-    if (hass) {
-      this.hass = hass;
-    }
+  async render(hass = this.hass) {
+    this.hass = hass;
     this.entities.forEach((ent) => {
       // Entity keeps the hass object from setup(); Lovelace replaces hass on
       // every state change, so without this the marker reads a stale snapshot
