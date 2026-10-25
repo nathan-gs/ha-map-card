@@ -31,23 +31,26 @@ export default class GeoJson {
       return;
     }
 
+    // Always read live hass state. Entity.attributes prefers the latest
+    // history timeline entry, which typically only has lat/lng — so once
+    // history loads the GeoJSON attribute disappears and the layer is
+    // cleared (#204).
+    const liveAttrs = this.entity.hass?.states?.[this.entity.id]?.attributes;
+    const attributeValue = (liveAttrs ?? this.entity.attributes ?? {})[this.config.attribute];
     // Home Assistant replaces state objects on change, so the same value
     // means the same data; skip the costly rebuild on unrelated updates.
-    const attributeValue = this._getAttributeValue();
     if (attributeValue === this._renderedValue) {
       return;
     }
     this._renderedValue = attributeValue;
 
     try {
-      // Remove existing layer
       if (this.geoJsonLayer) {
         this.entity.map.removeLayer(this.geoJsonLayer);
         this.geoJsonLayer = null;
       }
 
-      // Re-render with updated data
-      const geoJsonData = this._getGeoJsonData();
+      const geoJsonData = this._parseGeoJson(attributeValue);
       if (geoJsonData) {
         this._renderGeoJson(geoJsonData);
       }
@@ -58,24 +61,10 @@ export default class GeoJson {
 
   /**
    * @private
-   */
-  _getAttributeValue() {
-    // Always read live hass state. Entity.attributes prefers the latest
-    // history timeline entry, which typically only has lat/lng — so once
-    // history loads the GeoJSON attribute disappears and the layer is
-    // cleared (#204).
-    const liveAttrs = this.entity.hass?.states?.[this.entity.id]?.attributes;
-    const attrs = liveAttrs ?? this.entity.attributes ?? {};
-    return attrs[this.config.attribute];
-  }
-
-  /**
-   * @private
+   * @param {*} attributeValue
    * @returns {object|null}
    */
-  _getGeoJsonData() {
-    const attributeValue = this._getAttributeValue();
-
+  _parseGeoJson(attributeValue) {
     if (!attributeValue) {
       Logger.debug(`[GeoJson]: No data found in attribute '${this.config.attribute}' for ${this.entity.id}`);
       return null;
