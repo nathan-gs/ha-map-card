@@ -10,6 +10,8 @@ export default class GeoJson {
   entity;
   /** @type {L.GeoJSON} */
   geoJsonLayer;
+  /** @type {*} */
+  _renderedValue;
 
   /**
    * @param {GeoJsonConfig} config 
@@ -21,24 +23,21 @@ export default class GeoJson {
   }
 
   setup() {
-    if (!this.config.enabled) {
-      return;
-    }
-
-    try {
-      const geoJsonData = this._getGeoJsonData();
-      if (geoJsonData) {
-        this._renderGeoJson(geoJsonData);
-      }
-    } catch (e) {
-      Logger.error(`[GeoJson]: Failed to setup GeoJSON for ${this.entity.id}`, e);
-    }
+    this.update();
   }
 
   update() {
     if (!this.config.enabled) {
       return;
     }
+
+    // Home Assistant replaces state objects on change, so the same value
+    // means the same data; skip the costly rebuild on unrelated updates.
+    const attributeValue = this._getAttributeValue();
+    if (attributeValue === this._renderedValue) {
+      return;
+    }
+    this._renderedValue = attributeValue;
 
     try {
       // Remove existing layer
@@ -59,16 +58,23 @@ export default class GeoJson {
 
   /**
    * @private
-   * @returns {object|null}
    */
-  _getGeoJsonData() {
+  _getAttributeValue() {
     // Always read live hass state. Entity.attributes prefers the latest
     // history timeline entry, which typically only has lat/lng — so once
     // history loads the GeoJSON attribute disappears and the layer is
     // cleared (#204).
     const liveAttrs = this.entity.hass?.states?.[this.entity.id]?.attributes;
     const attrs = liveAttrs ?? this.entity.attributes ?? {};
-    const attributeValue = attrs[this.config.attribute];
+    return attrs[this.config.attribute];
+  }
+
+  /**
+   * @private
+   * @returns {object|null}
+   */
+  _getGeoJsonData() {
+    const attributeValue = this._getAttributeValue();
 
     if (!attributeValue) {
       Logger.debug(`[GeoJson]: No data found in attribute '${this.config.attribute}' for ${this.entity.id}`);

@@ -182,6 +182,17 @@ describe('GeoJson', () => {
       expect(L.geoJSON).toHaveBeenCalledTimes(initialCallCount + 1);
     });
 
+    it('should not rebuild the layer when the attribute value is unchanged', () => {
+      mockEntity.attributes = { zone_data: '{"type": "Point", "coordinates": [0, 0]}' };
+      const geoJson = new GeoJson(new GeoJsonConfig('zone_data', '#ff0000'), mockEntity);
+
+      geoJson.setup();
+      geoJson.update();
+
+      expect(L.geoJSON).toHaveBeenCalledTimes(1);
+      expect(mockMap.removeLayer).not.toHaveBeenCalled();
+    });
+
     it('should not render when config is disabled', () => {
       const config = new GeoJsonConfig(false, '#ff0000');
       const geoJson = new GeoJson(config, mockEntity);
