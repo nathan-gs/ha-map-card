@@ -154,6 +154,10 @@ export default class EntityHistoryManager {
     if(!this.hasHistory) {
       return;
     }
+    if (HaMapUtilities.isZooming(this.entity.map)) {
+      this.entity.map.once("zoomend", this.update, this);
+      return;
+    }
     this.history?.update().flat().forEach((marker) => {
       marker.addTo(this.historyLayerGroup);
     });
