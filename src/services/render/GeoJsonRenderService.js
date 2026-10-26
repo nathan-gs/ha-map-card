@@ -12,7 +12,7 @@ export default class GeoJsonRenderService {
   hass;
   /** @type {[GeoJsonLayerConfig]} */
   configs = [];
-  /** @type {Map<string, {layer: L.GeoJSON, config: GeoJsonLayerConfig}>} */
+  /** @type {Map<string, {layer: L.GeoJSON, config: GeoJsonLayerConfig, renderedState?: object}>} */
   layers = new Map();
 
   /**
@@ -61,7 +61,14 @@ export default class GeoJsonRenderService {
   render(hass) {
     if (hass) this.hass = hass;
 
-    this.layers.forEach(({ layer, config }, entityId) => {
+    this.layers.forEach((entry, entityId) => {
+      const { layer, config } = entry;
+      // Home Assistant replaces state objects on change; skip unrelated updates.
+      const entityState = this.hass.states[config.entity];
+      if (entry.renderedState === entityState) {
+        return;
+      }
+      entry.renderedState = entityState;
       try {
         const geoJsonData = this._getGeoJsonFromEntity(config);
 

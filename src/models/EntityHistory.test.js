@@ -157,5 +157,39 @@ describe('EntityHistory', () => {
       entityHistory.update();
       expect(entityHistory.needRerender).toBe(false);
     });
+
+    const entryAt = (i) => new TimelineEntry(new Date(), "original-entity", "entity", { a: {latitude: 51 + i / 1000, longitude: i / 1000} });
+
+    it('should update existing layers in place on new entries', () => {
+      const history = new EntityHistory('entity-1', 'Test Entity', 'red', 0, true, true);
+      history.react(entryAt(0));
+      history.react(entryAt(1));
+      expect(history.update()).toHaveLength(2);
+
+      history.react(entryAt(2));
+      const created = history.update();
+
+      expect(created).toHaveLength(1);
+      expect(created[0]).toBe(history.dots[1]);
+      expect(history.lines).toHaveLength(1);
+      expect(history.lines[0].getLatLngs()).toHaveLength(3);
+    });
+
+    it('should draw a long trail as a bounded number of lines with gradual opacity', () => {
+      const history = new EntityHistory('entity-1', 'Test Entity', 'red', 0.5, false, true);
+      for (let i = 0; i < 1000; i++) {
+        history.react(entryAt(i));
+      }
+
+      const lines = history.update();
+
+      expect(lines).toHaveLength(20);
+      expect(lines[0].options.opacity).toBe(0.5);
+      expect(lines[19].options.opacity).toBe(1);
+      expect(lines.reduce((n, line) => n + line.getLatLngs().length - 1, 0)).toBe(999);
+      lines.slice(1).forEach((line, i) => {
+        expect(line.getLatLngs()[0]).toEqual(lines[i].getLatLngs().at(-1));
+      });
+    });
   });
 });
