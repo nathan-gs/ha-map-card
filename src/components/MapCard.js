@@ -109,7 +109,7 @@ export default class MapCard extends LitElement {
       this.setup();
     }
 
-    if (this.map) {
+    if (this.map && !HaMapUtilities.isZooming(this.map)) {
       this.pluginsRenderService.render(this.hass);
       this.tileLayersService.render();
       this.geoJsonRenderService.render(this.hass);
@@ -196,6 +196,8 @@ export default class MapCard extends LitElement {
 
     const mapEl = this.shadowRoot.querySelector('#map');
     let map = L.map(mapEl, this._config.mapOptions);
+    // Catch up on updates held back while zooming (see render)
+    map.on("zoomend", () => this.requestUpdate());
 
     // Add dark class if darkmode
     this._isDarkMode() ? mapEl.classList.add('dark') : mapEl.classList.add('light');

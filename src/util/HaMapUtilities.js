@@ -92,6 +92,13 @@ export default class HaMapUtilities {
       );
   }
 
+  // Leaflet places paths drawn during an animated zoom or a pinch for the
+  // intermediate zoom inside the already scaled layer, misplacing them until
+  // the zoom ends. Leaflet has no public flag for this.
+  static isZooming(map) {
+    return Boolean(map._animatingZoom || map.touchZoom?._zooming);
+  }
+
   static getEntityHistoryDate(state, suffix) {
       // If state isn't set, defualt to hours ago is value is numeric.
       // If its not numeric, default to no suffix as likely is already be a date.

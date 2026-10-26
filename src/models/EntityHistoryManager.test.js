@@ -4,6 +4,7 @@ import Entity from './Entity';
 import HaHistoryService from '../services/HaHistoryService';
 import HaDateRangeService from '../services/HaDateRangeService';
 import HaLinkedEntityService from '../services/HaLinkedEntityService';
+import HaMapUtilities from '../util/HaMapUtilities';
 import { jest, describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 
 jest.mock('../util/Logger');
@@ -141,6 +142,17 @@ describe('EntityHistoryManager', () => {
       entityHistoryManager.history = { update: jest.fn(() => [[{ addTo: jest.fn() }]])};
       entityHistoryManager.update();
       expect(entityHistoryManager.history.update).toHaveBeenCalled();
+    });
+
+    it('should wait for a zoom in progress to end', () => {
+      HaMapUtilities.isZooming.mockReturnValueOnce(true);
+      entity.map.once = jest.fn();
+      entityHistoryManager.history = { update: jest.fn(() => []) };
+
+      entityHistoryManager.update();
+
+      expect(entityHistoryManager.history.update).not.toHaveBeenCalled();
+      expect(entity.map.once).toHaveBeenCalledWith('zoomend', entityHistoryManager.update, entityHistoryManager);
     });
   });
 
