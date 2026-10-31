@@ -28,8 +28,9 @@ export default class HaHistoryService {
       Logger.debug("[HaHistoryService]: tracking entity: " + entityId);
     } else {
       // Use the entity's device trackers if available
-      trackerEntityIds = this.hass.states[entityId]?.attributes?.device_trackers ?? [];
-      trackerEntityIds.push(entityId);
+      // Copy: pushing onto the attribute array would mutate the hass state
+      // object and add the entity again on every subscribe.
+      trackerEntityIds = [...(this.hass.states[entityId]?.attributes?.device_trackers ?? []), entityId];
       Logger.debug("[HaHistoryService]: tracking following entities " + trackerEntityIds + " for entity: " + entityId);
     }
 
