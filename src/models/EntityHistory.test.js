@@ -36,6 +36,29 @@ describe('EntityHistory', () => {
       expect(entityHistory.entries[0]).toBe(mockEntry);
       expect(entityHistory.needRerender).toBe(true);
     });
+
+    it('should keep entries in timestamp order when sources arrive one after another', () => {
+      // history/stream returns each source as its own block: the device_tracker's
+      // whole day, then the person's whole day (#158).
+      const at = (h) => new Date(2026, 9, 30, h);
+      const tracker = [at(0), at(12), at(23)].map((t) => new TimelineEntry(t, "person.a", "device_tracker.a", { a: {latitude: 1, longitude: 1} }));
+      const person = [at(1), at(13), at(22)].map((t) => new TimelineEntry(t, "person.a", "person.a", { a: {latitude: 1, longitude: 1} }));
+
+      [...tracker, ...person].forEach((e) => entityHistory.react(e));
+
+      expect(entityHistory.entries.map((e) => e.timestamp.getHours())).toEqual([0, 1, 12, 13, 22, 23]);
+    });
+
+    it('should keep arrival order for entries with the same timestamp', () => {
+      const t = new Date(2026, 9, 30, 12);
+      const first = new TimelineEntry(t, "person.a", "device_tracker.a", { a: {latitude: 1, longitude: 1} });
+      const second = new TimelineEntry(t, "person.a", "person.a", { a: {latitude: 1, longitude: 1} });
+
+      entityHistory.react(first);
+      entityHistory.react(second);
+
+      expect(entityHistory.entries).toEqual([first, second]);
+    });
   });
 
   describe('update', () => {

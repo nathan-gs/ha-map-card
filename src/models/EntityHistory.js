@@ -31,7 +31,21 @@ export default class EntityHistory {
 
   /** @param {TimelineEntry} entry  */
   react(entry) {
-    this.entries.push(entry);
+    // History arrives grouped per source entity (the person and each of its
+    // device_trackers), so arrival order is not chronological. Insert in
+    // timestamp order, otherwise a segment joins the end of one source's
+    // track to the start of the next (#158).
+    let low = 0;
+    let high = this.entries.length;
+    while (low < high) {
+      const mid = (low + high) >>> 1;
+      if (this.entries[mid].timestamp <= entry.timestamp) {
+        low = mid + 1;
+      } else {
+        high = mid;
+      }
+    }
+    this.entries.splice(low, 0, entry);
     this.needRerender = true;
   };
 
